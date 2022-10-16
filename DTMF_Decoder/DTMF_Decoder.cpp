@@ -254,12 +254,14 @@ VOID DrawRectangle( HWND hWnd ) {
 
    // Clear to the background color
    pRenderTarget->Clear( D2D1::ColorF( BACKGROUND_COLOR, 1.0f ) );
-
-   // Draw Rectangle
-   pRenderTarget->DrawRectangle(
-      D2D1::RectF( 100.f, 100.f, 500.f, 500.f ),
-      gpBrushForeground
-   );
+   
+   pRenderTarget->DrawRoundedRectangle(
+      D2D1::RoundedRect(
+         D2D1::RectF( 100.f, 100.f, 164.f, 164.f ),
+         8.0f,
+         8.0f ),
+      gpBrushForeground, 
+      2.f) ;
 
    pRenderTarget->EndDraw();
    /// @TODO Look into error checking for these methods
