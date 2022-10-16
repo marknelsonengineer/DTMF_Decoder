@@ -12,10 +12,12 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include "framework.h"    // Standard system include files
-#include "d2d1.h"         // For Direct2D
+#include <d2d1.h>         // For Direct2D (drawing)
+#include <dwrite.h>       // For DirectWrite (fonts and text)
 #include "DTMF_Decoder.h" // Resource.h
 
 #pragma comment(lib, "d2d1")
+#pragma comment(lib, "Dwrite")
 
 
 #define MAX_LOADSTRING    (100)
@@ -31,6 +33,8 @@ ID2D1Factory* pD2DFactory = NULL;                  /// The Direct2D Factory
 ID2D1HwndRenderTarget* pRenderTarget = NULL;	      /// Render target
 ID2D1SolidColorBrush* gpBrushBackground = NULL;    /// A dark blue brush for the background
 ID2D1SolidColorBrush* gpBrushForeground = NULL;    /// A light blue brush for the foreground
+IDWriteFactory*       g_pDWriteFactory = NULL;
+IDWriteTextFormat*    g_pTextFormat = NULL;
 
 
 // Forward declarations of functions included in this code module
@@ -103,6 +107,42 @@ int APIENTRY wWinMain(
       return FALSE;
    }
 
+   hr = DWriteCreateFactory(
+      DWRITE_FACTORY_TYPE_SHARED,
+      __uuidof( IDWriteFactory ),
+      reinterpret_cast<IUnknown**>( &g_pDWriteFactory )
+   );
+   if ( FAILED( hr ) ) {
+      OutputDebugStringA( APP_NAME ": Failed to create DirectWrite Factory" );
+      return FALSE;
+   }
+
+   hr = g_pDWriteFactory->CreateTextFormat(
+      L"Segoe UI",                  // Font family name
+      NULL,                         // Font collection(NULL sets it to the system font collection)
+      DWRITE_FONT_WEIGHT_REGULAR,   // Weight
+      DWRITE_FONT_STYLE_NORMAL,     // Style
+      DWRITE_FONT_STRETCH_NORMAL,   // Stretch
+      50.0f,                        // Size	
+      L"en-us",                     // Local
+      &g_pTextFormat                // Pointer to recieve the created object
+   );
+   if ( FAILED( hr ) ) {
+      OutputDebugStringA( APP_NAME ": Failed to create a font resource" );
+      return FALSE;
+   }
+
+   hr = g_pTextFormat->SetWordWrapping( DWRITE_WORD_WRAPPING_WRAP );
+   if ( FAILED( hr ) ) {
+      OutputDebugStringA( APP_NAME ": Failed to set word wrap mode" );
+      return FALSE;
+   }
+
+   hr = g_pTextFormat->SetTextAlignment( DWRITE_TEXT_ALIGNMENT_CENTER );
+   hr = g_pTextFormat->SetParagraphAlignment( DWRITE_PARAGRAPH_ALIGNMENT_CENTER );
+   hr = g_pTextFormat->SetLineSpacing( DWRITE_LINE_SPACING_METHOD_DEFAULT, 50, 80 );
+   /// @TODO Add error handling
+
    RECT rc ;
    if ( !GetClientRect( hWnd, &rc ) ) {   // Get the size of the drawing area of the window
       OutputDebugStringA( APP_NAME ": Failed to get the window size" );
@@ -155,6 +195,8 @@ int APIENTRY wWinMain(
 
    /// Main message loop
    MSG msg;
+   ZeroMemory( &msg, sizeof( msg ) );
+
 
    while ( GetMessage( &msg, nullptr, 0, 0 ) ) {
       if ( !TranslateAccelerator( msg.hwnd, hAccelTable, &msg ) ) {
@@ -262,6 +304,26 @@ VOID DrawRectangle( HWND hWnd ) {
          8.0f ),
       gpBrushForeground, 
       2.f) ;
+   
+   /// @TODO Add error handling
+
+   D2D1_RECT_F textLayoutRect = D2D1::RectF(
+      static_cast<FLOAT>( 100.f ),
+      static_cast<FLOAT>( 100.f ),
+      static_cast<FLOAT>( 164.f ),
+      static_cast<FLOAT>( 164.f )
+   );
+
+   const wchar_t* wszText = L"1";		// String to render
+   UINT32 cTextLength = (UINT32) wcslen( wszText );	// Get text length
+
+   pRenderTarget->DrawText(
+      wszText,		// Text to render
+      cTextLength,	// Text length
+      g_pTextFormat,	// Text format
+      textLayoutRect,	// The region of the window where the text will be rendered
+      gpBrushForeground	// The brush used to draw the text
+   );
 
    pRenderTarget->EndDraw();
    /// @TODO Look into error checking for these methods
