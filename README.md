@@ -39,5 +39,6 @@
   able to write debug messages to the console.  I'm going to push myself a bit:  No console logging this time.
   Instead, I'm going to rely more on the debugger than I ever have before.  
   - Note:  Should I have chosen to do a console-based log, I'd have dumped to a syslog on localhost.
+  - I think I'll try using [DebugOutputString](https://learn.microsoft.com/en-us/windows/win32/api/debugapi/nf-debugapi-outputdebugstringa)
 
 

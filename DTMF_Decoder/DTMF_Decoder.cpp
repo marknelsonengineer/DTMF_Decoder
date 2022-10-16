@@ -38,12 +38,16 @@ VOID             DrawRectangle( HWND );
 
 
 /// Program entrypoint
-int APIENTRY wWinMain( _In_     HINSTANCE hInstance,
+int APIENTRY wWinMain( 
+   _In_     HINSTANCE hInstance,
    _In_opt_ HINSTANCE hPrevInstance,
    _In_     LPWSTR    lpCmdLine,
    _In_     int       nCmdShow ) {
-   UNREFERENCED_PARAMETER( hPrevInstance );
-   UNREFERENCED_PARAMETER( lpCmdLine );
+
+   OutputDebugStringA( APP_NAME ": Starting" );
+
+   ghInst = hInstance; // Store the instance handle in a global variable
+
 
    /// Initialize global strings
    LoadStringW( hInstance, IDS_APP_TITLE, gszTitle, MAX_LOADSTRING );
@@ -68,11 +72,9 @@ int APIENTRY wWinMain( _In_     HINSTANCE hInstance,
    wcex.hIconSm = LoadIcon( wcex.hInstance, MAKEINTRESOURCE( IDI_SMALL ) );
 
    if ( !RegisterClassExW( &wcex ) ) {
-      MessageBox( NULL, TEXT( "Failed to register window class!" ), L"error", MB_ICONERROR ) ;
+      OutputDebugStringA( APP_NAME ": Failed to register window class");
       return FALSE;
    }
-
-   ghInst = hInstance; // Store the instance handle in a global variable
 
    HWND hWnd = CreateWindowW(
       gszWindowClass,
@@ -88,18 +90,22 @@ int APIENTRY wWinMain( _In_     HINSTANCE hInstance,
       nullptr );              // lpParam
 
    if ( !hWnd ) {
+      OutputDebugStringA( APP_NAME ": Failed to create main window" );
       return FALSE;
    }
 
    /// Initialize Direct2D
    HRESULT hr = D2D1CreateFactory( D2D1_FACTORY_TYPE_MULTI_THREADED, &pD2DFactory );
    if ( FAILED(hr) ) {
-      MessageBox( hWnd, L"Create D2D factory failed!", L"Error", 0 ) ;
+      OutputDebugStringA( APP_NAME ": Failed to create Direct2D Factory" );
       return FALSE;
    }
 
    RECT rc ;
-   GetClientRect( hWnd, &rc ) ;   // Get the size of the drawing area of the window
+   if ( !GetClientRect( hWnd, &rc ) ) {   // Get the size of the drawing area of the window
+      OutputDebugStringA( APP_NAME ": Failed to get the window size" );
+      return FALSE;
+   }
 
    hr = pD2DFactory->CreateHwndRenderTarget(
       D2D1::RenderTargetProperties(),
@@ -107,7 +113,7 @@ int APIENTRY wWinMain( _In_     HINSTANCE hInstance,
       &pRenderTarget
    );
    if ( FAILED( hr ) ) {
-      MessageBox( hWnd, L"Create render target failed!", L"Error", 0 ) ;
+      OutputDebugStringA( APP_NAME ": Failed to create Direct2D Render Target" );
       return FALSE;
    }
 
@@ -116,15 +122,25 @@ int APIENTRY wWinMain( _In_     HINSTANCE hInstance,
       &pBlackBrush
    );
    if ( FAILED( hr ) ) {
-      MessageBox( hWnd, L"Create brush failed!", L"Error", 0 ) ;
+      OutputDebugStringA( APP_NAME ": Failed to create Direct2D Brush" );
       return FALSE;
    }
 
 
-   ShowWindow( hWnd, nCmdShow );
-   UpdateWindow( hWnd );
+   ShowWindow( hWnd, nCmdShow );   // It's OK to ignore the result of this
+   if ( !UpdateWindow( hWnd ) ) {
+      OutputDebugStringA( APP_NAME ": Failed to do the initial window update" );
+      return FALSE;
+   }
 
    HACCEL hAccelTable = LoadAccelerators( hInstance, MAKEINTRESOURCE( IDC_DTMFDECODER ) );
+   if ( hAccelTable == NULL ) {
+      OutputDebugStringA( APP_NAME ": Failed to load manu accelerator" );
+      return FALSE;
+   }
+
+   OutputDebugStringA( APP_NAME ": All global resources were successfully initialized" );
+
 
    /// Main message loop
    MSG msg;
@@ -149,6 +165,9 @@ VOID Cleanup() {
       DeleteObject( ghBrushBlueBackground );
       ghBrushBlueBackground = NULL;
    }
+
+   OutputDebugStringA( APP_NAME ": Ending" );
+
 }
 
 
