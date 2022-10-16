@@ -16,8 +16,8 @@
 #include <dwrite.h>       // For DirectWrite (fonts and text)
 #include "DTMF_Decoder.h" // Resource.h
 
-#pragma comment(lib, "d2d1")
-#pragma comment(lib, "Dwrite")
+#pragma comment(lib, "d2d1")    // Link the Diect2D library (for drawing)
+#pragma comment(lib, "Dwrite")  // Link the DirectWrite library (for fonts and text)
 
 
 #define MAX_LOADSTRING    (100)
@@ -63,6 +63,7 @@ int APIENTRY wWinMain(
 
    // Register the Windows Class
    WNDCLASSEXW wcex;
+   ZeroMemory( &wcex, sizeof( wcex ) );
 
    wcex.cbSize = sizeof( WNDCLASSEX );
    wcex.style = CS_HREDRAW | CS_VREDRAW;
@@ -117,6 +118,7 @@ int APIENTRY wWinMain(
       return FALSE;
    }
 
+   /// Initialize DirectWrite
    hr = g_pDWriteFactory->CreateTextFormat(
       L"Segoe UI",                  // Font family name
       NULL,                         // Font collection(NULL sets it to the system font collection)
@@ -178,6 +180,7 @@ int APIENTRY wWinMain(
    }
 
 
+   /// Initialize Win32-isms
    ShowWindow( hWnd, nCmdShow );   // It's OK to ignore the result of this
    if ( !UpdateWindow( hWnd ) ) {
       OutputDebugStringA( APP_NAME ": Failed to do the initial window update" );
