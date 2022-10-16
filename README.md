@@ -32,7 +32,8 @@
   towards **Direct2D**. 
   - **GDI:**  It's depricated.  Also, I want to explore APIs that were written for GPUs.
   - **GDI+:**  I want to write this in C
-  - I'm looking at [this](https://bobobobo.wordpress.com/2008/01/31/how-to-create-a-basic-window-in-c/) for a starting point
+  - I'm looking at [this](https://learn.microsoft.com/en-us/windows/win32/direct2d/getting-started-with-direct2d) 
+    and [this](https://bobobobo.wordpress.com/2008/01/31/how-to-create-a-basic-window-in-c/) for a starting point
 
 - **Logging:** I've been programming for a long time and grown accustomed to being
   able to write debug messages to the console.  I'm going to push myself a bit:  No console logging this time.

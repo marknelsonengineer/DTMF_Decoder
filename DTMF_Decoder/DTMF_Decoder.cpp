@@ -11,16 +11,21 @@
 /// @date   10_Oct_2022
 ///////////////////////////////////////////////////////////////////////////////
 
-#include "framework.h"
-#include "DTMF_Decoder.h"
+#include "framework.h"    // Standard system include files
+#include "d2d1.h"         // For Direct2D
+#include "DTMF_Decoder.h" // Resource.h
+
+#pragma comment(lib, "d2d1")
+
 
 #define MAX_LOADSTRING 100
-
 
 // Global Variables
 HINSTANCE ghInst;                                  /// Current instance
 WCHAR     gszTitle[ MAX_LOADSTRING ];              /// The title bar text
-WCHAR     gszWindowClass[ MAX_LOADSTRING ];        /// the main window class name
+WCHAR     gszWindowClass[ MAX_LOADSTRING ];        /// The main window class name
+ID2D1Factory* pD2DFactory = NULL;                  /// The Direct2D Factory
+HBRUSH    ghBrushBlueBackground;                   /// This is the background blue, so it's always in use
 
 
 // Forward declarations of functions included in this code module
@@ -32,9 +37,9 @@ INT_PTR CALLBACK About( HWND, UINT, WPARAM, LPARAM );
 
 /// Program entrypoint
 int APIENTRY wWinMain( _In_     HINSTANCE hInstance,
-                       _In_opt_ HINSTANCE hPrevInstance,
-                       _In_     LPWSTR    lpCmdLine,
-                       _In_     int       nCmdShow ) {
+   _In_opt_ HINSTANCE hPrevInstance,
+   _In_     LPWSTR    lpCmdLine,
+   _In_     int       nCmdShow ) {
    UNREFERENCED_PARAMETER( hPrevInstance );
    UNREFERENCED_PARAMETER( lpCmdLine );
 
@@ -49,6 +54,12 @@ int APIENTRY wWinMain( _In_     HINSTANCE hInstance,
    }
 
    HACCEL hAccelTable = LoadAccelerators( hInstance, MAKEINTRESOURCE( IDC_DTMFDECODER ) );
+
+   /// Create a Direct2D Factory
+   HRESULT hr = D2D1CreateFactory( D2D1_FACTORY_TYPE_MULTI_THREADED, &pD2DFactory );
+   if ( hr != S_OK ) {
+      return FALSE;
+   }
 
    MSG msg;
 
@@ -68,8 +79,9 @@ int APIENTRY wWinMain( _In_     HINSTANCE hInstance,
 ATOM RegisterWindowsClass( HINSTANCE hInstance ) {
    WNDCLASSEXW wcex;
 
-   wcex.cbSize = sizeof( WNDCLASSEX );
+   ghBrushBlueBackground = CreateSolidBrush( RGB( 25, 23, 55 ) );  // The background shade of blue I'm after
 
+   wcex.cbSize = sizeof( WNDCLASSEX );
    wcex.style = CS_HREDRAW | CS_VREDRAW;
    wcex.lpfnWndProc = WndProc;
    wcex.cbClsExtra = 0;
@@ -77,7 +89,7 @@ ATOM RegisterWindowsClass( HINSTANCE hInstance ) {
    wcex.hInstance = hInstance;
    wcex.hIcon = LoadIcon( hInstance, MAKEINTRESOURCE( IDI_DTMFDECODER ) );
    wcex.hCursor = LoadCursor( nullptr, IDC_ARROW );
-   wcex.hbrBackground = (HBRUSH) ( COLOR_WINDOW + 1 );
+   wcex.hbrBackground = ghBrushBlueBackground;
    wcex.lpszMenuName = MAKEINTRESOURCEW( IDC_DTMFDECODER );
    wcex.lpszClassName = gszWindowClass;
    wcex.hIconSm = LoadIcon( wcex.hInstance, MAKEINTRESOURCE( IDI_SMALL ) );
@@ -116,7 +128,11 @@ LRESULT CALLBACK WndProc( HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam 
                   DialogBox( ghInst, MAKEINTRESOURCE( IDD_ABOUTBOX ), hWnd, About );
                   break;
                case IDM_EXIT:
+                  DeleteObject( ghBrushBlueBackground );
+                  ghBrushBlueBackground = NULL;
+
                   DestroyWindow( hWnd );
+
                   break;
                default:
                   return DefWindowProc( hWnd, message, wParam, lParam );
