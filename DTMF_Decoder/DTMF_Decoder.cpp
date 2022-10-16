@@ -12,8 +12,6 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include "framework.h"    // Standard system include files
-#include <d2d1.h>         // For Direct2D (drawing)
-#include <dwrite.h>       // For DirectWrite (fonts and text)
 #include "mvcView.h"      // For drawing the window
 #include "DTMF_Decoder.h" // Resource.h
 
@@ -43,7 +41,7 @@ int APIENTRY wWinMain(
 
    OutputDebugStringA( APP_NAME ": Starting" );
 
-   ghInst = hInstance; // Store the instance handle in a global variable
+   ghInst = hInstance; /// Store the instance handle in a global variable
 
 
    /// Initialize global strings
@@ -51,7 +49,7 @@ int APIENTRY wWinMain(
    LoadStringW( hInstance, IDC_DTMFDECODER, gszWindowClass, MAX_LOADSTRING );
 
 
-   // Register the Windows Class
+   /// Register the Windows Class
    WNDCLASSEXW wcex;
    ZeroMemory( &wcex, sizeof( wcex ) );
 
@@ -73,7 +71,7 @@ int APIENTRY wWinMain(
       return FALSE;
    }
 
-   // Create the window
+   /// Create the window
    HWND hWnd = CreateWindowW(
       gszWindowClass,
       gszTitle,

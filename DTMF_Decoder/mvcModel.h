@@ -19,3 +19,5 @@ typedef struct {
 } dtmfTones_t;
 
 extern dtmfTones_t dtmfTones[ 8 ]; 
+
+/// @TODO I should convert this to a read-only interface

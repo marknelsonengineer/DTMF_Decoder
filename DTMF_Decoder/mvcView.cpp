@@ -15,6 +15,7 @@
 #include <d2d1.h>         // For Direct2D (drawing)
 #include <dwrite.h>       // For DirectWrite (fonts and text)
 #include "mvcView.h"      // For drawing the window
+#include "mvcModel.h"     // For viewing the state of the machine
 #include "DTMF_Decoder.h" // Resource.h
 
 
@@ -28,6 +29,34 @@ ID2D1SolidColorBrush* gpBrushBackground = NULL;    /// A dark blue brush for the
 ID2D1SolidColorBrush* gpBrushForeground = NULL;    /// A light blue brush for the foreground
 IDWriteFactory* g_pDWriteFactory = NULL;
 IDWriteTextFormat* g_pTextFormat = NULL;
+
+typedef struct {
+   char   digit;
+   size_t row;
+   size_t column;
+   char   letters[5];
+   float  x;
+   float  y;
+} keypad_t;
+
+keypad_t keypad[ 16 ] = {
+   {'1', 0, 0,     "", 010, 010},
+   {'2', 0, 1,  "ABC", 020, 020},
+   {'3', 0, 2,  "DEF", 000, 000},
+   {'4', 1, 0,  "GHI", 000, 000},
+   {'5', 1, 1,  "JKL", 000, 000},
+   {'6', 1, 2,  "MNO", 000, 000},
+   {'7', 2, 0, "PQRS", 000, 000},
+   {'8', 2, 1,  "TUV", 000, 000},
+   {'9', 2, 2, "WXYZ", 000, 000},
+   {'*', 3, 0,     "", 000, 000},
+   {'0', 3, 1,     "", 000, 000},
+   {'#', 3, 2,     "", 000, 000},
+   {'A', 0, 3,     "", 000, 000},
+   {'B', 1, 3,     "", 000, 000},
+   {'C', 2, 3,     "", 000, 000},
+   {'D', 3, 3,     "", 000, 000}
+};
 
 // Forward declarations of private functions in this file
 
