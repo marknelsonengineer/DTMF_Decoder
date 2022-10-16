@@ -153,6 +153,17 @@ LRESULT CALLBACK WndProc( HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam 
             EndPaint( hWnd, &ps );
          }
          break;
+      case WM_KEYDOWN:  /// WM_KEYDOWN - Exit if <ESC> is pressed
+         {
+            switch ( wParam ) {
+               case VK_ESCAPE:
+                  SendMessage( hWnd, WM_CLOSE, 0, 0 );
+                  break ;
+               default:
+                  break ;
+            }
+         }
+         break ;
       case WM_DESTROY:  /// WM_DESTROY - Post a quit message and return
          Cleanup();
          PostQuitMessage( 0 );
