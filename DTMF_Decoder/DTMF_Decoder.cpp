@@ -18,16 +18,19 @@
 #pragma comment(lib, "d2d1")
 
 
-#define MAX_LOADSTRING 100
+#define MAX_LOADSTRING    (100)
+
+#define FOREGROUND_COLOR  (0x63B5FE)
+#define BACKGROUND_COLOR  (0x181737)
 
 // Global Variables
 HINSTANCE     ghInst = NULL;                       /// Current instance
 WCHAR         gszTitle[ MAX_LOADSTRING ];          /// The title bar text
 WCHAR         gszWindowClass[ MAX_LOADSTRING ];    /// The main window class name
 ID2D1Factory* pD2DFactory = NULL;                  /// The Direct2D Factory
-HBRUSH        ghBrushBlueBackground = NULL;        /// This is the background blue, so it's always in use
 ID2D1HwndRenderTarget* pRenderTarget = NULL;	      /// Render target
-ID2D1SolidColorBrush*  pBlackBrush = NULL ;	      // A black brush, reflect the line color
+ID2D1SolidColorBrush* gpBrushBackground = NULL;    /// A dark blue brush for the background
+ID2D1SolidColorBrush* gpBrushForeground = NULL;    /// A light blue brush for the foreground
 
 
 // Forward declarations of functions included in this code module
@@ -53,10 +56,9 @@ int APIENTRY wWinMain(
    LoadStringW( hInstance, IDS_APP_TITLE, gszTitle, MAX_LOADSTRING );
    LoadStringW( hInstance, IDC_DTMFDECODER, gszWindowClass, MAX_LOADSTRING );
 
+
    // Register the Windows Class
    WNDCLASSEXW wcex;
-
-   ghBrushBlueBackground = CreateSolidBrush( RGB( 25, 23, 55 ) );  // The background shade of blue I'm after
 
    wcex.cbSize = sizeof( WNDCLASSEX );
    wcex.style = CS_HREDRAW | CS_VREDRAW;
@@ -66,7 +68,7 @@ int APIENTRY wWinMain(
    wcex.hInstance = hInstance;
    wcex.hIcon = LoadIcon( hInstance, MAKEINTRESOURCE( IDI_DTMFDECODER ) );
    wcex.hCursor = LoadCursor( nullptr, IDC_ARROW );
-   wcex.hbrBackground = ghBrushBlueBackground;
+   wcex.hbrBackground = (HBRUSH) ( COLOR_WINDOW + 1 );
    wcex.lpszMenuName = MAKEINTRESOURCEW( IDC_DTMFDECODER );
    wcex.lpszClassName = gszWindowClass;
    wcex.hIconSm = LoadIcon( wcex.hInstance, MAKEINTRESOURCE( IDI_SMALL ) );
@@ -118,11 +120,20 @@ int APIENTRY wWinMain(
    }
 
    hr = pRenderTarget->CreateSolidColorBrush(
-      D2D1::ColorF( D2D1::ColorF::Aquamarine ),
-      &pBlackBrush
+      D2D1::ColorF( D2D1::ColorF( BACKGROUND_COLOR, 1.0f ) ),
+      &gpBrushBackground   /// @TODO Consider deleting if this goesn't get used
    );
    if ( FAILED( hr ) ) {
-      OutputDebugStringA( APP_NAME ": Failed to create Direct2D Brush" );
+      OutputDebugStringA( APP_NAME ": Failed to create Direct2D Brush (Background)" );
+      return FALSE;
+   }
+
+   hr = pRenderTarget->CreateSolidColorBrush(
+      D2D1::ColorF( D2D1::ColorF( FOREGROUND_COLOR, 1.0f ) ),
+      &gpBrushForeground
+   );
+   if ( FAILED( hr ) ) {
+      OutputDebugStringA( APP_NAME ": Failed to create Direct2D Brush (Foreground)" );
       return FALSE;
    }
 
@@ -157,14 +168,10 @@ int APIENTRY wWinMain(
 
 
 VOID Cleanup() {
-   SAFE_RELEASE( pBlackBrush );
+   SAFE_RELEASE( gpBrushForeground );
+   SAFE_RELEASE( gpBrushBackground );
    SAFE_RELEASE( pRenderTarget );
    SAFE_RELEASE( pD2DFactory );
-
-   if ( ghBrushBlueBackground != NULL ) {
-      DeleteObject( ghBrushBlueBackground );
-      ghBrushBlueBackground = NULL;
-   }
 
    OutputDebugStringA( APP_NAME ": Ending" );
 
@@ -245,13 +252,13 @@ INT_PTR CALLBACK About( HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam ) 
 VOID DrawRectangle( HWND hWnd ) {
    pRenderTarget->BeginDraw() ;
 
-   // Clear background color to dark cyan
-   // pRenderTarget->Clear( D2D1::ColorF( D2D1::ColorF::White ) );
+   // Clear to the background color
+   pRenderTarget->Clear( D2D1::ColorF( BACKGROUND_COLOR, 1.0f ) );
 
    // Draw Rectangle
    pRenderTarget->DrawRectangle(
       D2D1::RectF( 100.f, 100.f, 500.f, 500.f ),
-      pBlackBrush
+      gpBrushForeground
    );
 
    pRenderTarget->EndDraw();
