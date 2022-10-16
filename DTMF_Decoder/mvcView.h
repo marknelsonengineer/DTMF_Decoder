@@ -4,6 +4,9 @@
 //
 /// A Windows Desktop C program that decodes DTMF tones
 ///
+/// This is the implementation of the Direct2D paint commands as the view 
+/// component of a model-view-controller architecture.
+/// 
 /// @file mvcView.h
 /// @version 1.0
 ///

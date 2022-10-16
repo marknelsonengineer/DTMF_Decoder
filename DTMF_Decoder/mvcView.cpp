@@ -3,6 +3,9 @@
 //          DTMF_Decoder - EE 469 - Fall 2022
 //
 /// A Windows Desktop C program that decodes DTMF tones
+/// 
+/// This is the implementation of the Direct2D paint commands as the view 
+/// component of a model-view-controller architecture.
 ///
 /// @file mvcView.cpp
 /// @version 1.0
@@ -21,14 +24,15 @@
 #pragma comment(lib, "d2d1")    // Link the Diect2D library (for drawing)
 #pragma comment(lib, "Dwrite")  // Link the DirectWrite library (for fonts and text)
 
-// Global Variables
-ID2D1Factory*          pD2DFactory = NULL;         /// The Direct2D Factory
-ID2D1HwndRenderTarget* pRenderTarget = NULL;	      /// Render target
+// Global Variables (private to this source file)
+ID2D1Factory*          gpD2DFactory = NULL;        /// The Direct2D Factory
+ID2D1HwndRenderTarget* gpRenderTarget = NULL;	   /// Render target
 ID2D1SolidColorBrush*  gpBrushForeground = NULL;   /// A light blue brush for the foreground
 ID2D1SolidColorBrush*  gpBrushHighlight = NULL;    /// A lighter blue brush for the highlight
 ID2D1SolidColorBrush*  gpBrushBackground = NULL;   /// A dark blue brush for the background
-IDWriteFactory*        g_pDWriteFactory = NULL;    /// @TODO fixup these names and docs
-IDWriteTextFormat*     g_pTextFormat = NULL;
+IDWriteFactory*        gpDWriteFactory = NULL;     /// A DirectWrite factory object
+IDWriteTextFormat*     gpDigitTextFormat = NULL;   /// The font for the digits
+IDWriteTextFormat*     gpLettersTextFormat = NULL; /// The font for the letters above the digits
 
 #define BOX_WIDTH (64)
 #define BOX_HEIGHT (64)
@@ -47,31 +51,31 @@ IDWriteTextFormat*     g_pTextFormat = NULL;
 #define COL3 (COL2 + BOX_WIDTH + GAP_WIDTH)
 
 typedef struct {
-   WCHAR  digit[2];
+   WCHAR  digit[2];   // The digit to print
    size_t row;        // Row index into dtmfTones
    size_t column;     // Column index into dtmfTones
-   char   letters[5];
-   float  x;
-   float  y;
+   WCHAR  letters[5]; // The letters above the digit
+   float  x;          // The upper-left corner of the digit's box
+   float  y;          // The upper-left corner of the digit's box
 } keypad_t;
 
 keypad_t keypad[ 16 ] = {
-   {L"1", 0, 4,     "", COL0, ROW0 },
-   {L"2", 0, 5,  "ABC", COL1, ROW0 },
-   {L"3", 0, 6,  "DEF", COL2, ROW0 },
-   {L"4", 1, 4,  "GHI", COL0, ROW1 },
-   {L"5", 1, 5,  "JKL", COL1, ROW1 },
-   {L"6", 1, 6,  "MNO", COL2, ROW1 },
-   {L"7", 2, 4, "PQRS", COL0, ROW2 },
-   {L"8", 2, 5,  "TUV", COL1, ROW2 },
-   {L"9", 2, 6, "WXYZ", COL2, ROW2 },
-   {L"*", 3, 4,     "", COL0, ROW3 },
-   {L"0", 3, 5,     "", COL1, ROW3 },
-   {L"#", 3, 6,     "", COL2, ROW3 },
-   {L"A", 0, 7,     "", COL3, ROW0 },
-   {L"B", 1, 7,     "", COL3, ROW1 },
-   {L"C", 2, 7,     "", COL3, ROW2 },
-   {L"D", 3, 7,     "", COL3, ROW3 }
+   {L"1", 0, 4,     L"", COL0, ROW0 },
+   {L"2", 0, 5,  L"ABC", COL1, ROW0 },
+   {L"3", 0, 6,  L"DEF", COL2, ROW0 },
+   {L"4", 1, 4,  L"GHI", COL0, ROW1 },
+   {L"5", 1, 5,  L"JKL", COL1, ROW1 },
+   {L"6", 1, 6,  L"MNO", COL2, ROW1 },
+   {L"7", 2, 4, L"PQRS", COL0, ROW2 },
+   {L"8", 2, 5,  L"TUV", COL1, ROW2 },
+   {L"9", 2, 6, L"WXYZ", COL2, ROW2 },
+   {L"*", 3, 4,     L"", COL0, ROW3 },
+   {L"0", 3, 5,     L"", COL1, ROW3 },
+   {L"#", 3, 6,     L"", COL2, ROW3 },
+   {L"A", 0, 7,     L"", COL3, ROW0 },
+   {L"B", 1, 7,     L"", COL3, ROW1 },
+   {L"C", 2, 7,     L"", COL3, ROW2 },
+   {L"D", 3, 7,     L"", COL3, ROW3 }
 };
 
 // Forward declarations of private functions in this file
@@ -80,66 +84,95 @@ BOOL paintDigit( HWND hWnd, size_t index );
 
 BOOL mvcViewInitResources( HWND hWnd ) {
    /// Initialize Direct2D
-   HRESULT hr = D2D1CreateFactory( D2D1_FACTORY_TYPE_MULTI_THREADED, &pD2DFactory );
+   HRESULT hr = D2D1CreateFactory( D2D1_FACTORY_TYPE_MULTI_THREADED, &gpD2DFactory );
    if ( FAILED( hr ) ) {
       OutputDebugStringA( APP_NAME ": Failed to create Direct2D Factory" );
       return FALSE;
    }
 
+   /// Initialize DirectWrite
    hr = DWriteCreateFactory(
       DWRITE_FACTORY_TYPE_SHARED,
       __uuidof( IDWriteFactory ),
-      reinterpret_cast<IUnknown**>( &g_pDWriteFactory )
+      reinterpret_cast<IUnknown**>( &gpDWriteFactory )
    );
    if ( FAILED( hr ) ) {
       OutputDebugStringA( APP_NAME ": Failed to create DirectWrite Factory" );
       return FALSE;
    }
 
-   /// Initialize DirectWrite
-   hr = g_pDWriteFactory->CreateTextFormat(
+   /// Create the font for the digits
+   hr = gpDWriteFactory->CreateTextFormat(
+      L"Segoe UI",                  // Font family name
+      NULL,                         // Font collection(NULL sets it to the system font collection)
+      DWRITE_FONT_WEIGHT_MEDIUM,    // Weight
+      DWRITE_FONT_STYLE_NORMAL,     // Style
+      DWRITE_FONT_STRETCH_NORMAL,   // Stretch
+      36.0f,                        // Size	
+      L"en-us",                     // Local
+      &gpDigitTextFormat                // Pointer to recieve the created object
+   );
+   if ( FAILED( hr ) ) {
+      OutputDebugStringA( APP_NAME ": Failed to create a font resource (digit text format)" );
+      return FALSE;
+   }
+
+   hr = gpDigitTextFormat->SetWordWrapping( DWRITE_WORD_WRAPPING_WRAP );
+   if ( FAILED( hr ) ) {
+      OutputDebugStringA( APP_NAME ": Failed to set word wrap mode (digit text format)" );
+      return FALSE;
+   }
+
+   hr = gpDigitTextFormat->SetTextAlignment( DWRITE_TEXT_ALIGNMENT_CENTER );
+   hr = gpDigitTextFormat->SetParagraphAlignment( DWRITE_PARAGRAPH_ALIGNMENT_CENTER );
+   /// @TODO Add error handling
+
+
+   /// Create the font for the letters
+   hr = gpDWriteFactory->CreateTextFormat(
       L"Segoe UI",                  // Font family name
       NULL,                         // Font collection(NULL sets it to the system font collection)
       DWRITE_FONT_WEIGHT_REGULAR,   // Weight
       DWRITE_FONT_STYLE_NORMAL,     // Style
       DWRITE_FONT_STRETCH_NORMAL,   // Stretch
-      32.0f,                        // Size	
+      16.0f,                        // Size	
       L"en-us",                     // Local
-      &g_pTextFormat                // Pointer to recieve the created object
+      &gpLettersTextFormat                // Pointer to recieve the created object
    );
    if ( FAILED( hr ) ) {
-      OutputDebugStringA( APP_NAME ": Failed to create a font resource" );
+      OutputDebugStringA( APP_NAME ": Failed to create a font resource (letters text format)" );
       return FALSE;
    }
 
-   hr = g_pTextFormat->SetWordWrapping( DWRITE_WORD_WRAPPING_WRAP );
+   hr = gpLettersTextFormat->SetWordWrapping( DWRITE_WORD_WRAPPING_WRAP );
    if ( FAILED( hr ) ) {
-      OutputDebugStringA( APP_NAME ": Failed to set word wrap mode" );
+      OutputDebugStringA( APP_NAME ": Failed to set word wrap mode (letters text format)" );
       return FALSE;
    }
 
-   hr = g_pTextFormat->SetTextAlignment( DWRITE_TEXT_ALIGNMENT_CENTER );
-   hr = g_pTextFormat->SetParagraphAlignment( DWRITE_PARAGRAPH_ALIGNMENT_CENTER );
-   hr = g_pTextFormat->SetLineSpacing( DWRITE_LINE_SPACING_METHOD_DEFAULT, 50, 80 );
+   hr = gpLettersTextFormat->SetTextAlignment( DWRITE_TEXT_ALIGNMENT_CENTER );
+   hr = gpLettersTextFormat->SetParagraphAlignment( DWRITE_PARAGRAPH_ALIGNMENT_CENTER );
    /// @TODO Add error handling
 
+   /// Create the render target
    RECT rc ;
    if ( !GetClientRect( hWnd, &rc ) ) {   // Get the size of the drawing area of the window
       OutputDebugStringA( APP_NAME ": Failed to get the window size" );
       return FALSE;
    }
 
-   hr = pD2DFactory->CreateHwndRenderTarget(
+   hr = gpD2DFactory->CreateHwndRenderTarget(
       D2D1::RenderTargetProperties(),
       D2D1::HwndRenderTargetProperties( hWnd, D2D1::SizeU( rc.right - rc.left, rc.bottom - rc.top ) ),
-      &pRenderTarget
+      &gpRenderTarget
    );
    if ( FAILED( hr ) ) {
       OutputDebugStringA( APP_NAME ": Failed to create Direct2D Render Target" );
       return FALSE;
    }
 
-   hr = pRenderTarget->CreateSolidColorBrush(
+   /// Create the colors (brushes) for the foreground, highlight and background
+   hr = gpRenderTarget->CreateSolidColorBrush(
       D2D1::ColorF( D2D1::ColorF( FOREGROUND_COLOR, 1.0f ) ),
       &gpBrushForeground
    );
@@ -148,7 +181,7 @@ BOOL mvcViewInitResources( HWND hWnd ) {
       return FALSE;
    }
 
-   hr = pRenderTarget->CreateSolidColorBrush(
+   hr = gpRenderTarget->CreateSolidColorBrush(
       D2D1::ColorF( D2D1::ColorF( HIGHLIGHT_COLOR, 1.0f ) ),
       &gpBrushHighlight
    );
@@ -157,7 +190,7 @@ BOOL mvcViewInitResources( HWND hWnd ) {
       return FALSE;
    }
 
-   hr = pRenderTarget->CreateSolidColorBrush(
+   hr = gpRenderTarget->CreateSolidColorBrush(
       D2D1::ColorF( D2D1::ColorF( BACKGROUND_COLOR, 1.0f ) ),
       &gpBrushBackground   /// @TODO Consider deleting if this goesn't get used
    );
@@ -170,43 +203,45 @@ BOOL mvcViewInitResources( HWND hWnd ) {
 }
 
 
+/// Cleanup the resources (in reverse order of their creation)
 BOOL mvcViewCleanupResources() {
    SAFE_RELEASE( gpBrushForeground );
    SAFE_RELEASE( gpBrushHighlight );
    SAFE_RELEASE( gpBrushBackground );
-   SAFE_RELEASE( pRenderTarget );
-   SAFE_RELEASE( pD2DFactory );
+   SAFE_RELEASE( gpRenderTarget );
+   SAFE_RELEASE( gpD2DFactory );
 
    return TRUE;
 }
 
 
 BOOL mvcViewPaintWindow( HWND hWnd ) {
-   pRenderTarget->BeginDraw() ;
+   gpRenderTarget->BeginDraw() ;
 
-// Clear to the background color
-   pRenderTarget->Clear( D2D1::ColorF( BACKGROUND_COLOR, 1.0f ) );
+   // Clear to the background color
+   gpRenderTarget->Clear( D2D1::ColorF( BACKGROUND_COLOR, 1.0f ) );
 
+   // Paint each of the digits
    for ( int i = 0 ; i < 16 ; i++ ) {
       paintDigit( hWnd, i );
    }
 
-   pRenderTarget->EndDraw();
+   gpRenderTarget->EndDraw();
    /// @TODO Look into error checking for these methods
 
    return TRUE;
 }
 
 
+// The detailed work to paint a digit
 BOOL paintDigit( HWND hWnd, size_t index ) {
-
    ID2D1SolidColorBrush* pBrush = gpBrushForeground;
 
    if ( dtmfTones[ keypad[ index ].row ].detected == TRUE && dtmfTones[ keypad[ index ].column ].detected == TRUE ) {
       pBrush = gpBrushHighlight;
    }
 
-   pRenderTarget->DrawRoundedRectangle(
+   gpRenderTarget->DrawRoundedRectangle(
       D2D1::RoundedRect(
       D2D1::RectF( keypad[index].x, keypad[index].y, keypad[index].x + BOX_WIDTH, keypad[index].y + BOX_HEIGHT ),
       8.0f,
@@ -216,23 +251,44 @@ BOOL paintDigit( HWND hWnd, size_t index ) {
 
    /// @TODO Add error handling
 
-   D2D1_RECT_F textLayoutRect = D2D1::RectF(
+   D2D1_RECT_F digitTextRect = D2D1::RectF(
       static_cast<FLOAT>( keypad[index].x ),
-      static_cast<FLOAT>( keypad[index].y+12 ),
+      static_cast<FLOAT>( keypad[index].y + 24 ),
       static_cast<FLOAT>( keypad[index].x + BOX_WIDTH ),
-      static_cast<FLOAT>( keypad[index].y+12 + BOX_HEIGHT )
+      static_cast<FLOAT>( keypad[index].y + BOX_HEIGHT - 6 )
    );
 
    //const wchar_t* wszText = L"1";		// String to render
    UINT32 cTextLength = (UINT32) wcslen( keypad[index].digit);	  // Get text length
 
-   pRenderTarget->DrawText(
-      keypad[index].digit,		// Text to render
-      cTextLength,	// Text length
-      g_pTextFormat,	// Text format
-      textLayoutRect,	// The region of the window where the text will be rendered
-      pBrush	// The brush used to draw the text
+   gpRenderTarget->DrawText(
+      keypad[index].digit, // Text to render
+      cTextLength,         // Text length
+      gpDigitTextFormat,   // Text format
+      digitTextRect,	      // The region of the window where the text will be rendered
+      pBrush               // The brush used to draw the text
    );
+
+
+   // Draw the letters above the digits
+   cTextLength = (UINT32) wcslen( keypad[ index ].letters );	  // Get text length
+
+   if ( cTextLength > 0 ) {
+      D2D1_RECT_F lettersTextRect = D2D1::RectF(
+         static_cast<FLOAT>( keypad[ index ].x ),
+         static_cast<FLOAT>( keypad[ index ].y + 6 ),
+         static_cast<FLOAT>( keypad[ index ].x + BOX_WIDTH ),
+         static_cast<FLOAT>( keypad[ index ].y + 6 + 16 )
+      );
+
+      gpRenderTarget->DrawText(
+         keypad[ index ].letters,  // Text to render
+         cTextLength,              // Text length
+         gpLettersTextFormat,      // Text format
+         lettersTextRect,          // The region of the window where the text will be rendered
+         pBrush                    // The brush used to draw the text
+      );
+   }
 
    return TRUE;
 }
