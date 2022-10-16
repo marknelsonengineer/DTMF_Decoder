@@ -129,11 +129,15 @@
   <ItemGroup>
     <ClInclude Include="DTMF_Decoder.h" />
     <ClInclude Include="framework.h" />
+    <ClInclude Include="mvcModel.h" />
+    <ClInclude Include="mvcView.h" />
     <ClInclude Include="Resource.h" />
     <ClInclude Include="targetver.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="DTMF_Decoder.cpp" />
+    <ClCompile Include="mvcModel.cpp" />
+    <ClCompile Include="mvcView.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="DTMF_Decoder.rc" />

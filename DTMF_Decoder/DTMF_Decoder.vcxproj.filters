@@ -27,9 +27,21 @@
     <ClInclude Include="DTMF_Decoder.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="mvcModel.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="mvcView.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="DTMF_Decoder.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="mvcModel.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="mvcView.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
