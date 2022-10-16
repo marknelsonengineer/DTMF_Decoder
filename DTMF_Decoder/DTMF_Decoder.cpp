@@ -29,8 +29,6 @@ HBRUSH        ghBrushBlueBackground;               /// This is the background bl
 
 
 // Forward declarations of functions included in this code module
-ATOM             RegisterWindowsClass( HINSTANCE hInstance );
-BOOL             InitInstance( HINSTANCE, int );
 LRESULT CALLBACK WndProc( HWND, UINT, WPARAM, LPARAM );
 INT_PTR CALLBACK About( HWND, UINT, WPARAM, LPARAM );
 VOID             Cleanup();
@@ -47,12 +45,51 @@ int APIENTRY wWinMain( _In_     HINSTANCE hInstance,
    /// Initialize global strings
    LoadStringW( hInstance, IDS_APP_TITLE, gszTitle, MAX_LOADSTRING );
    LoadStringW( hInstance, IDC_DTMFDECODER, gszWindowClass, MAX_LOADSTRING );
-   RegisterWindowsClass( hInstance );
 
-   /// Perform application initialization
-   if ( !InitInstance( hInstance, nCmdShow ) ) {
+   // Register the Windows Class
+   WNDCLASSEXW wcex;
+
+   ghBrushBlueBackground = CreateSolidBrush( RGB( 25, 23, 55 ) );  // The background shade of blue I'm after
+
+   wcex.cbSize = sizeof( WNDCLASSEX );
+   wcex.style = CS_HREDRAW | CS_VREDRAW;
+   wcex.lpfnWndProc = WndProc;
+   wcex.cbClsExtra = 0;
+   wcex.cbWndExtra = 0;
+   wcex.hInstance = hInstance;
+   wcex.hIcon = LoadIcon( hInstance, MAKEINTRESOURCE( IDI_DTMFDECODER ) );
+   wcex.hCursor = LoadCursor( nullptr, IDC_ARROW );
+   wcex.hbrBackground = ghBrushBlueBackground;
+   wcex.lpszMenuName = MAKEINTRESOURCEW( IDC_DTMFDECODER );
+   wcex.lpszClassName = gszWindowClass;
+   wcex.hIconSm = LoadIcon( wcex.hInstance, MAKEINTRESOURCE( IDI_SMALL ) );
+
+   if ( !RegisterClassExW( &wcex ) ) {
+      MessageBox( NULL, TEXT( "Failed to register window class!" ), L"error", MB_ICONERROR ) ;
       return FALSE;
    }
+
+   ghInst = hInstance; // Store the instance handle in a global variable
+
+   HWND hWnd = CreateWindowW(
+      gszWindowClass,
+      gszTitle,
+      WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU,
+      CW_USEDEFAULT,          // X position of window
+      0,                      // Y position of window
+      640,                    // Width of window
+      640,                    // Height of window
+      nullptr,                // hWndParent
+      nullptr,                // hMenu
+      hInstance,              // hInstance
+      nullptr );              // lpParam
+
+   if ( !hWnd ) {
+      return FALSE;
+   }
+
+   ShowWindow( hWnd, nCmdShow );
+   UpdateWindow( hWnd );
 
    HACCEL hAccelTable = LoadAccelerators( hInstance, MAKEINTRESOURCE( IDC_DTMFDECODER ) );
 
@@ -73,57 +110,6 @@ int APIENTRY wWinMain( _In_     HINSTANCE hInstance,
    }
 
    return (int) msg.wParam;
-}
-
-
-///  Register the window class
-ATOM RegisterWindowsClass( HINSTANCE hInstance ) {
-   WNDCLASSEXW wcex;
-
-   ghBrushBlueBackground = CreateSolidBrush( RGB( 25, 23, 55 ) );  // The background shade of blue I'm after
-
-   wcex.cbSize = sizeof( WNDCLASSEX );
-   wcex.style = CS_HREDRAW | CS_VREDRAW;
-   wcex.lpfnWndProc = WndProc;
-   wcex.cbClsExtra = 0;
-   wcex.cbWndExtra = 0;
-   wcex.hInstance = hInstance;
-   wcex.hIcon = LoadIcon( hInstance, MAKEINTRESOURCE( IDI_DTMFDECODER ) );
-   wcex.hCursor = LoadCursor( nullptr, IDC_ARROW );
-   wcex.hbrBackground = ghBrushBlueBackground;
-   wcex.lpszMenuName = MAKEINTRESOURCEW( IDC_DTMFDECODER );
-   wcex.lpszClassName = gszWindowClass;
-   wcex.hIconSm = LoadIcon( wcex.hInstance, MAKEINTRESOURCE( IDI_SMALL ) );
-
-   return RegisterClassExW( &wcex );
-}
-
-
-/// Save the instance handle and create the main window
-BOOL InitInstance( HINSTANCE hInstance, int nCmdShow ) {
-   ghInst = hInstance; // Store the instance handle in a global variable
-
-   HWND hWnd = CreateWindowW( 
-      gszWindowClass, 
-      gszTitle, 
-      WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU,
-      CW_USEDEFAULT,          // X position of window
-      0,                      // Y position of window
-      500,                    // Width of window
-      500,                    // Height of window
-      nullptr,                // hWndParent
-      nullptr,                // hMenu
-      hInstance,              // hInstance
-      nullptr );              // lpParam
-
-   if ( !hWnd ) {
-      return FALSE;
-   }
-
-   ShowWindow( hWnd, nCmdShow );
-   UpdateWindow( hWnd );
-
-   return TRUE;
 }
 
 
