@@ -15,11 +15,11 @@
 
 dtmfTones_t dtmfTones[ 8 ] = {
    { 697.0, false},
-   { 770.0, false},
+   { 770.0, true},   /// @TODO Remove before flight
    { 852.0, false},
    { 941.0, false},
    {1209.0, false},
-   {1336.0, false},
+   {1336.0, true},
    {1477.0, false},
    {1633.0, false}
 };

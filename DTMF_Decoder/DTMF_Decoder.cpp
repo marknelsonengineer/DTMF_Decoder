@@ -20,9 +20,9 @@
 
 
 // Global Variables
-HINSTANCE     ghInst = NULL;                       /// Current instance
-WCHAR         gszTitle[ MAX_LOADSTRING ];          /// The title bar text
-WCHAR         gszWindowClass[ MAX_LOADSTRING ];    /// The main window class name
+HINSTANCE ghInst = NULL;                       /// Current instance
+WCHAR     gszTitle[ MAX_LOADSTRING ];          /// The title bar text
+WCHAR     gszWindowClass[ MAX_LOADSTRING ];    /// The main window class name
 
 
 // Forward declarations of private functions in this file
