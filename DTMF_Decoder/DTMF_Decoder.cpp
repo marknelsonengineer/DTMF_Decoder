@@ -21,17 +21,20 @@
 #define MAX_LOADSTRING 100
 
 // Global Variables
-HINSTANCE     ghInst;                              /// Current instance
+HINSTANCE     ghInst = NULL;                       /// Current instance
 WCHAR         gszTitle[ MAX_LOADSTRING ];          /// The title bar text
 WCHAR         gszWindowClass[ MAX_LOADSTRING ];    /// The main window class name
 ID2D1Factory* pD2DFactory = NULL;                  /// The Direct2D Factory
-HBRUSH        ghBrushBlueBackground;               /// This is the background blue, so it's always in use
+HBRUSH        ghBrushBlueBackground = NULL;        /// This is the background blue, so it's always in use
+ID2D1HwndRenderTarget* pRenderTarget = NULL;	      /// Render target
+ID2D1SolidColorBrush*  pBlackBrush = NULL ;	      // A black brush, reflect the line color
 
 
 // Forward declarations of functions included in this code module
 LRESULT CALLBACK WndProc( HWND, UINT, WPARAM, LPARAM );
 INT_PTR CALLBACK About( HWND, UINT, WPARAM, LPARAM );
 VOID             Cleanup();
+VOID             DrawRectangle( HWND );
 
 
 /// Program entrypoint
@@ -88,20 +91,44 @@ int APIENTRY wWinMain( _In_     HINSTANCE hInstance,
       return FALSE;
    }
 
+   /// Initialize Direct2D
+   HRESULT hr = D2D1CreateFactory( D2D1_FACTORY_TYPE_MULTI_THREADED, &pD2DFactory );
+   if ( FAILED(hr) ) {
+      MessageBox( hWnd, L"Create D2D factory failed!", L"Error", 0 ) ;
+      return FALSE;
+   }
+
+   RECT rc ;
+   GetClientRect( hWnd, &rc ) ;   // Get the size of the drawing area of the window
+
+   hr = pD2DFactory->CreateHwndRenderTarget(
+      D2D1::RenderTargetProperties(),
+      D2D1::HwndRenderTargetProperties( hWnd, D2D1::SizeU( rc.right - rc.left, rc.bottom - rc.top ) ),
+      &pRenderTarget
+   );
+   if ( FAILED( hr ) ) {
+      MessageBox( hWnd, L"Create render target failed!", L"Error", 0 ) ;
+      return FALSE;
+   }
+
+   hr = pRenderTarget->CreateSolidColorBrush(
+      D2D1::ColorF( D2D1::ColorF::Aquamarine ),
+      &pBlackBrush
+   );
+   if ( FAILED( hr ) ) {
+      MessageBox( hWnd, L"Create brush failed!", L"Error", 0 ) ;
+      return FALSE;
+   }
+
+
    ShowWindow( hWnd, nCmdShow );
    UpdateWindow( hWnd );
 
    HACCEL hAccelTable = LoadAccelerators( hInstance, MAKEINTRESOURCE( IDC_DTMFDECODER ) );
 
-   /// Create a Direct2D Factory
-   HRESULT hr = D2D1CreateFactory( D2D1_FACTORY_TYPE_MULTI_THREADED, &pD2DFactory );
-   if ( hr != S_OK ) {
-      return FALSE;
-   }
-
+   /// Main message loop
    MSG msg;
 
-   /// Main message loop
    while ( GetMessage( &msg, nullptr, 0, 0 ) ) {
       if ( !TranslateAccelerator( msg.hwnd, hAccelTable, &msg ) ) {
          TranslateMessage( &msg );
@@ -114,9 +141,9 @@ int APIENTRY wWinMain( _In_     HINSTANCE hInstance,
 
 
 VOID Cleanup() {
-//   SAFE_RELEASE( pRenderTarget ) ;
-//   SAFE_RELEASE( pBlackBrush ) ;
-   SAFE_RELEASE( pD2DFactory ) ;
+   SAFE_RELEASE( pBlackBrush );
+   SAFE_RELEASE( pRenderTarget );
+   SAFE_RELEASE( pD2DFactory );
 
    if ( ghBrushBlueBackground != NULL ) {
       DeleteObject( ghBrushBlueBackground );
@@ -149,7 +176,10 @@ LRESULT CALLBACK WndProc( HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam 
          {
             PAINTSTRUCT ps;
             HDC hdc = BeginPaint( hWnd, &ps );
+
             // TODO: Add any drawing code that uses hdc here...
+            DrawRectangle( hWnd ) ;
+
             EndPaint( hWnd, &ps );
          }
          break;
@@ -190,4 +220,21 @@ INT_PTR CALLBACK About( HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam ) 
          break;
    }
    return (INT_PTR) FALSE;
+}
+
+
+VOID DrawRectangle( HWND hWnd ) {
+   pRenderTarget->BeginDraw() ;
+
+   // Clear background color to dark cyan
+   // pRenderTarget->Clear( D2D1::ColorF( D2D1::ColorF::White ) );
+
+   // Draw Rectangle
+   pRenderTarget->DrawRectangle(
+      D2D1::RectF( 100.f, 100.f, 500.f, 500.f ),
+      pBlackBrush
+   );
+
+   pRenderTarget->EndDraw();
+   /// @TODO Look into error checking for these methods
 }
