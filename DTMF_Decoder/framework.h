@@ -15,3 +15,7 @@
 #include <malloc.h>
 #include <memory.h>
 #include <tchar.h>
+
+#ifndef SAFE_RELEASE
+#define SAFE_RELEASE(P) if(P){P->Release() ; P = NULL ;}
+#endif

@@ -21,11 +21,11 @@
 #define MAX_LOADSTRING 100
 
 // Global Variables
-HINSTANCE ghInst;                                  /// Current instance
-WCHAR     gszTitle[ MAX_LOADSTRING ];              /// The title bar text
-WCHAR     gszWindowClass[ MAX_LOADSTRING ];        /// The main window class name
+HINSTANCE     ghInst;                              /// Current instance
+WCHAR         gszTitle[ MAX_LOADSTRING ];          /// The title bar text
+WCHAR         gszWindowClass[ MAX_LOADSTRING ];    /// The main window class name
 ID2D1Factory* pD2DFactory = NULL;                  /// The Direct2D Factory
-HBRUSH    ghBrushBlueBackground;                   /// This is the background blue, so it's always in use
+HBRUSH        ghBrushBlueBackground;               /// This is the background blue, so it's always in use
 
 
 // Forward declarations of functions included in this code module
@@ -33,6 +33,7 @@ ATOM             RegisterWindowsClass( HINSTANCE hInstance );
 BOOL             InitInstance( HINSTANCE, int );
 LRESULT CALLBACK WndProc( HWND, UINT, WPARAM, LPARAM );
 INT_PTR CALLBACK About( HWND, UINT, WPARAM, LPARAM );
+VOID             Cleanup();
 
 
 /// Program entrypoint
@@ -102,8 +103,18 @@ ATOM RegisterWindowsClass( HINSTANCE hInstance ) {
 BOOL InitInstance( HINSTANCE hInstance, int nCmdShow ) {
    ghInst = hInstance; // Store the instance handle in a global variable
 
-   HWND hWnd = CreateWindowW( gszWindowClass, gszTitle, WS_OVERLAPPEDWINDOW,
-      CW_USEDEFAULT, 0, CW_USEDEFAULT, 0, nullptr, nullptr, hInstance, nullptr );
+   HWND hWnd = CreateWindowW( 
+      gszWindowClass, 
+      gszTitle, 
+      WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU,
+      CW_USEDEFAULT,          // X position of window
+      0,                      // Y position of window
+      500,                    // Width of window
+      500,                    // Height of window
+      nullptr,                // hWndParent
+      nullptr,                // hMenu
+      hInstance,              // hInstance
+      nullptr );              // lpParam
 
    if ( !hWnd ) {
       return FALSE;
@@ -113,6 +124,18 @@ BOOL InitInstance( HINSTANCE hInstance, int nCmdShow ) {
    UpdateWindow( hWnd );
 
    return TRUE;
+}
+
+
+VOID Cleanup() {
+//   SAFE_RELEASE( pRenderTarget ) ;
+//   SAFE_RELEASE( pBlackBrush ) ;
+   SAFE_RELEASE( pD2DFactory ) ;
+
+   if ( ghBrushBlueBackground != NULL ) {
+      DeleteObject( ghBrushBlueBackground );
+      ghBrushBlueBackground = NULL;
+   }
 }
 
 
@@ -128,9 +151,6 @@ LRESULT CALLBACK WndProc( HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam 
                   DialogBox( ghInst, MAKEINTRESOURCE( IDD_ABOUTBOX ), hWnd, About );
                   break;
                case IDM_EXIT:
-                  DeleteObject( ghBrushBlueBackground );
-                  ghBrushBlueBackground = NULL;
-
                   DestroyWindow( hWnd );
 
                   break;
@@ -148,6 +168,7 @@ LRESULT CALLBACK WndProc( HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam 
          }
          break;
       case WM_DESTROY:  /// WM_DESTROY - Post a quit message and return
+         Cleanup();
          PostQuitMessage( 0 );
          break;
       default:
