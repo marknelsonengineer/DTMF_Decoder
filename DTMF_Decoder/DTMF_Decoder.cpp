@@ -13,6 +13,7 @@
 
 #include "framework.h"    // Standard system include files
 #include "mvcView.h"      // For drawing the window
+#include "audio.h"        // For capturing audio
 #include "DTMF_Decoder.h" // Resource.h
 
 
@@ -93,6 +94,11 @@ int APIENTRY wWinMain(
    /// Initialize the view
    if( !mvcViewInitResources( hWnd ) ) {
       OutputDebugStringA( APP_NAME ": Failed to do initialize the view.  Exiting." );
+      return FALSE;
+   }
+
+   if ( !initAudio( hWnd ) ) {
+      OutputDebugStringA( APP_NAME ": Failed to do initialize the audio system.  Exiting." );
       return FALSE;
    }
 
