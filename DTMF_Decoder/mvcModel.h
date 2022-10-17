@@ -13,9 +13,12 @@
 
 #pragma once
 
+#include <windows.h>
+
 typedef struct {
-   float frequency;  /// The DTMF tone
-   bool  detected;   /// True if the tone is present, false if it's not
+   float frequency;    /// The DTMF tone
+   bool  detected;     /// True if the tone is present, false if it's not
+   WCHAR label[ 16 ];  /// A label for the tone
 } dtmfTones_t;
 
 extern dtmfTones_t dtmfTones[ 8 ]; 

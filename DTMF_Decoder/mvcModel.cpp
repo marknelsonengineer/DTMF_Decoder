@@ -14,12 +14,12 @@
 #include "mvcModel.h"
 
 dtmfTones_t dtmfTones[ 8 ] = {
-   { 697.0, false},
-   { 770.0, true},   /// @TODO Remove before flight
-   { 852.0, false},
-   { 941.0, false},
-   {1209.0, false},
-   {1336.0, true},
-   {1477.0, false},
-   {1633.0, false}
+   { 697.0, false, L"697" },
+   { 770.0, true,  L"770" },   /// @TODO Remove before flight
+   { 852.0, false, L"852" },
+   { 941.0, false, L"941" },
+   {1209.0, false, L"1209" },
+   {1336.0, true,  L"1336" },  /// @TODO Remove before flight
+   {1477.0, false, L"1477" },
+   {1633.0, false, L"1633" }
 };

@@ -32,7 +32,8 @@ ID2D1SolidColorBrush*  gpBrushHighlight = NULL;    /// A lighter blue brush for 
 ID2D1SolidColorBrush*  gpBrushBackground = NULL;   /// A dark blue brush for the background
 IDWriteFactory*        gpDWriteFactory = NULL;     /// A DirectWrite factory object
 IDWriteTextFormat*     gpDigitTextFormat = NULL;   /// The font for the digits
-IDWriteTextFormat*     gpLettersTextFormat = NULL; /// The font for the letters above the digits
+IDWriteTextFormat*     gpLettersTextFormat = NULL; /// The font for the letters above the digits (and the `Hz` units)
+IDWriteTextFormat*     gpFreqTextFormat = NULL;    /// The font for the frequency
 
 #define BOX_WIDTH (64)
 #define BOX_HEIGHT (64)
@@ -45,7 +46,7 @@ IDWriteTextFormat*     gpLettersTextFormat = NULL; /// The font for the letters 
 #define ROW2 (ROW1 + BOX_HEIGHT + GAP_HEIGHT)
 #define ROW3 (ROW2 + BOX_HEIGHT + GAP_HEIGHT)
 
-#define COL0 (64)
+#define COL0 (96)
 #define COL1 (COL0 + BOX_WIDTH + GAP_WIDTH)
 #define COL2 (COL1 + BOX_WIDTH + GAP_WIDTH)
 #define COL3 (COL2 + BOX_WIDTH + GAP_WIDTH)
@@ -63,23 +64,25 @@ keypad_t keypad[ 16 ] = {
    {L"1", 0, 4,     L"", COL0, ROW0 },
    {L"2", 0, 5,  L"ABC", COL1, ROW0 },
    {L"3", 0, 6,  L"DEF", COL2, ROW0 },
+   {L"A", 0, 7,     L"", COL3, ROW0 },
    {L"4", 1, 4,  L"GHI", COL0, ROW1 },
    {L"5", 1, 5,  L"JKL", COL1, ROW1 },
    {L"6", 1, 6,  L"MNO", COL2, ROW1 },
+   {L"B", 1, 7,     L"", COL3, ROW1 },
    {L"7", 2, 4, L"PQRS", COL0, ROW2 },
    {L"8", 2, 5,  L"TUV", COL1, ROW2 },
    {L"9", 2, 6, L"WXYZ", COL2, ROW2 },
+   {L"C", 2, 7,     L"", COL3, ROW2 },
    {L"*", 3, 4,     L"", COL0, ROW3 },
    {L"0", 3, 5,     L"", COL1, ROW3 },
    {L"#", 3, 6,     L"", COL2, ROW3 },
-   {L"A", 0, 7,     L"", COL3, ROW0 },
-   {L"B", 1, 7,     L"", COL3, ROW1 },
-   {L"C", 2, 7,     L"", COL3, ROW2 },
    {L"D", 3, 7,     L"", COL3, ROW3 }
 };
 
 // Forward declarations of private functions in this file
 BOOL paintDigit( HWND hWnd, size_t index );
+BOOL paintRowFreq( HWND hWnd, size_t index );
+BOOL paintColFreq( HWND hWnd, size_t index );
 
 
 BOOL mvcViewInitResources( HWND hWnd ) {
@@ -110,7 +113,7 @@ BOOL mvcViewInitResources( HWND hWnd ) {
       DWRITE_FONT_STRETCH_NORMAL,   // Stretch
       36.0f,                        // Size	
       L"en-us",                     // Local
-      &gpDigitTextFormat                // Pointer to recieve the created object
+      &gpDigitTextFormat            // Pointer to recieve the created object
    );
    if ( FAILED( hr ) ) {
       OutputDebugStringA( APP_NAME ": Failed to create a font resource (digit text format)" );
@@ -123,8 +126,8 @@ BOOL mvcViewInitResources( HWND hWnd ) {
       return FALSE;
    }
 
-   hr = gpDigitTextFormat->SetTextAlignment( DWRITE_TEXT_ALIGNMENT_CENTER );
-   hr = gpDigitTextFormat->SetParagraphAlignment( DWRITE_PARAGRAPH_ALIGNMENT_CENTER );
+   hr = gpDigitTextFormat->SetTextAlignment( DWRITE_TEXT_ALIGNMENT_CENTER );  // Horizontal alignment
+   hr = gpDigitTextFormat->SetParagraphAlignment( DWRITE_PARAGRAPH_ALIGNMENT_CENTER );  // Vertical alignment
    /// @TODO Add error handling
 
 
@@ -137,7 +140,7 @@ BOOL mvcViewInitResources( HWND hWnd ) {
       DWRITE_FONT_STRETCH_NORMAL,   // Stretch
       16.0f,                        // Size	
       L"en-us",                     // Local
-      &gpLettersTextFormat                // Pointer to recieve the created object
+      &gpLettersTextFormat          // Pointer to recieve the created object
    );
    if ( FAILED( hr ) ) {
       OutputDebugStringA( APP_NAME ": Failed to create a font resource (letters text format)" );
@@ -150,8 +153,34 @@ BOOL mvcViewInitResources( HWND hWnd ) {
       return FALSE;
    }
 
-   hr = gpLettersTextFormat->SetTextAlignment( DWRITE_TEXT_ALIGNMENT_CENTER );
-   hr = gpLettersTextFormat->SetParagraphAlignment( DWRITE_PARAGRAPH_ALIGNMENT_CENTER );
+   hr = gpLettersTextFormat->SetTextAlignment( DWRITE_TEXT_ALIGNMENT_CENTER );  // Horizontal alignment
+   hr = gpLettersTextFormat->SetParagraphAlignment( DWRITE_PARAGRAPH_ALIGNMENT_CENTER );  // Vertical alignment
+   /// @TODO Add error handling
+
+   /// Create the font for the frequency labels
+   hr = gpDWriteFactory->CreateTextFormat(
+      L"Segoe UI",                  // Font family name
+      NULL,                         // Font collection(NULL sets it to the system font collection)
+      DWRITE_FONT_WEIGHT_REGULAR,   // Weight
+      DWRITE_FONT_STYLE_NORMAL,     // Style
+      DWRITE_FONT_STRETCH_NORMAL,   // Stretch
+      24.0f,                        // Size	
+      L"en-us",                     // Local
+      &gpFreqTextFormat             // Pointer to recieve the created object
+   );
+   if ( FAILED( hr ) ) {
+      OutputDebugStringA( APP_NAME ": Failed to create a font resource (frequency text format)" );
+      return FALSE;
+   }
+
+   hr = gpFreqTextFormat->SetWordWrapping( DWRITE_WORD_WRAPPING_WRAP );
+   if ( FAILED( hr ) ) {
+      OutputDebugStringA( APP_NAME ": Failed to set word wrap mode (frequency text format)" );
+      return FALSE;
+   }
+
+   hr = gpFreqTextFormat->SetTextAlignment( DWRITE_TEXT_ALIGNMENT_TRAILING );  // Horizontal alignment
+   hr = gpFreqTextFormat->SetParagraphAlignment( DWRITE_PARAGRAPH_ALIGNMENT_CENTER );  // Vertical alignment
    /// @TODO Add error handling
 
    /// Create the render target
@@ -226,8 +255,73 @@ BOOL mvcViewPaintWindow( HWND hWnd ) {
       paintDigit( hWnd, i );
    }
 
+   for ( int i = 0 ; i < 4 ; i++ ) {
+      paintRowFreq( hWnd, i );
+      paintColFreq( hWnd, i );
+   }
+
    gpRenderTarget->EndDraw();
    /// @TODO Look into error checking for these methods
+
+   return TRUE;
+}
+
+BOOL paintRowFreq( HWND hWnd, size_t index ) {
+   keypad_t* pKey = &keypad[ (4 * index) + index ];  // The diaganol DTMF digits 1, 5, 9 and D
+   size_t iFreq = pKey->row;
+
+   ID2D1SolidColorBrush* pBrush = gpBrushForeground;
+
+   if ( dtmfTones[ iFreq ].detected == TRUE ) {
+      pBrush = gpBrushHighlight;
+   }
+
+   D2D1_RECT_F freqTextRect = D2D1::RectF(
+      static_cast<FLOAT>( COL0 - 78 ),
+      static_cast<FLOAT>( pKey->y ),
+      static_cast<FLOAT>( COL0 - 32 ),
+      static_cast<FLOAT>( pKey->y + BOX_HEIGHT )
+   );
+
+   //const wchar_t* wszText = L"1";		// String to render
+   UINT32 cTextLength = (UINT32) wcslen( dtmfTones[ iFreq ].label );	  // Get text length
+
+   gpRenderTarget->DrawText(
+      dtmfTones[ iFreq ].label, // Text to render
+      cTextLength,              // Text length
+      gpFreqTextFormat,         // Text format
+      freqTextRect,	           // The region of the window where the text will be rendered
+      pBrush                    // The brush used to draw the text
+   );
+
+   freqTextRect = D2D1::RectF(
+      static_cast<FLOAT>( COL0 - 32 ),
+      static_cast<FLOAT>( pKey->y - 4 ),
+      static_cast<FLOAT>( COL0 - 12 ),
+      static_cast<FLOAT>( pKey->y + BOX_HEIGHT - 4)
+   );
+
+   const wchar_t* wszText = L"Hz";		        // String to render
+   cTextLength = (UINT32) wcslen( wszText );	  // Get text length
+
+   gpRenderTarget->DrawText(
+      wszText,                  // Text to render
+      cTextLength,              // Text length
+      gpLettersTextFormat,         // Text format
+      freqTextRect,	           // The region of the window where the text will be rendered
+      pBrush                    // The brush used to draw the text
+   );
+
+   return TRUE;
+}
+
+
+BOOL paintColFreq( HWND hWnd, size_t index ) {
+   ID2D1SolidColorBrush* pBrush = gpBrushForeground;
+
+   if ( dtmfTones[ index ].detected == TRUE ) {
+      pBrush = gpBrushHighlight;
+   }
 
    return TRUE;
 }
