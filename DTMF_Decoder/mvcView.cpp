@@ -41,15 +41,18 @@ IDWriteTextFormat*     gpFreqTextFormat = NULL;    /// The font for the frequenc
 #define GAP_WIDTH (16)
 #define GAP_HEIGHT (16)
 
-#define ROW0 (64)
+#define ROW0 (64)                               // These are Y-axis distances from the top
 #define ROW1 (ROW0 + BOX_HEIGHT + GAP_HEIGHT)
 #define ROW2 (ROW1 + BOX_HEIGHT + GAP_HEIGHT)
 #define ROW3 (ROW2 + BOX_HEIGHT + GAP_HEIGHT)
 
-#define COL0 (96)
+#define COL0 (96)                               // These are X-axis distances from the left
 #define COL1 (COL0 + BOX_WIDTH + GAP_WIDTH)
 #define COL2 (COL1 + BOX_WIDTH + GAP_WIDTH)
 #define COL3 (COL2 + BOX_WIDTH + GAP_WIDTH)
+
+const int windowWidth = COL0 + ( BOX_WIDTH * 4 ) + ( GAP_WIDTH * 3 ) + BOX_WIDTH;
+const int windowHeight = ROW0 + ( BOX_HEIGHT * 4 ) + ( GAP_HEIGHT * 3 ) + BOX_HEIGHT + 50;  // The title is 25px and the menu is 25px
 
 typedef struct {
    WCHAR  digit[2];   // The digit to print

@@ -78,8 +78,8 @@ int APIENTRY wWinMain(
       WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU,
       CW_USEDEFAULT,          // X position of window
       0,                      // Y position of window
-      640,                    // Width of window
-      640,                    // Height of window
+      windowWidth,            // Width of window
+      windowHeight,           // Height of window
       nullptr,                // hWndParent
       nullptr,                // hMenu
       hInstance,              // hInstance
