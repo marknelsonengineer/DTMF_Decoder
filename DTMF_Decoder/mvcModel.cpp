@@ -19,7 +19,7 @@ dtmfTones_t dtmfTones[ 8 ] = {
    { 852.0, false, L"852" },
    { 941.0, false, L"941" },
    {1209.0, false, L"1209" },
-   {1336.0, true,  L"1336" },  /// @TODO Remove before flight
-   {1477.0, false, L"1477" },
+   {1336.0, false, L"1336" }, 
+   {1477.0, true,  L"1477" },  /// @TODO Remove before flight
    {1633.0, false, L"1633" }
 };

@@ -317,11 +317,49 @@ BOOL paintRowFreq( HWND hWnd, size_t index ) {
 
 
 BOOL paintColFreq( HWND hWnd, size_t index ) {
+   keypad_t* pKey = &keypad[ ( 4 * index ) + index ];  // The diaganol DTMF digits 1, 5, 9 and D
+   size_t iFreq = pKey->column;
+
    ID2D1SolidColorBrush* pBrush = gpBrushForeground;
 
-   if ( dtmfTones[ index ].detected == TRUE ) {
+   if ( dtmfTones[ iFreq ].detected == TRUE ) {
       pBrush = gpBrushHighlight;
    }
+
+   D2D1_RECT_F freqTextRect = D2D1::RectF(
+      static_cast<FLOAT>( pKey->x - 16 ),
+      static_cast<FLOAT>( ROW0 - 48 ),
+      static_cast<FLOAT>( pKey->x + BOX_WIDTH - 16 ),
+      static_cast<FLOAT>( ROW0 )
+   );
+
+   UINT32 cTextLength = (UINT32) wcslen( dtmfTones[ iFreq ].label );	  // Get text length
+
+   gpRenderTarget->DrawText(
+      dtmfTones[ iFreq ].label, // Text to render
+      cTextLength,              // Text length
+      gpFreqTextFormat,         // Text format
+      freqTextRect,	           // The region of the window where the text will be rendered
+      pBrush                    // The brush used to draw the text
+   );
+
+   freqTextRect = D2D1::RectF(
+      static_cast<FLOAT>( pKey->x + 47 ),
+      static_cast<FLOAT>( ROW0 - 36 ),
+      static_cast<FLOAT>( pKey->x + 71 ),
+      static_cast<FLOAT>( ROW0 - 20 )
+   );
+
+   const wchar_t* wszText = L"Hz";		        // String to render
+   cTextLength = (UINT32) wcslen( wszText );	  // Get text length
+
+   gpRenderTarget->DrawText(
+      wszText,                  // Text to render
+      cTextLength,              // Text length
+      gpLettersTextFormat,         // Text format
+      freqTextRect,	           // The region of the window where the text will be rendered
+      pBrush                    // The brush used to draw the text
+   );
 
    return TRUE;
 }
