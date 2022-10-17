@@ -135,6 +135,8 @@ int APIENTRY wWinMain(
 
 
 VOID Cleanup() {
+   cleanupAudioResources();
+
    mvcViewCleanupResources();
 
    OutputDebugStringA( APP_NAME ": All global resources were cleaned up.  Ending program." );

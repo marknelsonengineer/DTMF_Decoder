@@ -16,3 +16,5 @@
 #include <Windows.h>
 
 BOOL initAudio( HWND );
+
+BOOL cleanupAudioResources();

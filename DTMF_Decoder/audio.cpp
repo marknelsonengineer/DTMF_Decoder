@@ -19,6 +19,9 @@
 #include "audio.h"
 
 
+IMMDevice* device = NULL;
+
+
 template <class T> void SafeRelease( T** ppT ) {
    if ( *ppT ) {
       ( *ppT )->Release();
@@ -87,8 +90,6 @@ LPWSTR GetDeviceName( IMMDeviceCollection* DeviceCollection, UINT DeviceIndex ) 
 
 
 BOOL initAudio( HWND hWnd ) {
-   OutputDebugStringA( __FUNCTION__ ":  Starting" );
-
    HRESULT hr = CoInitializeEx( NULL, COINIT_APARTMENTTHREADED );
    if ( FAILED( hr ) ) {
       OutputDebugStringA( __FUNCTION__ ":  Failed to initialize COM" );
@@ -103,81 +104,19 @@ BOOL initAudio( HWND hWnd ) {
       return FALSE;
    }
 
-   IMMDeviceCollection* deviceCollection = NULL;
-
-   hr = deviceEnumerator->EnumAudioEndpoints( eCapture, DEVICE_STATE_ACTIVE, &deviceCollection );
-   if ( FAILED( hr ) ) {
-      OutputDebugStringA( __FUNCTION__ ":  Failed to retrieve device collection" );
+   hr = deviceEnumerator->GetDefaultAudioEndpoint( eCapture, eMultimedia, &device );
+   if ( FAILED( hr ) || device == NULL ) {
+      OutputDebugStringA( __FUNCTION__ ":  Failed to get default audio device" );
       return FALSE;
-   }
-
-   UINT deviceCount = -1;
-
-   hr = deviceCollection->GetCount( &deviceCount );
-   if ( FAILED( hr ) ) {
-      OutputDebugStringA( __FUNCTION__ ":  Failed to get device collection length" );
-      return FALSE;
-   }
-
-   if ( deviceCount <= 0 ) {
-      OutputDebugStringA( __FUNCTION__ ":  No audio devices found" );
-      return FALSE;
-   }
-
-   for ( UINT i = 0 ; i < deviceCount ; i++ ) {
-      LPWSTR deviceName;
-
-      deviceName = GetDeviceName( deviceCollection, i );
-      if ( deviceName == NULL ) {
-         OutputDebugStringA( __FUNCTION__ ":  Could not get a device name" );
-         return FALSE;
-      }
-
-      OutputDebugStringW ( deviceName );
-      free( deviceName );
    }
 
    return TRUE;
 }
 
 
-/*
-IMMDevice* device = NULL;
-bool isDefaultDevice;
-ERole role;
+BOOL cleanupAudioResources() {
+   SafeRelease( &device );
+   CoUninitialize();
 
-if ( !PickDevice( &device, &isDefaultDevice, &role ) )
-
-
-
-bool PickDevice( IMMDevice** DeviceToUse, bool* IsDefaultDevice, ERole* DefaultDeviceRole ) {
-   HRESULT hr;
-   bool retValue = true;
-   IMMDeviceEnumerator* deviceEnumerator = NULL;
-   IMMDeviceCollection* deviceCollection = NULL;
-
-   *IsDefaultDevice = false;   // Assume we're not using the default device.
-
-   hr = CoCreateInstance( __uuidof( MMDeviceEnumerator ), NULL, CLSCTX_INPROC_SERVER, IID_PPV_ARGS( &deviceEnumerator ) );
-   if ( FAILED( hr ) ) {
-      printf( "Unable to instantiate device enumerator: %x\n", hr );
-      retValue = false;
-      goto Exit;
-   }
-
-   IMMDevice* device = NULL;
-
-   //
-   //  First off, if none of the console switches was specified, use the console device.
-   //
-   if ( !UseConsoleDevice && !UseCommunicationsDevice && !UseMultimediaDevice && OutputEndpoint == NULL ) {
-       //
-       //  The user didn't specify an output device, prompt the user for a device and use that.
-       //
-      hr = deviceEnumerator->EnumAudioEndpoints( eCapture, DEVICE_STATE_ACTIVE, &deviceCollection );
-      if ( FAILED( hr ) ) {
-         printf( "Unable to retrieve device collection: %x\n", hr );
-         retValue = false;
-         goto Exit;
-      }
-      */
+   return TRUE;
+}
