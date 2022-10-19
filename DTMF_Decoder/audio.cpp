@@ -89,16 +89,10 @@ LPWSTR GetDeviceName( IMMDeviceCollection* DeviceCollection, UINT DeviceIndex ) 
 }
 
 
-BOOL initAudio( HWND hWnd ) {
-   HRESULT hr = CoInitializeEx( NULL, COINIT_APARTMENTTHREADED );
-   if ( FAILED( hr ) ) {
-      OutputDebugStringA( __FUNCTION__ ":  Failed to initialize COM" );
-      return FALSE;
-   }
-
+BOOL initAudioDevice( HWND hWnd ) {
    IMMDeviceEnumerator* deviceEnumerator = NULL;
 
-   hr = CoCreateInstance( __uuidof( MMDeviceEnumerator ), NULL, CLSCTX_INPROC_SERVER, IID_PPV_ARGS( &deviceEnumerator ) );
+   HRESULT hr = CoCreateInstance( __uuidof( MMDeviceEnumerator ), NULL, CLSCTX_INPROC_SERVER, IID_PPV_ARGS( &deviceEnumerator ) );
    if ( FAILED( hr ) ) {
       OutputDebugStringA( __FUNCTION__ ":  Failed to instantiate device enumerator" );
       return FALSE;
@@ -114,9 +108,8 @@ BOOL initAudio( HWND hWnd ) {
 }
 
 
-BOOL cleanupAudioResources() {
+BOOL cleanupAudioDevice() {
    SafeRelease( &device );
-   CoUninitialize();
 
    return TRUE;
 }

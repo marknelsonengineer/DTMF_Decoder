@@ -14,6 +14,7 @@
 #include "framework.h"    // Standard system include files
 #include "mvcView.h"      // For drawing the window
 #include "audio.h"        // For capturing audio
+#include <combaseapi.h>   // For initializing COM
 #include "DTMF_Decoder.h" // Resource.h
 
 
@@ -44,6 +45,12 @@ int APIENTRY wWinMain(
 
    ghInst = hInstance; /// Store the instance handle in a global variable
 
+   /// Initialize COM (needs to be called once per each thread)
+   HRESULT hr = CoInitializeEx( NULL, COINIT_APARTMENTTHREADED );
+   if ( hr != S_OK ) {
+      OutputDebugStringA( __FUNCTION__ ":  Failed to initialize COM" );
+      return FALSE;
+   }
 
    /// Initialize global strings
    LoadStringW( hInstance, IDS_APP_TITLE, gszTitle, MAX_LOADSTRING );
@@ -97,7 +104,7 @@ int APIENTRY wWinMain(
       return FALSE;
    }
 
-   if ( !initAudio( hWnd ) ) {
+   if ( !initAudioDevice( hWnd ) ) {
       OutputDebugStringA( APP_NAME ": Failed to do initialize the audio system.  Exiting." );
       return FALSE;
    }
@@ -135,9 +142,11 @@ int APIENTRY wWinMain(
 
 
 VOID Cleanup() {
-   cleanupAudioResources();
+   cleanupAudioDevice();
 
    mvcViewCleanupResources();
+
+   CoUninitialize();  /// Unwind COM
 
    OutputDebugStringA( APP_NAME ": All global resources were cleaned up.  Ending program." );
 }
