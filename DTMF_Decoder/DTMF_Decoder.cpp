@@ -13,6 +13,7 @@
 
 #include "framework.h"    // Standard system include files
 #include "mvcView.h"      // For drawing the window
+#include "mvcModel.h"     // Holds the persistent model for the application
 #include "audio.h"        // For capturing audio
 #include <combaseapi.h>   // For initializing COM
 #include "DTMF_Decoder.h" // Resource.h
@@ -137,6 +138,12 @@ int APIENTRY wWinMain(
       }
    }
 
+   Cleanup();  // The message loop has stopped
+
+   CoUninitialize();  /// Unwind COM
+
+   OutputDebugStringA( APP_NAME ": Ending" );
+
    return (int) msg.wParam;
 }
 
@@ -144,9 +151,6 @@ int APIENTRY wWinMain(
 VOID Cleanup() {
    cleanupAudioDevice();
 
-   mvcViewCleanupResources();
-
-   CoUninitialize();  /// Unwind COM
 
    OutputDebugStringA( APP_NAME ": All global resources were cleaned up.  Ending program." );
 }
@@ -194,9 +198,19 @@ LRESULT CALLBACK WndProc( HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam 
             }
          }
          break ;
+      case WM_CLOSE:    /// WM_CLOSE - Start the process of closing the application
+         {
+            isRunning = false;
+
+            DestroyWindow( hWnd );
+
+            break;
+         }
       case WM_DESTROY:  /// WM_DESTROY - Post a quit message and return
-         Cleanup();
+         mvcViewCleanupResources();
+
          PostQuitMessage( 0 );
+
          break;
       default:
          return DefWindowProc( hWnd, message, wParam, lParam );

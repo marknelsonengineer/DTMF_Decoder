@@ -26,3 +26,5 @@ dtmfTones_t dtmfTones[ 8 ] = {
    {1477.0, true,  L"1477" },  /// @TODO Remove before flight
    {1633.0, false, L"1633" }
 };
+
+extern bool isRunning = false;

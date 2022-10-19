@@ -18,6 +18,8 @@
 #include <AudioClient.h>
 
 #include "audio.h"
+#include "mvcModel.h"
+
 #include <assert.h>  // For assert
 #include <avrt.h>    // For AvSetMmThreadCharacteristics()
 
@@ -55,19 +57,29 @@ DWORD captureThread( LPVOID Context ) {
    HANDLE mmcssHandle = NULL;
    DWORD mmcssTaskIndex = 0;
 
-
-
+   /// Initialize COM for the thread
    hr = CoInitializeEx( NULL, COINIT_MULTITHREADED );
    if ( hr != S_OK ) {
       OutputDebugStringA( __FUNCTION__ ":  Failed to initialize COM in thread" );
       ExitThread( -1 );
    }
 
+   /// Set the multimedia class scheduler service, which will set the CPU
+   /// priority for this thread
    mmcssHandle = AvSetMmThreadCharacteristics( L"Capture", &mmcssTaskIndex );
    if ( mmcssHandle == NULL ) {
       OutputDebugStringA( __FUNCTION__ ":  Failed to set MMCSS on thread.  Continuing." );
    }
 
+   /// Audio capture loop
+   /// isRunning gets set to false by WM_CLOSE
+   
+   isRunning = true;
+
+   while ( isRunning ) {
+   }
+
+   /// Cleanup the thread
    CoUninitialize();
 
    OutputDebugStringA( __FUNCTION__ ":  End capture thread" );
