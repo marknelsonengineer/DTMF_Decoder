@@ -23,6 +23,7 @@
 BOOL mvcViewInitResources( HWND );
 BOOL mvcViewCleanupResources();
 BOOL mvcViewPaintWindow( HWND );
+BOOL mvcViewRefreshWindow();
 
 extern const int windowWidth;
 extern const int windowHeight;

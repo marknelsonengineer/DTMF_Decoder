@@ -25,6 +25,7 @@
 #pragma comment(lib, "Dwrite")  // Link the DirectWrite library (for fonts and text)
 
 // Global Variables (private to this source file)
+HWND                   gHwnd = NULL;
 ID2D1Factory*          gpD2DFactory = NULL;        /// The Direct2D Factory
 ID2D1HwndRenderTarget* gpRenderTarget = NULL;	   /// Render target
 ID2D1SolidColorBrush*  gpBrushForeground = NULL;   /// A light blue brush for the foreground
@@ -88,7 +89,18 @@ BOOL paintRowFreq( HWND hWnd, size_t index );
 BOOL paintColFreq( HWND hWnd, size_t index );
 
 
+BOOL mvcViewRefreshWindow() {
+   // TODO: Fix assertions and do error checking
+   InvalidateRect( gHwnd, NULL, TRUE );
+   UpdateWindow( gHwnd );
+
+   return TRUE;
+}
+
+
 BOOL mvcViewInitResources( HWND hWnd ) {
+   gHwnd = hWnd;  // Save in global mvcViewRefreshWindow 
+
    /// Initialize Direct2D
    HRESULT hr = D2D1CreateFactory( D2D1_FACTORY_TYPE_MULTI_THREADED, &gpD2DFactory );
    if ( FAILED( hr ) ) {

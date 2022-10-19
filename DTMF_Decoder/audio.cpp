@@ -19,6 +19,8 @@
 
 #include "audio.h"
 #include "mvcModel.h"
+#include "goertzel.h"
+#include "mvcView.h"
 
 #include <assert.h>  // For assert
 #include <avrt.h>    // For AvSetMmThreadCharacteristics()
@@ -135,9 +137,24 @@ DWORD captureThread( LPVOID Context ) {
 //         isRunning = false;   /// @TOTO This is a kill switch.  Remove before flight
       }
 
-      if ( dbgCounter >= 1000 ) {
+      if ( dbgCounter >= 50 ) {
          dbgCounter = 0;
          OutputDebugStringA( __FUNCTION__ ":  Capturing" );
+
+         for ( int i = 0 ; i < 8 ; i++ ) {
+            int freq = (int) dtmfTones[i].frequency;
+            float magnitude = goertzel_magnitude( SIZE_OF_QUEUE, freq, 8000, pcmQueue );
+            //char sBuf[ 128 ];
+            //sprintf_s( sBuf, "The magnitude of the function is %f for %i Hz", magnitude, freq );
+            //OutputDebugStringA( sBuf );
+            if ( magnitude > 0.11 ) {
+               dtmfTones[ i ].detected = true;
+            } else {
+               dtmfTones[ i ].detected = false;
+            }
+         }
+         mvcViewRefreshWindow();
+
       }
       dbgCounter++;
    }
