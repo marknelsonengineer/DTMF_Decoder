@@ -98,6 +98,12 @@ int APIENTRY wWinMain(
       return FALSE;
    }
 
+   /// Initialize the model
+   if ( !mvcInitModel() ) {
+      OutputDebugStringA( APP_NAME ": Failed to do initialize the model.  Exiting." );
+      return FALSE;
+   }
+
    /// Initialize the view
    if( !mvcViewInitResources( hWnd ) ) {
       OutputDebugStringA( APP_NAME ": Failed to do initialize the view.  Exiting." );

@@ -131,7 +131,7 @@ BOOL mvcViewInitResources( HWND hWnd ) {
 
    hr = gpDigitTextFormat->SetTextAlignment( DWRITE_TEXT_ALIGNMENT_CENTER );  // Horizontal alignment
    hr = gpDigitTextFormat->SetParagraphAlignment( DWRITE_PARAGRAPH_ALIGNMENT_CENTER );  // Vertical alignment
-   /// @TODO Add error handling
+   // TODO: Add error handling
 
 
    /// Create the font for the letters
@@ -158,7 +158,7 @@ BOOL mvcViewInitResources( HWND hWnd ) {
 
    hr = gpLettersTextFormat->SetTextAlignment( DWRITE_TEXT_ALIGNMENT_CENTER );  // Horizontal alignment
    hr = gpLettersTextFormat->SetParagraphAlignment( DWRITE_PARAGRAPH_ALIGNMENT_CENTER );  // Vertical alignment
-   /// @TODO Add error handling
+   /// TODO Add error handling
 
    /// Create the font for the frequency labels
    hr = gpDWriteFactory->CreateTextFormat(
@@ -184,7 +184,7 @@ BOOL mvcViewInitResources( HWND hWnd ) {
 
    hr = gpFreqTextFormat->SetTextAlignment( DWRITE_TEXT_ALIGNMENT_TRAILING );  // Horizontal alignment
    hr = gpFreqTextFormat->SetParagraphAlignment( DWRITE_PARAGRAPH_ALIGNMENT_CENTER );  // Vertical alignment
-   /// @TODO Add error handling
+   /// TODO Add error handling
 
    /// Create the render target
    RECT rc ;
@@ -224,7 +224,7 @@ BOOL mvcViewInitResources( HWND hWnd ) {
 
    hr = gpRenderTarget->CreateSolidColorBrush(
       D2D1::ColorF( D2D1::ColorF( BACKGROUND_COLOR, 1.0f ) ),
-      &gpBrushBackground   /// @TODO Consider deleting if this goesn't get used
+      &gpBrushBackground   /// TODO Consider deleting if this goesn't get used
    );
    if ( FAILED( hr ) ) {
       OutputDebugStringA( APP_NAME ": Failed to create Direct2D Brush (Background)" );
@@ -264,7 +264,7 @@ BOOL mvcViewPaintWindow( HWND hWnd ) {
    }
 
    gpRenderTarget->EndDraw();
-   /// @TODO Look into error checking for these methods
+   /// TODO Look into error checking for these methods
 
    return TRUE;
 }
@@ -384,7 +384,7 @@ BOOL paintDigit( HWND hWnd, size_t index ) {
       pBrush,
       2.f ) ;
 
-   /// @TODO Add error handling
+   // TODO Add error handling
 
    D2D1_RECT_F digitTextRect = D2D1::RectF(
       static_cast<FLOAT>( keypad[index].x ),

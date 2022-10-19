@@ -29,7 +29,16 @@ extern bool isRunning;
 
 extern HANDLE gAudioSamplesReadyEvent;
 
-/// @TODO Consider having the thread have an indicator light that its running
+#define SIZE_OF_QUEUE (800)  /* 100ms of data @ 8000Hz sampling rate */
+
+extern BYTE pcmQueue[ SIZE_OF_QUEUE ];
+
+extern BOOL mvcInitModel();
+
+extern void pcmEnqueue( BYTE* data, UINT32 size );
 
 
-/// @TODO I should convert this to a read-only interface
+// TODO: Consider having the thread have an indicator light that its running
+
+
+// TODO: I should convert this to a read-only interface

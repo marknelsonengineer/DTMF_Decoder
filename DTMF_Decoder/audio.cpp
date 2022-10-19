@@ -61,8 +61,7 @@ BOOL captureAudio() {
    hr = gCaptureClient->GetBuffer( &pData, &framesAvailable, &flags, NULL, NULL );
    if ( hr == S_OK ) {
       // OutputDebugStringA( __FUNCTION__ ":  I got data!" );
-
-
+      pcmEnqueue( pData, framesAvailable );
 
       hr = gCaptureClient->ReleaseBuffer( framesAvailable );
       if ( hr != S_OK ) {
@@ -81,6 +80,8 @@ BOOL captureAudio() {
    return TRUE;
 }
 
+
+// TODO I still have some checks I need to do in init.  I also need to think through how to shutdown the program.
 
 DWORD captureThread( LPVOID Context ) {
    OutputDebugStringA( __FUNCTION__ ":  Start capture thread" );
@@ -107,6 +108,7 @@ DWORD captureThread( LPVOID Context ) {
    
    isRunning = true;
    int dbgLoop = 4;
+   int dbgCounter = 0;
 
    while ( isRunning ) {
       DWORD dwWaitResult;
@@ -129,9 +131,15 @@ DWORD captureThread( LPVOID Context ) {
       if ( dbgLoop > 0 ) {
          OutputDebugStringA( __FUNCTION__ ":  End capturing frame.  Looping." );
          dbgLoop--;
-      } else {
-         isRunning = false;   /// @TOTO This is a kill switch.  Remove before flight
+//      } else {
+//         isRunning = false;   /// @TOTO This is a kill switch.  Remove before flight
       }
+
+      if ( dbgCounter >= 1000 ) {
+         dbgCounter = 0;
+         OutputDebugStringA( __FUNCTION__ ":  Capturing" );
+      }
+      dbgCounter++;
    }
 
    /// Cleanup the thread
