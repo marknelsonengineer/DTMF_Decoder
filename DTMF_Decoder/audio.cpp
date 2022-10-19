@@ -15,6 +15,7 @@
 #include <mmdeviceapi.h>
 #include <Functiondiscoverykeys_devpkey.h>
 #include <strsafe.h>
+#include <AudioClient.h>
 
 #include "audio.h"
 #include <assert.h>  // For assert
@@ -27,7 +28,7 @@ IPropertyStore* glpPropertyStore = NULL;
 PROPVARIANT     DeviceInterfaceFriendlyName;  // Container for the friendly name of the audio adapter for the device
 PROPVARIANT     DeviceDescription;            // Container for the device's description
 PROPVARIANT     DeviceFriendlyName;           // Container for friendly name of the device
-
+IAudioClient*   glpAudioClient = NULL;
 
 
 template <class T> void SafeRelease( T** ppT ) {
@@ -88,9 +89,9 @@ BOOL initAudioDevice( HWND hWnd ) {
    }
 
    /// Get the device's properties from the property store
-   PropVariantInit( &DeviceInterfaceFriendlyName );
-   PropVariantInit( &DeviceDescription );
-   PropVariantInit( &DeviceFriendlyName );
+   PropVariantInit( &DeviceInterfaceFriendlyName );     /// Get the friendly name of the audio adapter for the device
+   PropVariantInit( &DeviceDescription );               /// Get the device's description
+   PropVariantInit( &DeviceFriendlyName );              /// Get the friendly name of the device
 
    hr = glpPropertyStore->GetValue( PKEY_DeviceInterface_FriendlyName, &DeviceInterfaceFriendlyName );
    if ( hr != S_OK ) {
@@ -119,6 +120,12 @@ BOOL initAudioDevice( HWND hWnd ) {
       OutputDebugStringW( DeviceFriendlyName.pwszVal );
    }
 
+   /// Use Activate on IMMDevice to create an IAudioClient
+   hr = gDevice->Activate( __uuidof( IAudioClient ), CLSCTX_ALL, NULL, (void**) &glpAudioClient );
+   if ( hr != S_OK || glpAudioClient == NULL ) {
+      OutputDebugStringA( __FUNCTION__ ":  Failed to create an audio client" );
+      return NULL;
+   }
 
 
    return TRUE;
@@ -126,6 +133,8 @@ BOOL initAudioDevice( HWND hWnd ) {
 
 
 BOOL cleanupAudioDevice() {
+
+   SafeRelease( &glpAudioClient );
 
    PropVariantClear( &DeviceFriendlyName );
    PropVariantClear( &DeviceDescription );
