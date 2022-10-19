@@ -29,6 +29,9 @@ PROPVARIANT     DeviceInterfaceFriendlyName;  // Container for the friendly name
 PROPVARIANT     DeviceDescription;            // Container for the device's description
 PROPVARIANT     DeviceFriendlyName;           // Container for friendly name of the device
 IAudioClient*   glpAudioClient = NULL;
+REFERENCE_TIME  gDefaultDevicePeriod = -1;    // Expressed in 100ns units (dev machine = 101,587 = 10.1587ms)
+REFERENCE_TIME  gMinimumDevicePeriod = -1;    // Expressed in 100ns units (dev machine = 29,025  = 2.9025ms
+BOOL            gExclusiveAudioMode = false;
 
 
 template <class T> void SafeRelease( T** ppT ) {
@@ -125,6 +128,35 @@ BOOL initAudioDevice( HWND hWnd ) {
    if ( hr != S_OK || glpAudioClient == NULL ) {
       OutputDebugStringA( __FUNCTION__ ":  Failed to create an audio client" );
       return NULL;
+   }
+
+   /// Get the device period
+   hr = glpAudioClient->GetDevicePeriod( &gDefaultDevicePeriod, &gMinimumDevicePeriod );
+   if ( hr != S_OK ) {
+      OutputDebugStringA( __FUNCTION__ ":  Failed to get audio client device periods" );
+      return NULL;
+   }
+
+   /// See if the audio device supports the format we want
+   WAVEFORMATEX tryThisFormat;
+   tryThisFormat.wFormatTag = WAVE_FORMAT_PCM;
+   tryThisFormat.nChannels = 1;
+   tryThisFormat.nSamplesPerSec = 8000;
+   tryThisFormat.nAvgBytesPerSec = 8000;
+   tryThisFormat.nBlockAlign = 1;
+   tryThisFormat.wBitsPerSample = 8;
+   tryThisFormat.cbSize = 0;
+
+   hr = glpAudioClient->IsFormatSupported( AUDCLNT_SHAREMODE_EXCLUSIVE, &tryThisFormat, NULL );
+   if ( hr == S_OK ) {
+      OutputDebugStringA( __FUNCTION__ ":  The requested format is supported in exclusive mode" );
+      gExclusiveAudioMode = true;
+   } else if ( hr == AUDCLNT_E_UNSUPPORTED_FORMAT ) {
+      OutputDebugStringA( __FUNCTION__ ":  The requested format is supported in shared mode" );
+      gExclusiveAudioMode = false;
+   } else {
+      OutputDebugStringA( __FUNCTION__ ":  Failed to check the requested format" );
+      return FALSE;
    }
 
 
