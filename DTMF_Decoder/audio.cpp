@@ -32,6 +32,7 @@ IAudioClient*   glpAudioClient = NULL;
 REFERENCE_TIME  gDefaultDevicePeriod = -1;    // Expressed in 100ns units (dev machine = 101,587 = 10.1587ms)
 REFERENCE_TIME  gMinimumDevicePeriod = -1;    // Expressed in 100ns units (dev machine = 29,025  = 2.9025ms
 BOOL            gExclusiveAudioMode = false;
+REFERENCE_TIME  gBufferDuration = 10000000;   // The size of the buffer in 100ns units (1-second)
 
 
 template <class T> void SafeRelease( T** ppT ) {
@@ -160,11 +161,35 @@ BOOL initAudioDevice( HWND hWnd ) {
    }
 
 
+   if ( gExclusiveAudioMode ) {
+      OutputDebugStringA( __FUNCTION__ ":  Exclusive mode not supported right now... using shared mode until theres a problem" );
+      gExclusiveAudioMode = false;
+   }
+
+   /// Initialize shared mode audio client
+   //  Shared mode streams using event-driven buffering must set both periodicity and bufferDuration to 0.
+   hr = glpAudioClient->Initialize( AUDCLNT_SHAREMODE_SHARED, AUDCLNT_STREAMFLAGS_EVENTCALLBACK
+                                                            | AUDCLNT_STREAMFLAGS_AUTOCONVERTPCM
+                                                                                                , 0, 0, &tryThisFormat, NULL );
+                                       
+  
+   if ( hr != S_OK ) {
+      OutputDebugStringA( __FUNCTION__ ":  Failed to initialize the audio client in shared mode" );
+      return NULL;
+   }
+
+   OutputDebugStringA( __FUNCTION__ ":  The audio client has been initialized in shared mode" );
+
+   
    return TRUE;
 }
 
 
 BOOL cleanupAudioDevice() {
+
+   if ( glpAudioClient != NULL ) {
+      glpAudioClient->Reset();
+   }
 
    SafeRelease( &glpAudioClient );
 
