@@ -38,57 +38,6 @@ template <class T> void SafeRelease( T** ppT ) {
 }
 
 
-//
-//  Retrieves the device friendly name for a particular device in a device collection.  
-//
-//  The returned string was allocated using malloc() so it should be freed using free();
-//
-LPWSTR GetDeviceName( IMMDeviceCollection* DeviceCollection, UINT DeviceIndex ) {
-   IMMDevice* device;
-   HRESULT hr;
-
-   hr = DeviceCollection->Item( DeviceIndex, &device );
-   if ( FAILED( hr ) ) {
-      OutputDebugStringA( __FUNCTION__ ":  Failed to get device" );
-      return NULL;
-   }
-
-   hr = device->OpenPropertyStore( STGM_READ, &glpPropertyStore );
-   SafeRelease( &device );
-   if ( FAILED( hr ) ) {
-      OutputDebugStringA( __FUNCTION__ ":  Failed to open device property store" );
-      return NULL;
-   }
-
-   PROPVARIANT friendlyName;
-   PropVariantInit( &friendlyName );
-   hr = glpPropertyStore->GetValue( PKEY_Device_FriendlyName, &friendlyName );
-   SafeRelease( &glpPropertyStore );
-   if ( FAILED( hr ) ) {
-      OutputDebugStringA( __FUNCTION__ ":  Failed to retrieve friendly name for the device" );
-      return NULL;
-   }
-
-   wchar_t deviceName[ 128 ];
-   
-   hr = StringCbPrintf( deviceName, sizeof( deviceName ), L"%s (%s)", friendlyName.vt != VT_LPWSTR ? L"Unknown" : friendlyName.pwszVal, glpwstrDeviceId );
-   if ( FAILED( hr ) ) {
-      OutputDebugStringA( __FUNCTION__ ":  Failed to format a friendly name for the device" );
-      return NULL;
-   }
-   
-   PropVariantClear( &friendlyName );
-   CoTaskMemFree( glpwstrDeviceId );
-   
-   wchar_t* returnValue = _wcsdup( deviceName );
-   if ( returnValue == NULL ) {
-      OutputDebugStringA( __FUNCTION__ ":  Failed to allocate a buffer" );
-      return NULL;
-   }
-   return returnValue;
-}
-
-
 BOOL initAudioDevice( HWND hWnd ) {
    /// Get IMMDeviceEnumerator from COM (CoCreateInstance)
 
