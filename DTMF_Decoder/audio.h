@@ -16,7 +16,5 @@
 #include <Windows.h>
 
 BOOL initAudioDevice( HWND );
+BOOL stopAudioDevice( HWND );
 BOOL cleanupAudioDevice();
-
-BOOL startAudioStream( HWND );
-BOOL endAudioStream( HWND );

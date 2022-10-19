@@ -31,7 +31,6 @@ WCHAR     gszWindowClass[ MAX_LOADSTRING ];    /// The main window class name
 // Forward declarations of private functions in this file
 LRESULT CALLBACK WndProc( HWND, UINT, WPARAM, LPARAM );
 INT_PTR CALLBACK About( HWND, UINT, WPARAM, LPARAM );
-VOID             Cleanup();
 VOID             DrawRectangle( HWND );
 
 
@@ -138,21 +137,14 @@ int APIENTRY wWinMain(
       }
    }
 
-   Cleanup();  // The message loop has stopped
+   /// Cleanup all resources
+   cleanupAudioDevice();
 
    CoUninitialize();  /// Unwind COM
 
-   OutputDebugStringA( APP_NAME ": Ending" );
+   OutputDebugStringA( APP_NAME ": All global resources were cleaned up.  Ending program." );
 
    return (int) msg.wParam;
-}
-
-
-VOID Cleanup() {
-   cleanupAudioDevice();
-
-
-   OutputDebugStringA( APP_NAME ": All global resources were cleaned up.  Ending program." );
 }
 
 
@@ -201,6 +193,11 @@ LRESULT CALLBACK WndProc( HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam 
       case WM_CLOSE:    /// WM_CLOSE - Start the process of closing the application
          {
             isRunning = false;
+            if ( gAudioSamplesReadyEvent != NULL ) {
+               SetEvent( gAudioSamplesReadyEvent );
+            }
+
+            stopAudioDevice( hWnd );
 
             DestroyWindow( hWnd );
 

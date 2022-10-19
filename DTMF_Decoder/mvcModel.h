@@ -27,5 +27,9 @@ extern dtmfTones_t dtmfTones[ 8 ];
 
 extern bool isRunning;
 
+extern HANDLE gAudioSamplesReadyEvent;
+
+/// @TODO Consider having the thread have an indicator light that its running
+
 
 /// @TODO I should convert this to a read-only interface

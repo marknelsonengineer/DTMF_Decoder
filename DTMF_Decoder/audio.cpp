@@ -38,8 +38,8 @@ REFERENCE_TIME  gDefaultDevicePeriod = -1;    // Expressed in 100ns units (dev m
 REFERENCE_TIME  gMinimumDevicePeriod = -1;    // Expressed in 100ns units (dev machine = 29,025  = 2.9025ms
 BOOL            gExclusiveAudioMode = false;
 UINT32          guBufferSize = 0;             // Dev Machine = 182
-HANDLE          gAudioSamplesReadyEvent = NULL;;
 HANDLE          hCaptureThread = NULL;
+HANDLE          gAudioSamplesReadyEvent = NULL;  // This is externally delcared
 IAudioCaptureClient* gCaptureClient = NULL;
 
 
@@ -48,6 +48,37 @@ template <class T> void SafeRelease( T** ppT ) {
       ( *ppT )->Release();
       *ppT = NULL;
    }
+}
+
+
+BOOL captureAudio() {
+   HRESULT hr;
+
+   BYTE* pData;
+   UINT32 framesAvailable;
+   DWORD  flags;
+
+   hr = gCaptureClient->GetBuffer( &pData, &framesAvailable, &flags, NULL, NULL );
+   if ( hr == S_OK ) {
+      // OutputDebugStringA( __FUNCTION__ ":  I got data!" );
+
+
+
+      hr = gCaptureClient->ReleaseBuffer( framesAvailable );
+      if ( hr != S_OK ) {
+         OutputDebugStringA( __FUNCTION__ ":  ReleaseBuffer didn't return S_OK.  Investigate!!" );
+         isRunning = false;
+      }
+   } else if ( hr == AUDCLNT_S_BUFFER_EMPTY ) {
+      OutputDebugStringA( __FUNCTION__ ":  GetBuffer returned an empty buffer.  Continue." );
+   } else if ( hr == AUDCLNT_E_OUT_OF_ORDER ) {
+      OutputDebugStringA( __FUNCTION__ ":  GetBuffer returned out of order data.  Continue." );
+   } else {
+      OutputDebugStringA( __FUNCTION__ ":  GetBuffer did not return S_OK.  Investigate!!" );
+      isRunning = false;
+   }
+
+   return TRUE;
 }
 
 
@@ -75,8 +106,32 @@ DWORD captureThread( LPVOID Context ) {
    /// isRunning gets set to false by WM_CLOSE
    
    isRunning = true;
+   int dbgLoop = 4;
 
    while ( isRunning ) {
+      DWORD dwWaitResult;
+
+      dwWaitResult = WaitForSingleObject( gAudioSamplesReadyEvent, INFINITE );
+      if ( dwWaitResult == WAIT_OBJECT_0 ) {
+         if ( isRunning ) {
+            captureAudio();
+         }
+      } else if ( dwWaitResult == WAIT_FAILED ) {
+         OutputDebugStringA( __FUNCTION__ ":  The wait was failed.  Exiting" );
+         isRunning = false;
+         break;  // While loop
+      } else {
+         OutputDebugStringA( __FUNCTION__ ":  The wait was ended for some other reason.  Exiting" );
+         isRunning = false;
+         break;  // While loop
+      }
+
+      if ( dbgLoop > 0 ) {
+         OutputDebugStringA( __FUNCTION__ ":  End capturing frame.  Looping." );
+         dbgLoop--;
+      } else {
+         isRunning = false;   /// @TOTO This is a kill switch.  Remove before flight
+      }
    }
 
    /// Cleanup the thread
@@ -243,16 +298,41 @@ BOOL initAudioDevice( HWND hWnd ) {
       return FALSE;
    }
 
+   /// Get the Capture Client
    hr = glpAudioClient->GetService( IID_PPV_ARGS( &gCaptureClient ) );
    if ( hr != S_OK ) {
       OutputDebugStringA( __FUNCTION__ ":  Failed to get capture client" );
       return FALSE;
    }
 
+   /// Start the thread
    hCaptureThread = CreateThread( NULL, 0, captureThread, NULL, 0, NULL );
    if ( hCaptureThread == NULL ) {
       OutputDebugStringA( __FUNCTION__ ":  Failed to create the capture thread" );
       return FALSE;
+   }
+
+   /// Start the audio processer
+   hr = glpAudioClient->Start();
+   if ( hr != S_OK ) {
+      OutputDebugStringA( __FUNCTION__ ":  Failed to start capturing the audio stream" );
+      return FALSE;
+   }
+
+   /// The thread of execution goes back to wWinMain, which starts the main message loop
+   return TRUE;
+}
+
+
+BOOL stopAudioDevice( HWND ) {
+   HRESULT hr;
+
+   if ( glpAudioClient != NULL ) {
+      hr = glpAudioClient->Stop();
+      if ( hr != S_OK ) {
+         OutputDebugStringA( __FUNCTION__ ":  Stopping the audio stream returned an odd value.  Investigate!!" );
+         return FALSE;
+      }
    }
 
    return TRUE;
