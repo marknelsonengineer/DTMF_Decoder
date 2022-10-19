@@ -4,6 +4,8 @@
 //
 /// A Windows Desktop C program that decodes DTMF tones
 ///
+/// The model will hold state between the controller and view code
+/// 
 /// @file mvcModel.h
 /// @version 1.0
 ///
