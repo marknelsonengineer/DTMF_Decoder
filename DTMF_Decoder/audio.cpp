@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////
 //          University of Hawaii, College of Engineering
-//          DTMF_Decoder - EE 469 - Fall 2022
+//          DTMF_Decoder22X!Vqrpp1kz9C!ma3mCkbd - EE 469 - Fall 2022
 //
 /// A Windows Desktop C program that decodes DTMF tones
 /// 
@@ -19,6 +19,9 @@
 
 #include "audio.h"
 #include <assert.h>  // For assert
+#include <avrt.h>    // For AvSetMmThreadCharacteristics()
+
+#pragma comment(lib, "avrt")    // Link the MMCSS library
 
 
 IMMDevice*      gDevice = NULL;
@@ -33,6 +36,9 @@ REFERENCE_TIME  gDefaultDevicePeriod = -1;    // Expressed in 100ns units (dev m
 REFERENCE_TIME  gMinimumDevicePeriod = -1;    // Expressed in 100ns units (dev machine = 29,025  = 2.9025ms
 BOOL            gExclusiveAudioMode = false;
 UINT32          guBufferSize = 0;             // Dev Machine = 182
+HANDLE          gAudioSamplesReadyEvent = NULL;;
+HANDLE          hCaptureThread = NULL;
+IAudioCaptureClient* gCaptureClient = NULL;
 
 
 template <class T> void SafeRelease( T** ppT ) {
@@ -43,12 +49,40 @@ template <class T> void SafeRelease( T** ppT ) {
 }
 
 
+DWORD captureThread( LPVOID Context ) {
+   OutputDebugStringA( __FUNCTION__ ":  Start capture thread" );
+   HRESULT hr;
+   HANDLE mmcssHandle = NULL;
+   DWORD mmcssTaskIndex = 0;
+
+
+
+   hr = CoInitializeEx( NULL, COINIT_MULTITHREADED );
+   if ( hr != S_OK ) {
+      OutputDebugStringA( __FUNCTION__ ":  Failed to initialize COM in thread" );
+      ExitThread( -1 );
+   }
+
+   mmcssHandle = AvSetMmThreadCharacteristics( L"Capture", &mmcssTaskIndex );
+   if ( mmcssHandle == NULL ) {
+      OutputDebugStringA( __FUNCTION__ ":  Failed to set MMCSS on thread.  Continuing." );
+   }
+
+   CoUninitialize();
+
+   OutputDebugStringA( __FUNCTION__ ":  End capture thread" );
+
+   ExitThread( 0 );
+}
+
+
 BOOL initAudioDevice( HWND hWnd ) {
    /// Get IMMDeviceEnumerator from COM (CoCreateInstance)
 
    IMMDeviceEnumerator* deviceEnumerator = NULL;
+   HRESULT hr;
 
-   HRESULT hr = CoCreateInstance( __uuidof( MMDeviceEnumerator ), NULL, CLSCTX_INPROC_SERVER, IID_PPV_ARGS( &deviceEnumerator ) );
+   hr = CoCreateInstance( __uuidof( MMDeviceEnumerator ), NULL, CLSCTX_INPROC_SERVER, IID_PPV_ARGS( &deviceEnumerator ) );
    if ( hr != S_OK ) {
       OutputDebugStringA( __FUNCTION__ ":  Failed to instantiate the multimedia device enumerator via COM" );
       return FALSE;
@@ -89,7 +123,7 @@ BOOL initAudioDevice( HWND hWnd ) {
    hr = gDevice->OpenPropertyStore( STGM_READ, &glpPropertyStore );
    if ( hr != S_OK || glpPropertyStore == NULL ) {
       OutputDebugStringA( __FUNCTION__ ":  Failed to open device property store" );
-      return NULL;
+      return FALSE;
    }
 
    /// Get the device's properties from the property store
@@ -128,14 +162,14 @@ BOOL initAudioDevice( HWND hWnd ) {
    hr = gDevice->Activate( __uuidof( IAudioClient ), CLSCTX_ALL, NULL, (void**) &glpAudioClient );
    if ( hr != S_OK || glpAudioClient == NULL ) {
       OutputDebugStringA( __FUNCTION__ ":  Failed to create an audio client" );
-      return NULL;
+      return FALSE;
    }
 
    /// Get the device period
    hr = glpAudioClient->GetDevicePeriod( &gDefaultDevicePeriod, &gMinimumDevicePeriod );
    if ( hr != S_OK ) {
       OutputDebugStringA( __FUNCTION__ ":  Failed to get audio client device periods" );
-      return NULL;
+      return FALSE;
    }
 
    /// See if the audio device supports the format we want
@@ -173,7 +207,7 @@ BOOL initAudioDevice( HWND hWnd ) {
                                                                                                 , 0, 0, &tryThisFormat, NULL );
    if ( hr != S_OK ) {
       OutputDebugStringA( __FUNCTION__ ":  Failed to initialize the audio client in shared mode" );
-      return NULL;
+      return FALSE;
    }
 
    OutputDebugStringA( __FUNCTION__ ":  The audio client has been initialized in shared mode" );
@@ -181,7 +215,32 @@ BOOL initAudioDevice( HWND hWnd ) {
    hr = glpAudioClient->GetBufferSize( &guBufferSize );
    if ( hr != S_OK ) {
       OutputDebugStringA( __FUNCTION__ ":  Failed to get buffer size" );
-      return NULL;
+      return FALSE;
+   }
+
+   /// Create the callback events
+   gAudioSamplesReadyEvent = CreateEventEx( NULL, NULL, 0, EVENT_MODIFY_STATE | SYNCHRONIZE );
+   if ( gAudioSamplesReadyEvent == NULL ) {
+      OutputDebugStringA( __FUNCTION__ ":  Failed to create audio samples ready event" );
+      return FALSE;
+   }
+
+   hr = glpAudioClient->SetEventHandle( gAudioSamplesReadyEvent );
+   if ( hr != S_OK ) {
+      OutputDebugStringA( __FUNCTION__ ":  Failed to set audio capture ready event" );
+      return FALSE;
+   }
+
+   hr = glpAudioClient->GetService( IID_PPV_ARGS( &gCaptureClient ) );
+   if ( hr != S_OK ) {
+      OutputDebugStringA( __FUNCTION__ ":  Failed to get capture client" );
+      return FALSE;
+   }
+
+   hCaptureThread = CreateThread( NULL, 0, captureThread, NULL, 0, NULL );
+   if ( hCaptureThread == NULL ) {
+      OutputDebugStringA( __FUNCTION__ ":  Failed to create the capture thread" );
+      return FALSE;
    }
 
    return TRUE;
@@ -190,8 +249,21 @@ BOOL initAudioDevice( HWND hWnd ) {
 
 BOOL cleanupAudioDevice() {
 
+   if ( hCaptureThread != NULL ) {
+      CloseHandle( hCaptureThread );
+      hCaptureThread = NULL;
+   }
+
+   SafeRelease( &gCaptureClient );
+
+   if ( gAudioSamplesReadyEvent != NULL ) {
+      CloseHandle( gAudioSamplesReadyEvent );
+      gAudioSamplesReadyEvent = NULL;
+   }
+
    if ( glpAudioClient != NULL ) {
       glpAudioClient->Reset();
+      glpAudioClient = NULL;
    }
 
    SafeRelease( &glpAudioClient );
