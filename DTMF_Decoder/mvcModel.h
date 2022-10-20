@@ -25,7 +25,10 @@ typedef struct {
 
 extern dtmfTones_t dtmfTones[ 8 ]; 
 
-extern bool isRunning;
+extern bool isRunning;  /// This is very important:  When true, the audio capture
+                        /// loop (this is an event-blocking thread) will continue
+                        /// run.  When false, the loop will exit and the thread
+                        /// will end.
 
 extern HANDLE gAudioSamplesReadyEvent;
 

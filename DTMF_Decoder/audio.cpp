@@ -25,6 +25,7 @@
 #include <assert.h>  // For assert
 #include <avrt.h>    // For AvSetMmThreadCharacteristics()
 #include <inttypes.h> // For the printf fixed-integer mappings
+#include <float.h>    // For FLT_MIN and FLT_MAX
 
 #pragma comment(lib, "avrt")    // Link the MMCSS library
 
@@ -54,24 +55,143 @@ template <class T> void SafeRelease( T** ppT ) {
    }
 }
 
+#define MONITOR_INTERVAL_SECONDS (4)   /* Set to 0 to disable monitoring */
+UINT64 gFramesToMonitor = 0;
+UINT64 gStartOfMonitor = UINT64_MAX;
+BOOL   gbMonitor = false;     /* Briefly set to 1 to output monitor data */
 
+
+BOOL processAudioFrame( BYTE* pData, UINT32 frame, UINT64 framePosition ) {
+   assert( pData != NULL );
+   assert( gpFormatInUse != NULL );
+
+   BYTE* pFrame = pData + ( frame * gpFormatInUse->nBlockAlign );
+
+/*   union u_t {
+      float f;
+      UINT8 c[ 4 ];
+   } gu; */
+
+   float* ch1Sample = NULL;
+   float* ch2Sample = NULL;
+   if ( gpFormatInUse->nChannels >= 1 ) {
+/*    gu.f = (float) *pFrame;
+      UINT8 t;
+      t = gu.c[ 0 ];
+      gu.c[ 0 ] = gu.c[ 3 ];
+      gu.c[ 3 ] = t;
+      t = gu.c[ 1 ];
+      gu.c[ 1 ] = gu.c[ 2 ];
+      gu.c[ 2 ] = t;
+      ch1Sample = &gu.f; */
+
+      ch1Sample = (float*) pFrame;
+   }
+   if ( gpFormatInUse->nChannels >= 2 ) {
+      ch2Sample = (float*) (pFrame + (gpFormatInUse->wBitsPerSample/8));
+   }
+
+   float monitorCh1Max = FLT_MIN;
+   float monitorCh2Max = FLT_MIN;
+   float monitorCh1Min = FLT_MAX;
+   float monitorCh2Min = FLT_MAX;
+
+   if ( gFramesToMonitor > 0 ) {
+
+      if ( *ch1Sample > monitorCh1Max ) monitorCh1Max = *ch1Sample;
+      if ( *ch2Sample > monitorCh2Max ) monitorCh2Max = *ch2Sample;
+      if ( *ch1Sample < monitorCh1Min ) monitorCh1Min = *ch1Sample;
+      if ( *ch2Sample < monitorCh2Min ) monitorCh2Min = *ch2Sample;
+
+      if ( gbMonitor ) {
+         CHAR sBuf[ 128 ];
+
+         sprintf_s( sBuf, sizeof( sBuf ), "Channel 1:  Min: %e   Max: %e", monitorCh1Min, monitorCh1Max );
+         OutputDebugStringA( sBuf );
+         sprintf_s( sBuf, sizeof( sBuf ), "Channel 2:  Min: %e   Max: %e", monitorCh2Min, monitorCh2Max );
+         OutputDebugStringA( sBuf );
+
+         monitorCh1Max = FLT_MIN;
+         monitorCh2Max = FLT_MIN;
+         monitorCh1Min = FLT_MAX;
+         monitorCh2Min = FLT_MAX;
+
+         gbMonitor = false;
+      }
+   }
+
+   return TRUE;
+}
+
+
+// TODO:  Watch the program with Process Monitor and make sure it's not
+// over-spinning a thread
 BOOL captureAudio() {
    HRESULT hr;
 
-   BYTE* pData;
+   BYTE*  pData;
    UINT32 framesAvailable;
    DWORD  flags;
+   UINT64 framePosition;
 
-   hr = gCaptureClient->GetBuffer( &pData, &framesAvailable, &flags, NULL, NULL );
+   assert( gCaptureClient != NULL );
+
+   hr = gCaptureClient->GetBuffer( &pData, &framesAvailable, &flags, &framePosition, NULL );
    if ( hr == S_OK ) {
       // OutputDebugStringA( __FUNCTION__ ":  I got data!" );
-      pcmEnqueue( pData, framesAvailable );
+      // pcmEnqueue( pData, framesAvailable );
 
-      hr = gCaptureClient->ReleaseBuffer( framesAvailable );
-      if ( hr != S_OK ) {
-         OutputDebugStringA( __FUNCTION__ ":  ReleaseBuffer didn't return S_OK.  Investigate!!" );
-         isRunning = false;
+      if ( flags == 0 ) {
+         // Normal processing
+         for ( UINT32 i = 0 ; i < framesAvailable ; i++ ) {
+            processAudioFrame( pData, i, framePosition+i );
+         }
+      } 
+
+      if ( flags & AUDCLNT_BUFFERFLAGS_SILENT ) {
+         OutputDebugStringA( __FUNCTION__ ":  Buffer flag set:  SILENT" );
+         // Nothing so see here.  Move along.
+      } 
+      if ( flags & AUDCLNT_BUFFERFLAGS_DATA_DISCONTINUITY ) {
+         OutputDebugStringA( __FUNCTION__ ":  Buffer flag set:  DATA_DISCONTINUITY" );
+         // Throw the first packet out
+      } 
+      if ( flags & AUDCLNT_BUFFERFLAGS_TIMESTAMP_ERROR ) {
+         OutputDebugStringA( __FUNCTION__ ":  Buffer flag set:  TIMESTAMP_ERROR" );
+         // Throw this packet out as well
       }
+      // TODO: Print an error if you get a flag that's not in this list 
+
+      if ( framesAvailable > 0 ) {
+         gbMonitor = false;
+         if ( gFramesToMonitor > 0 ) {
+            if ( gStartOfMonitor > framePosition ) {
+               gStartOfMonitor = framePosition;
+            }
+
+            if ( gStartOfMonitor + gFramesToMonitor < framePosition ) {
+               gbMonitor = true;
+               gStartOfMonitor = framePosition;
+            }
+
+         }
+
+         if ( gbMonitor ) {  // Monitor data on this pass
+            OutputDebugStringA( __FUNCTION__ ":  Monitoring loop" );
+            CHAR sBuf[ 128 ];
+
+            sprintf_s( sBuf, sizeof( sBuf ), "Frames available=%" PRIu32 "    frame position=%" PRIu64, framesAvailable, framePosition );
+            OutputDebugStringA( sBuf );
+
+         }
+
+         hr = gCaptureClient->ReleaseBuffer( framesAvailable );
+         if ( hr != S_OK ) {
+            OutputDebugStringA( __FUNCTION__ ":  ReleaseBuffer didn't return S_OK.  Investigate!!" );
+            isRunning = false;
+         }
+      }
+
    } else if ( hr == AUDCLNT_S_BUFFER_EMPTY ) {
       OutputDebugStringA( __FUNCTION__ ":  GetBuffer returned an empty buffer.  Continue." );
    } else if ( hr == AUDCLNT_E_OUT_OF_ORDER ) {
@@ -89,6 +209,7 @@ BOOL captureAudio() {
 
 DWORD captureThread( LPVOID Context ) {
    OutputDebugStringA( __FUNCTION__ ":  Start capture thread" );
+
    HRESULT hr;
    HANDLE mmcssHandle = NULL;
    DWORD mmcssTaskIndex = 0;
@@ -107,12 +228,12 @@ DWORD captureThread( LPVOID Context ) {
       OutputDebugStringA( __FUNCTION__ ":  Failed to set MMCSS on thread.  Continuing." );
    }
 
+   gFramesToMonitor = MONITOR_INTERVAL_SECONDS * gpFormatInUse->nSamplesPerSec;
+
    /// Audio capture loop
    /// isRunning gets set to false by WM_CLOSE
    
    isRunning = true;
-   int dbgLoop = 4;
-   int dbgCounter = 0;
 
    while ( isRunning ) {
       DWORD dwWaitResult;
@@ -127,38 +248,10 @@ DWORD captureThread( LPVOID Context ) {
          isRunning = false;
          break;  // While loop
       } else {
-         OutputDebugStringA( __FUNCTION__ ":  The wait was ended for some other reason.  Exiting" );
+         OutputDebugStringA( __FUNCTION__ ":  The wait was ended for some other reason.  Exiting.  Investigate!" );
          isRunning = false;
          break;  // While loop
       }
-
-      if ( dbgLoop > 0 ) {
-         OutputDebugStringA( __FUNCTION__ ":  End capturing frame.  Looping." );
-         dbgLoop--;
-//      } else {
-//         isRunning = false;   /// @TOTO This is a kill switch.  Remove before flight
-      }
-
-      if ( dbgCounter >= 50 ) {
-         dbgCounter = 0;
-         OutputDebugStringA( __FUNCTION__ ":  Capturing" );
-
-         for ( int i = 0 ; i < 8 ; i++ ) {
-            int freq = (int) dtmfTones[i].frequency;
-            float magnitude = goertzel_magnitude( SIZE_OF_QUEUE, freq, 8000, pcmQueue );
-            //char sBuf[ 128 ];
-            //sprintf_s( sBuf, "The magnitude of the function is %f for %i Hz", magnitude, freq );
-            //OutputDebugStringA( sBuf );
-            if ( magnitude > 0.11 ) {
-               dtmfTones[ i ].detected = true;
-            } else {
-               dtmfTones[ i ].detected = false;
-            }
-         }
-         mvcViewRefreshWindow();
-
-      }
-      dbgCounter++;
    }
 
    /// Cleanup the thread
@@ -296,6 +389,7 @@ BOOL initAudioDevice( HWND hWnd ) {
       OutputDebugStringA( __FUNCTION__ ":  Failed to initialize the audio client in shared mode" );
       return FALSE;
    }
+   // TODO: Look at the error code and print out higher-fidelity error message
 
    OutputDebugStringA( __FUNCTION__ ":  The audio client has been initialized in shared mode" );
 
