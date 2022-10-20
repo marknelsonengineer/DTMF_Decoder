@@ -61,60 +61,28 @@ UINT64 gStartOfMonitor = UINT64_MAX;
 BOOL   gbMonitor = false;     /* Briefly set to 1 to output monitor data */
 
 
+BYTE monitorCh1Max = 0;
+BYTE monitorCh1Min = 255;
+
+
+// Assume this is 1 channel, 8-bit PCM data
 BOOL processAudioFrame( BYTE* pData, UINT32 frame, UINT64 framePosition ) {
    assert( pData != NULL );
-   assert( gpFormatInUse != NULL );
 
-   BYTE* pFrame = pData + ( frame * gpFormatInUse->nBlockAlign );
-
-/*   union u_t {
-      float f;
-      UINT8 c[ 4 ];
-   } gu; */
-
-   float* ch1Sample = NULL;
-   float* ch2Sample = NULL;
-   if ( gpFormatInUse->nChannels >= 1 ) {
-/*    gu.f = (float) *pFrame;
-      UINT8 t;
-      t = gu.c[ 0 ];
-      gu.c[ 0 ] = gu.c[ 3 ];
-      gu.c[ 3 ] = t;
-      t = gu.c[ 1 ];
-      gu.c[ 1 ] = gu.c[ 2 ];
-      gu.c[ 2 ] = t;
-      ch1Sample = &gu.f; */
-
-      ch1Sample = (float*) pFrame;
-   }
-   if ( gpFormatInUse->nChannels >= 2 ) {
-      ch2Sample = (float*) (pFrame + (gpFormatInUse->wBitsPerSample/8));
-   }
-
-   float monitorCh1Max = FLT_MIN;
-   float monitorCh2Max = FLT_MIN;
-   float monitorCh1Min = FLT_MAX;
-   float monitorCh2Min = FLT_MAX;
+   BYTE ch1Sample = *(pData+frame);
 
    if ( gFramesToMonitor > 0 ) {
-
-      if ( *ch1Sample > monitorCh1Max ) monitorCh1Max = *ch1Sample;
-      if ( *ch2Sample > monitorCh2Max ) monitorCh2Max = *ch2Sample;
-      if ( *ch1Sample < monitorCh1Min ) monitorCh1Min = *ch1Sample;
-      if ( *ch2Sample < monitorCh2Min ) monitorCh2Min = *ch2Sample;
+      if ( ch1Sample > monitorCh1Max ) monitorCh1Max = ch1Sample;
+      if ( ch1Sample < monitorCh1Min ) monitorCh1Min = ch1Sample;
 
       if ( gbMonitor ) {
          CHAR sBuf[ 128 ];
 
-         sprintf_s( sBuf, sizeof( sBuf ), "Channel 1:  Min: %e   Max: %e", monitorCh1Min, monitorCh1Max );
-         OutputDebugStringA( sBuf );
-         sprintf_s( sBuf, sizeof( sBuf ), "Channel 2:  Min: %e   Max: %e", monitorCh2Min, monitorCh2Max );
+         sprintf_s( sBuf, sizeof( sBuf ), "Channel 1:  Min: %" PRIu8 "   Max: %" PRIu8, monitorCh1Min, monitorCh1Max );
          OutputDebugStringA( sBuf );
 
-         monitorCh1Max = FLT_MIN;
-         monitorCh2Max = FLT_MIN;
-         monitorCh1Min = FLT_MAX;
-         monitorCh2Min = FLT_MAX;
+         monitorCh1Max = 0;
+         monitorCh1Min = 255;
 
          gbMonitor = false;
       }
