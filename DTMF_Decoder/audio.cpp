@@ -24,6 +24,7 @@
 
 #include <assert.h>  // For assert
 #include <avrt.h>    // For AvSetMmThreadCharacteristics()
+#include <inttypes.h> // For the printf fixed-integer mappings
 
 #pragma comment(lib, "avrt")    // Link the MMCSS library
 
@@ -41,6 +42,7 @@ REFERENCE_TIME  gMinimumDevicePeriod = -1;    // Expressed in 100ns units (dev m
 BOOL            gExclusiveAudioMode = false;
 UINT32          guBufferSize = 0;             // Dev Machine = 182
 HANDLE          hCaptureThread = NULL;
+WAVEFORMATEX*   gpFormatInUse = NULL;
 HANDLE          gAudioSamplesReadyEvent = NULL;  // This is externally delcared
 IAudioCaptureClient* gCaptureClient = NULL;
 
@@ -257,13 +259,6 @@ BOOL initAudioDevice( HWND hWnd ) {
       return FALSE;
    }
 
-   /// Get the device period
-   hr = glpAudioClient->GetDevicePeriod( &gDefaultDevicePeriod, &gMinimumDevicePeriod );
-   if ( hr != S_OK ) {
-      OutputDebugStringA( __FUNCTION__ ":  Failed to get audio client device periods" );
-      return FALSE;
-   }
-
    /// See if the audio device supports the format we want
    WAVEFORMATEX tryThisFormat;
    tryThisFormat.wFormatTag = WAVE_FORMAT_PCM;
@@ -309,6 +304,65 @@ BOOL initAudioDevice( HWND hWnd ) {
       OutputDebugStringA( __FUNCTION__ ":  Failed to get buffer size" );
       return FALSE;
    }
+
+   OutputDebugStringA( __FUNCTION__ ":  In-use audio client format" );
+
+   char sBuf[ 128 ];
+   sprintf_s( sBuf, sizeof( sBuf ), "   Buffer size=%" PRIu32 " frames", guBufferSize);
+   OutputDebugStringA( sBuf );
+
+   /// Get the format of the audio client
+   hr = glpAudioClient->GetMixFormat( &gpFormatInUse );
+   if ( hr != S_OK ) {
+      OutputDebugStringA( __FUNCTION__ ":  Failed to get audio client format" );
+      return FALSE;
+   }
+
+   WAVEFORMATEXTENSIBLE* pFormatInUseEx = NULL;
+   if ( gpFormatInUse->wFormatTag == WAVE_FORMAT_EXTENSIBLE ) {
+      pFormatInUseEx = (WAVEFORMATEXTENSIBLE*) gpFormatInUse;
+   }
+   if ( pFormatInUseEx == NULL ) {
+      OutputDebugStringA( __FUNCTION__ ":  Failed to correctly retrieve audio client format" );
+      return FALSE;
+   }
+
+   sprintf_s( sBuf, sizeof( sBuf ), "   Channels=%" PRIu16, pFormatInUseEx->Format.nChannels );
+   OutputDebugStringA( sBuf );
+
+   sprintf_s( sBuf, sizeof( sBuf ), "   Samples per Second=%" PRIu32, pFormatInUseEx->Format.nSamplesPerSec );
+   OutputDebugStringA( sBuf );
+
+   sprintf_s( sBuf, sizeof( sBuf ), "   Bytes per Second=%" PRIu32, pFormatInUseEx->Format.nAvgBytesPerSec );
+   OutputDebugStringA( sBuf );
+
+   sprintf_s( sBuf, sizeof( sBuf ), "   Block (frame) alignment, in bytes=%" PRIu32, pFormatInUseEx->Format.nBlockAlign );
+   OutputDebugStringA( sBuf );
+
+   sprintf_s( sBuf, sizeof( sBuf ), "   Bits per sample=%" PRIu32, pFormatInUseEx->Format.wBitsPerSample );
+   OutputDebugStringA( sBuf );
+
+   sprintf_s( sBuf, sizeof( sBuf ), "   Valid bits per sample=%" PRIu32, pFormatInUseEx->Samples.wValidBitsPerSample );
+   OutputDebugStringA( sBuf );
+
+   // TODO:  Add more subformats as I find them
+   sprintf_s( sBuf, sizeof( sBuf ), "   Subformat=%s", ( pFormatInUseEx->SubFormat == KSDATAFORMAT_SUBTYPE_IEEE_FLOAT ) ? "IEEE Float" : "Unknown" );
+   OutputDebugStringA( sBuf );
+
+
+   /// Get the device period
+   hr = glpAudioClient->GetDevicePeriod( &gDefaultDevicePeriod, &gMinimumDevicePeriod );
+   if ( hr != S_OK ) {
+      OutputDebugStringA( __FUNCTION__ ":  Failed to get audio client device periods" );
+      return FALSE;
+   }
+
+   sprintf_s( sBuf, sizeof( sBuf ), "   Default device period=%lli ms", gDefaultDevicePeriod/10000 );
+   OutputDebugStringA( sBuf );
+
+   sprintf_s( sBuf, sizeof( sBuf ), "   Minimum device period=%lli ms", gMinimumDevicePeriod/10000 );
+   OutputDebugStringA( sBuf );
+
 
    /// Create the callback events
    gAudioSamplesReadyEvent = CreateEventEx( NULL, NULL, 0, EVENT_MODIFY_STATE | SYNCHRONIZE );
