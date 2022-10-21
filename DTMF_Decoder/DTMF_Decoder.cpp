@@ -69,7 +69,7 @@ int APIENTRY wWinMain(
    wcex.hInstance = hInstance;
    wcex.hIcon = LoadIcon( hInstance, MAKEINTRESOURCE( IDI_DTMFDECODER ) );
    wcex.hCursor = LoadCursor( nullptr, IDC_ARROW );
-   wcex.hbrBackground = (HBRUSH) ( COLOR_WINDOW + 1 );
+   wcex.hbrBackground = CreateSolidBrush( BACKGROUND_COLOR );
    wcex.lpszMenuName = MAKEINTRESOURCEW( IDC_DTMFDECODER );
    wcex.lpszClassName = gszWindowClass;
    wcex.hIconSm = LoadIcon( wcex.hInstance, MAKEINTRESOURCE( IDI_SMALL ) );
