@@ -18,7 +18,7 @@
 
 #include "mvcModel.h"
 
-dtmfTones_t dtmfTones[ 8 ] = {
+dtmfTones_t dtmfTones[ NUMBER_OF_DTMF_TONES ] = {
    { 697.0, false, L"697" },
    { 770.0, false, L"770" },  
    { 852.0, false, L"852" },
@@ -29,7 +29,21 @@ dtmfTones_t dtmfTones[ 8 ] = {
    {1633.0, false, L"1633" }
 };
 
-extern bool isRunning = false;
+bool hasDtmfTonesChanged = false;
+
+
+void editToneDetectedStatus( size_t toneIndex, bool detectedStatus ) {
+   assert( toneIndex < NUMBER_OF_DTMF_TONES );
+
+   if ( dtmfTones[ toneIndex ].detected != detectedStatus ) {
+      dtmfTones[ toneIndex ].detected = detectedStatus;
+      hasDtmfTonesChanged = true;
+   }
+}
+
+
+
+bool isRunning = false;
 
 BYTE pcmQueue[SIZE_OF_QUEUE];
 

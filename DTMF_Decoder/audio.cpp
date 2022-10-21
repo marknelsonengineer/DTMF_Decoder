@@ -122,8 +122,11 @@ BOOL captureAudio() {
             processAudioFrame( pData, i, framePosition+i );
          }
          
-         goertzel_magnitude( SIZE_OF_QUEUE, 1000, 8000, pcmQueue );
-         // mvcViewRefreshWindow();
+         compute_dtmf_tones_with_goertzel();
+
+         if ( hasDtmfTonesChanged ) {
+            mvcViewRefreshWindow();
+         }
       } 
 
       if ( flags & AUDCLNT_BUFFERFLAGS_SILENT ) {

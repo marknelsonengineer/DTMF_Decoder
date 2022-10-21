@@ -48,3 +48,22 @@ float goertzel_magnitude( const uint16_t iNumSamples, const uint16_t targetFrequ
 
    return sqrtf( real * real + imag * imag );
 }
+
+
+BOOL compute_dtmf_tones_with_goertzel() {
+   float m = 0;
+   float threshold = 10;
+
+   for ( UINT8 i = 0 ; i < NUMBER_OF_DTMF_TONES ; i++ ) {
+      m = goertzel_magnitude( SIZE_OF_QUEUE, dtmfTones[i].frequency, 8000, pcmQueue);
+      // TODO: Replace 8000 with a global
+
+      if ( m >= threshold ) {
+         editToneDetectedStatus( i, true );
+      } else {
+         editToneDetectedStatus( i, false );
+      }
+   }
+
+   return TRUE;
+}

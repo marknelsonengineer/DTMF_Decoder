@@ -278,6 +278,8 @@ BOOL mvcViewPaintWindow( HWND hWnd ) {
    gpRenderTarget->EndDraw();
    /// TODO Look into error checking for these methods
 
+   hasDtmfTonesChanged = false;  /// Reset the mvcModel changed bit
+
    return TRUE;
 }
 
