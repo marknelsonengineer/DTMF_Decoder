@@ -37,13 +37,13 @@ IPropertyStore* glpPropertyStore = NULL;
 PROPVARIANT     DeviceInterfaceFriendlyName;  // Container for the friendly name of the audio adapter for the device
 PROPVARIANT     DeviceDescription;            // Container for the device's description
 PROPVARIANT     DeviceFriendlyName;           // Container for friendly name of the device
+WAVEFORMATEX    audioFormat;
 IAudioClient*   glpAudioClient = NULL;
 REFERENCE_TIME  gDefaultDevicePeriod = -1;    // Expressed in 100ns units (dev machine = 101,587 = 10.1587ms)
 REFERENCE_TIME  gMinimumDevicePeriod = -1;    // Expressed in 100ns units (dev machine = 29,025  = 2.9025ms
 BOOL            gExclusiveAudioMode = false;
 UINT32          guBufferSize = 0;             // Dev Machine = 182
 HANDLE          hCaptureThread = NULL;
-WAVEFORMATEX*   gpFormatInUse = NULL;
 HANDLE          gAudioSamplesReadyEvent = NULL;  // This is externally delcared
 IAudioCaptureClient* gCaptureClient = NULL;
 
@@ -66,14 +66,14 @@ BOOL   gbMonitor = false;     /// Briefly set to 1 to output monitor data
 BYTE monitorCh1Max = 0;
 BYTE monitorCh1Min = 255;
 
-// TODO: Make this generic (good for a variety of formats)
-// TODO: Bring in the RequestedFormat structure
-// TODO: Make RequestedFormat a global
+// TODO: Make this generic (good for a variety of formats -- there's a good example in the git history)
 // NOTE: For now, this code assumes that pData is a 1 channel, 8-bit PCM data stream
 BOOL processAudioFrame( BYTE* pData, UINT32 frame, UINT64 framePosition ) {
    assert( pData != NULL );
 
-   BYTE ch1Sample = *(pData+frame);
+   BYTE ch1Sample = *(pData + (frame * audioFormat.nBlockAlign) );
+
+   // pcmEnqueue( pData, framesAvailable );
 
    // Optional code I use to characterize the samples by tracking the min and max
    // levels, peridoically printing them and then resetting them.  This way, I can
@@ -114,7 +114,6 @@ BOOL captureAudio() {
    hr = gCaptureClient->GetBuffer( &pData, &framesAvailable, &flags, &framePosition, NULL );
    if ( hr == S_OK ) {
       // OutputDebugStringA( __FUNCTION__ ":  I got data!" );
-      // pcmEnqueue( pData, framesAvailable );
 
       if ( flags == 0 ) {
          // Normal processing
@@ -155,7 +154,6 @@ BOOL captureAudio() {
             OutputDebugStringA( __FUNCTION__ ":  Monitoring loop" );
             sprintf_s( sBuf, sizeof( sBuf ), "Frames available=%" PRIu32 "    frame position=%" PRIu64, framesAvailable, framePosition );
             OutputDebugStringA( sBuf );
-
          }
 
          hr = gCaptureClient->ReleaseBuffer( framesAvailable );
@@ -201,7 +199,7 @@ DWORD captureThread( LPVOID Context ) {
       OutputDebugStringA( __FUNCTION__ ":  Failed to set MMCSS on thread.  Continuing." );
    }
 
-   gFramesToMonitor = MONITOR_INTERVAL_SECONDS * gpFormatInUse->nSamplesPerSec;
+   gFramesToMonitor = MONITOR_INTERVAL_SECONDS * audioFormat.nSamplesPerSec;
 
    /// Audio capture loop
    /// isRunning gets set to false by WM_CLOSE
@@ -325,17 +323,16 @@ BOOL initAudioDevice( HWND hWnd ) {
       return FALSE;
    }
 
-   /// See if the audio device supports the format we want
-   WAVEFORMATEX tryThisFormat;
-   tryThisFormat.wFormatTag = WAVE_FORMAT_PCM;
-   tryThisFormat.nChannels = 1;
-   tryThisFormat.nSamplesPerSec = 8000;
-   tryThisFormat.nAvgBytesPerSec = 8000;
-   tryThisFormat.nBlockAlign = 1;
-   tryThisFormat.wBitsPerSample = 8;
-   tryThisFormat.cbSize = 0;
+   /// The audio format we want to process
+   audioFormat.wFormatTag = WAVE_FORMAT_PCM;
+   audioFormat.nChannels = 1;
+   audioFormat.nSamplesPerSec = 8000;
+   audioFormat.nAvgBytesPerSec = 8000;
+   audioFormat.nBlockAlign = 1;
+   audioFormat.wBitsPerSample = 8;
+   audioFormat.cbSize = 0;
 
-   hr = glpAudioClient->IsFormatSupported( AUDCLNT_SHAREMODE_EXCLUSIVE, &tryThisFormat, NULL );
+   hr = glpAudioClient->IsFormatSupported( AUDCLNT_SHAREMODE_EXCLUSIVE, &audioFormat, NULL );
    if ( hr == S_OK ) {
       OutputDebugStringA( __FUNCTION__ ":  The requested format is supported in exclusive mode" );
       gExclusiveAudioMode = true;
@@ -357,7 +354,7 @@ BOOL initAudioDevice( HWND hWnd ) {
    //  Shared mode streams using event-driven buffering must set both periodicity and bufferDuration to 0.
    hr = glpAudioClient->Initialize( AUDCLNT_SHAREMODE_SHARED, AUDCLNT_STREAMFLAGS_EVENTCALLBACK
                                                             | AUDCLNT_STREAMFLAGS_AUTOCONVERTPCM
-                                                                                                , 0, 0, &tryThisFormat, NULL );
+                                                                                                , 0, 0, &audioFormat, NULL );
    if ( hr != S_OK ) {
       OutputDebugStringA( __FUNCTION__ ":  Failed to initialize the audio client in shared mode" );
       return FALSE;
@@ -377,44 +374,24 @@ BOOL initAudioDevice( HWND hWnd ) {
    sprintf_s( sBuf, sizeof( sBuf ), "   Buffer size=%" PRIu32 " frames", guBufferSize);
    OutputDebugStringA( sBuf );
 
-   /// Get the format of the audio client
-   hr = glpAudioClient->GetMixFormat( &gpFormatInUse );
-   if ( hr != S_OK ) {
-      OutputDebugStringA( __FUNCTION__ ":  Failed to get audio client format" );
+   if ( audioFormat.wFormatTag != WAVE_FORMAT_PCM ) {
+      OutputDebugStringA( __FUNCTION__ ":  Wave format not PCM" );
       return FALSE;
    }
 
-   WAVEFORMATEXTENSIBLE* pFormatInUseEx = NULL;
-   if ( gpFormatInUse->wFormatTag == WAVE_FORMAT_EXTENSIBLE ) {
-      pFormatInUseEx = (WAVEFORMATEXTENSIBLE*) gpFormatInUse;
-   }
-   if ( pFormatInUseEx == NULL ) {
-      OutputDebugStringA( __FUNCTION__ ":  Failed to correctly retrieve audio client format" );
-      return FALSE;
-   }
-
-   // TODO:  Fix this.  All of this is a lie (it's the mixing parameters, not the in-use
-   //        parameters.  
-   sprintf_s( sBuf, sizeof( sBuf ), "   Channels=%" PRIu16, pFormatInUseEx->Format.nChannels );
+   sprintf_s( sBuf, sizeof( sBuf ), "   Channels=%" PRIu16, audioFormat.nChannels );
    OutputDebugStringA( sBuf );
 
-   sprintf_s( sBuf, sizeof( sBuf ), "   Samples per Second=%" PRIu32, pFormatInUseEx->Format.nSamplesPerSec );
+   sprintf_s( sBuf, sizeof( sBuf ), "   Samples per Second=%" PRIu32, audioFormat.nSamplesPerSec );
    OutputDebugStringA( sBuf );
 
-   sprintf_s( sBuf, sizeof( sBuf ), "   Bytes per Second=%" PRIu32, pFormatInUseEx->Format.nAvgBytesPerSec );
+   sprintf_s( sBuf, sizeof( sBuf ), "   Bytes per Second=%" PRIu32, audioFormat.nAvgBytesPerSec );
    OutputDebugStringA( sBuf );
 
-   sprintf_s( sBuf, sizeof( sBuf ), "   Block (frame) alignment, in bytes=%" PRIu32, pFormatInUseEx->Format.nBlockAlign );
+   sprintf_s( sBuf, sizeof( sBuf ), "   Block (frame) alignment, in bytes=%" PRIu32, audioFormat.nBlockAlign );
    OutputDebugStringA( sBuf );
 
-   sprintf_s( sBuf, sizeof( sBuf ), "   Bits per sample=%" PRIu32, pFormatInUseEx->Format.wBitsPerSample );
-   OutputDebugStringA( sBuf );
-
-   sprintf_s( sBuf, sizeof( sBuf ), "   Valid bits per sample=%" PRIu32, pFormatInUseEx->Samples.wValidBitsPerSample );
-   OutputDebugStringA( sBuf );
-
-   // TODO:  Add more subformats as I find them
-   sprintf_s( sBuf, sizeof( sBuf ), "   Subformat=%s", ( pFormatInUseEx->SubFormat == KSDATAFORMAT_SUBTYPE_IEEE_FLOAT ) ? "IEEE Float" : "Unknown" );
+   sprintf_s( sBuf, sizeof( sBuf ), "   Bits per sample=%" PRIu32, audioFormat.wBitsPerSample );
    OutputDebugStringA( sBuf );
 
 
