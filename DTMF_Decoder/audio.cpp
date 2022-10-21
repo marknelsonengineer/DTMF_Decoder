@@ -47,6 +47,9 @@ WAVEFORMATEX*   gpFormatInUse = NULL;
 HANDLE          gAudioSamplesReadyEvent = NULL;  // This is externally delcared
 IAudioCaptureClient* gCaptureClient = NULL;
 
+CHAR            sBuf[ 256 ];  // Debug buffer   // TODO: put a guard around this
+WCHAR           wsBuf[ 256 ];  // Debug buffer   // TODO: put a guard around this
+
 
 template <class T> void SafeRelease( T** ppT ) {
    if ( *ppT ) {
@@ -56,28 +59,32 @@ template <class T> void SafeRelease( T** ppT ) {
 }
 
 #define MONITOR_INTERVAL_SECONDS (4)   /* Set to 0 to disable monitoring */
-UINT64 gFramesToMonitor = 0;
+UINT64 gFramesToMonitor = 0;           /// set gMonitor when the current frame is > gStartOfMonitor + gFramesToMonitor
 UINT64 gStartOfMonitor = UINT64_MAX;
-BOOL   gbMonitor = false;     /* Briefly set to 1 to output monitor data */
-
+BOOL   gbMonitor = false;     /// Briefly set to 1 to output monitor data
 
 BYTE monitorCh1Max = 0;
 BYTE monitorCh1Min = 255;
 
-
-// Assume this is 1 channel, 8-bit PCM data
+// TODO: Make this generic (good for a variety of formats)
+// TODO: Bring in the RequestedFormat structure
+// TODO: Make RequestedFormat a global
+// NOTE: For now, this code assumes that pData is a 1 channel, 8-bit PCM data stream
 BOOL processAudioFrame( BYTE* pData, UINT32 frame, UINT64 framePosition ) {
    assert( pData != NULL );
 
    BYTE ch1Sample = *(pData+frame);
 
+   // Optional code I use to characterize the samples by tracking the min and max
+   // levels, peridoically printing them and then resetting them.  This way, I can
+   // get a feel for what silence and various volumes look like in the data.  This
+   // is an easy way to validate that the data I'm getting is real sound collected by
+   // the microphone.
    if ( gFramesToMonitor > 0 ) {
       if ( ch1Sample > monitorCh1Max ) monitorCh1Max = ch1Sample;
       if ( ch1Sample < monitorCh1Min ) monitorCh1Min = ch1Sample;
 
       if ( gbMonitor ) {
-         CHAR sBuf[ 128 ];
-
          sprintf_s( sBuf, sizeof( sBuf ), "Channel 1:  Min: %" PRIu8 "   Max: %" PRIu8, monitorCh1Min, monitorCh1Max );
          OutputDebugStringA( sBuf );
 
@@ -146,8 +153,6 @@ BOOL captureAudio() {
 
          if ( gbMonitor ) {  // Monitor data on this pass
             OutputDebugStringA( __FUNCTION__ ":  Monitoring loop" );
-            CHAR sBuf[ 128 ];
-
             sprintf_s( sBuf, sizeof( sBuf ), "Frames available=%" PRIu32 "    frame position=%" PRIu64, framesAvailable, framePosition );
             OutputDebugStringA( sBuf );
 
@@ -259,8 +264,8 @@ BOOL initAudioDevice( HWND hWnd ) {
       return FALSE;
    }
 
-   OutputDebugStringW( __FUNCTIONW__ L":  Device ID follows" );
-   OutputDebugStringW( glpwstrDeviceId );
+   swprintf_s( wsBuf, sizeof( wsBuf ), __FUNCTIONW__ L":  Device ID=%s", glpwstrDeviceId );
+   OutputDebugStringW( wsBuf );
 
    /// Get the State from IMMDevice
    hr = gDevice->GetState( &glpdwState );
@@ -291,8 +296,8 @@ BOOL initAudioDevice( HWND hWnd ) {
       OutputDebugStringA( __FUNCTION__ ":  Failed to retrieve the friendly name of the audio adapter for the device.  Continuing." );
       DeviceInterfaceFriendlyName.pcVal = NULL;
    } else {
-      OutputDebugStringA( __FUNCTION__ ":  The friendly name of the audio adapter for the device follows" );
-      OutputDebugStringW( DeviceInterfaceFriendlyName.pwszVal );
+      swprintf_s( wsBuf, sizeof( wsBuf ), __FUNCTIONW__ L":  Device audio adapter friendly name=%s", DeviceInterfaceFriendlyName.pwszVal );
+      OutputDebugStringW( wsBuf );
    }
 
    hr = glpPropertyStore->GetValue( PKEY_Device_DeviceDesc, &DeviceDescription );
@@ -300,8 +305,8 @@ BOOL initAudioDevice( HWND hWnd ) {
       OutputDebugStringA( __FUNCTION__ ":  Failed to retrieve the device's description.  Continuing." );
       DeviceDescription.pcVal = NULL;
    } else {
-      OutputDebugStringA( __FUNCTION__ ":  The device's description follows" );
-      OutputDebugStringW( DeviceDescription.pwszVal );
+      swprintf_s( wsBuf, sizeof( wsBuf ), __FUNCTIONW__ L":  Device description=%s", DeviceDescription.pwszVal );
+      OutputDebugStringW( wsBuf );
    }
 
    hr = glpPropertyStore->GetValue( PKEY_Device_FriendlyName, &DeviceFriendlyName );
@@ -309,8 +314,8 @@ BOOL initAudioDevice( HWND hWnd ) {
       OutputDebugStringA( __FUNCTION__ ":  Failed to retrieve the friendly name of the device.  Continuing." );
       DeviceFriendlyName.pcVal = NULL;
    } else {
-      OutputDebugStringA( __FUNCTION__ ":  The friendly name of the device follows" );
-      OutputDebugStringW( DeviceFriendlyName.pwszVal );
+      swprintf_s( wsBuf, sizeof( wsBuf ), __FUNCTIONW__ L":  Device friendly name=%s", DeviceFriendlyName.pwszVal );
+      OutputDebugStringW( wsBuf );
    }
 
    /// Use Activate on IMMDevice to create an IAudioClient
@@ -369,7 +374,6 @@ BOOL initAudioDevice( HWND hWnd ) {
 
    OutputDebugStringA( __FUNCTION__ ":  In-use audio client format" );
 
-   char sBuf[ 128 ];
    sprintf_s( sBuf, sizeof( sBuf ), "   Buffer size=%" PRIu32 " frames", guBufferSize);
    OutputDebugStringA( sBuf );
 
@@ -389,6 +393,8 @@ BOOL initAudioDevice( HWND hWnd ) {
       return FALSE;
    }
 
+   // TODO:  Fix this.  All of this is a lie (it's the mixing parameters, not the in-use
+   //        parameters.  
    sprintf_s( sBuf, sizeof( sBuf ), "   Channels=%" PRIu16, pFormatInUseEx->Format.nChannels );
    OutputDebugStringA( sBuf );
 
