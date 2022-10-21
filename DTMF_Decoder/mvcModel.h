@@ -38,7 +38,7 @@ extern BYTE pcmQueue[ SIZE_OF_QUEUE ];
 
 extern BOOL mvcInitModel();
 
-extern void pcmEnqueue( BYTE* data, UINT32 size );
+extern void pcmEnqueue( BYTE data );
 
 
 // TODO: Consider having the thread have an indicator light that its running

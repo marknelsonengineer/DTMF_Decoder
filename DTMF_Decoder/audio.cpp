@@ -66,14 +66,15 @@ BOOL   gbMonitor = false;     /// Briefly set to 1 to output monitor data
 BYTE monitorCh1Max = 0;
 BYTE monitorCh1Min = 255;
 
-// TODO: Make this generic (good for a variety of formats -- there's a good example in the git history)
+// TODO: Make this generic (good for a variety of formats -- there's a good 
+//       example in the git history just before commit 563da34a)
 // NOTE: For now, this code assumes that pData is a 1 channel, 8-bit PCM data stream
 BOOL processAudioFrame( BYTE* pData, UINT32 frame, UINT64 framePosition ) {
    assert( pData != NULL );
 
    BYTE ch1Sample = *(pData + (frame * audioFormat.nBlockAlign) );
 
-   // pcmEnqueue( pData, framesAvailable );
+   pcmEnqueue( ch1Sample );
 
    // Optional code I use to characterize the samples by tracking the min and max
    // levels, peridoically printing them and then resetting them.  This way, I can
@@ -120,6 +121,9 @@ BOOL captureAudio() {
          for ( UINT32 i = 0 ; i < framesAvailable ; i++ ) {
             processAudioFrame( pData, i, framePosition+i );
          }
+         
+         goertzel_magnitude( SIZE_OF_QUEUE, 1000, 8000, pcmQueue );
+         // mvcViewRefreshWindow();
       } 
 
       if ( flags & AUDCLNT_BUFFERFLAGS_SILENT ) {

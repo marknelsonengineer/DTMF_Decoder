@@ -14,6 +14,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include "framework.h"    // Standard system include files
+#include <assert.h>       // For assert()
+
 #include "mvcModel.h"
 
 dtmfTones_t dtmfTones[ 8 ] = {
@@ -39,28 +41,9 @@ BOOL mvcInitModel() {
 
 static INT64 queueHead = 0;  // Points to the next available byte
 
-void pcmEnqueue( BYTE* data, UINT32 size ) {
-   if ( size == 0 ) {
-      return;   /// Do nothing for no new data
-   }
+void pcmEnqueue( BYTE data ) {
+   assert( queueHead < sizeof( pcmQueue ) );
+   pcmQueue[ queueHead++ ] ;
 
-   if ( size >= SIZE_OF_QUEUE ) {  // If we have a very large wad of PCM data, take the last SIZE_OF_QUEUE bytes
-      memcpy( pcmQueue, data + size - SIZE_OF_QUEUE, SIZE_OF_QUEUE );
-      queueHead = 0;
-      return;
-   }
-
-   if ( queueHead + size <= SIZE_OF_QUEUE ) {
-      memcpy( pcmQueue + queueHead, data, size );
-      queueHead += size;
-      if ( queueHead == SIZE_OF_QUEUE ) {  // Special case
-         queueHead = 0;  
-      }
-      return;
-   }
-
-   INT64 wraparound = (( queueHead + size ) % SIZE_OF_QUEUE ) - 1 ;
-   memcpy( pcmQueue + queueHead, data, size - wraparound );
-   memcpy( pcmQueue, data + size - wraparound, wraparound );
-   queueHead = wraparound + 1;
+   queueHead %= sizeof( pcmQueue );  // There are more clever/efficient ways to do this, but this is very clear
 }
