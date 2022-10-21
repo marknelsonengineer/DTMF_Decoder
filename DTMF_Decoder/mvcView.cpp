@@ -259,6 +259,8 @@ BOOL mvcViewCleanupResources() {
 }
 
 
+// TODO: Make this based on changes to the model... get rid of the flicker. 
+//       Think Microsoft Windows
 BOOL mvcViewPaintWindow( HWND hWnd ) {
    gpRenderTarget->BeginDraw() ;
 
