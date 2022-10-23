@@ -28,6 +28,8 @@
 #include <float.h>    // For FLT_MIN and FLT_MAX
 
 #pragma comment(lib, "avrt")    // Link the MMCSS library
+#pragma comment(lib, "rpcrt4.lib")  // TEMP TEMP TEMP
+
 
 
 IMMDevice*      gDevice = NULL;
@@ -46,6 +48,8 @@ UINT32          guBufferSize = 0;             // Dev Machine = 182
 HANDLE          hCaptureThread = NULL;
 HANDLE          gAudioSamplesReadyEvent = NULL;  // This is externally delcared
 IAudioCaptureClient* gCaptureClient = NULL;
+IAudioClockAdjustment* gAudioClockAdjuster = NULL;
+
 
 CHAR            sBuf[ 256 ];  // Debug buffer   // TODO: put a guard around this
 WCHAR           wsBuf[ 256 ];  // Debug buffer   // TODO: put a guard around this
@@ -361,6 +365,7 @@ BOOL initAudioDevice( HWND hWnd ) {
    //  Shared mode streams using event-driven buffering must set both periodicity and bufferDuration to 0.
    hr = glpAudioClient->Initialize( AUDCLNT_SHAREMODE_SHARED, AUDCLNT_STREAMFLAGS_EVENTCALLBACK
                                                             | AUDCLNT_STREAMFLAGS_AUTOCONVERTPCM
+                                                            | AUDCLNT_STREAMFLAGS_RATEADJUST
                                                                                                 , 0, 0, &audioFormat, NULL );
    if ( hr != S_OK ) {
       OutputDebugStringA( __FUNCTION__ ":  Failed to initialize the audio client in shared mode" );
@@ -435,6 +440,18 @@ BOOL initAudioDevice( HWND hWnd ) {
       OutputDebugStringA( __FUNCTION__ ":  Failed to get capture client" );
       return FALSE;
    }
+
+   /*
+   /// Get the Rate Adjuster
+   hr = glpAudioClient->GetService( __uuidof( *gAudioClockAdjuster ), (void**) &gAudioClockAdjuster );
+   if ( hr != S_OK ) {
+      OutputDebugStringA( __FUNCTION__ ":  Failed to get rate adjuster" );
+      RPC_CSTR szUuid = NULL;  // TEMP
+      ::UuidToStringA( &__uuidof( *gAudioClockAdjuster ), &szUuid );  //TEMP
+      OutputDebugStringA( (LPCSTR) szUuid ); //TEMP
+      return FALSE;  //		hr	0x88890003= AUDCLNT_E_WRONG_ENDPOINT_TYPE
+   }
+   */
 
    /// Start the thread
    hCaptureThread = CreateThread( NULL, 0, captureThread, NULL, 0, NULL );
