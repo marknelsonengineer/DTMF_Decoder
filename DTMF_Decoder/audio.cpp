@@ -294,7 +294,7 @@ DWORD captureThread( LPVOID Context ) {
 /// Print the WAVEFORMATEX or WAVEFORMATEXTENSIBLE structure to OutputDebug
 BOOL printAudioFormat( WAVEFORMATEX* pFmt ) {
    if ( pFmt->wFormatTag == WAVE_FORMAT_EXTENSIBLE ) {
-      OutputDebugStringA( __FUNCTION__ ":  Using WAVE_FORMAT_EXTENSIBLE format" );
+      OutputDebugStringA( "   " __FUNCTION__ ":  Using WAVE_FORMAT_EXTENSIBLE format");
       WAVEFORMATEXTENSIBLE* pFmtEx = (WAVEFORMATEXTENSIBLE*) pFmt;
 
       sprintf_s( sBuf, sizeof( sBuf ), "   Channels=%" PRIu16, pFmtEx->Format.nChannels );
@@ -320,7 +320,7 @@ BOOL printAudioFormat( WAVEFORMATEX* pFmt ) {
          OutputDebugStringA( "   Extended wave format is not PCM" );
       }
    } else {
-      OutputDebugStringA( __FUNCTION__ ":  Using WAVE_FORMAT format" );
+      OutputDebugStringA( "   " __FUNCTION__ ":  Using WAVE_FORMAT format");
 
       if ( pFmt->wFormatTag == WAVE_FORMAT_PCM ) {
          OutputDebugStringA( "   Wave format is PCM" );
@@ -456,7 +456,7 @@ BOOL initAudioDevice( HWND hWnd ) {
 
    hr = glpAudioClient->IsFormatSupported( gShareMode, gpMixFormat, &audioFormatUsed );
    if ( hr == S_OK ) {
-      OutputDebugStringA( "   " __FUNCTION__ ":  The requested format is supported");
+      OutputDebugStringA( __FUNCTION__ ":  The requested format is supported");
    } else if ( hr == AUDCLNT_E_UNSUPPORTED_FORMAT ) {
       OutputDebugStringA( __FUNCTION__ ":  The requested format is is not supported" );
       return FALSE;
@@ -517,10 +517,10 @@ BOOL initAudioDevice( HWND hWnd ) {
       return FALSE;
    }
 
-   sprintf_s( sBuf, sizeof( sBuf ), "   Default device period=%lli ms", gDefaultDevicePeriod/10000 );
+   sprintf_s( sBuf, sizeof( sBuf ), "%s:  Default device period=%lli ms", __FUNCTION__, gDefaultDevicePeriod/10000 );
    OutputDebugStringA( sBuf );
 
-   sprintf_s( sBuf, sizeof( sBuf ), "   Minimum device period=%lli ms", gMinimumDevicePeriod/10000 );
+   sprintf_s( sBuf, sizeof( sBuf ), "%s:  Minimum device period=%lli ms", __FUNCTION__, gMinimumDevicePeriod/10000 );
    OutputDebugStringA( sBuf );
 
 
@@ -530,6 +530,9 @@ BOOL initAudioDevice( HWND hWnd ) {
       OutputDebugStringA( __FUNCTION__ ":  Failed to allocate PCM queue" );
       return FALSE;
    }
+
+   sprintf_s( sBuf, sizeof( sBuf ), "%s:  Queue size=%zu", __FUNCTION__, queueSize );
+   OutputDebugStringA( sBuf );
 
    /// Initialize the Goertzel module
    if ( goertxzel_init( queueSize, gpMixFormat->nSamplesPerSec ) != TRUE ) {
