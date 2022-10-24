@@ -412,7 +412,7 @@ BOOL initAudioDevice( HWND hWnd ) {
 
    hr = glpAudioClient->IsFormatSupported( gShareMode, mixFormat, &audioFormatUsed );
    if ( hr == S_OK ) {
-      OutputDebugStringA( __FUNCTION__ ":  The requested format is supported" );
+      OutputDebugStringA( "   " __FUNCTION__ ":  The requested format is supported");
    } else if ( hr == AUDCLNT_E_UNSUPPORTED_FORMAT ) {
       OutputDebugStringA( __FUNCTION__ ":  The requested format is is not supported" );
       return FALSE;
@@ -429,8 +429,7 @@ BOOL initAudioDevice( HWND hWnd ) {
    //  Shared mode streams using event-driven buffering must set both periodicity and bufferDuration to 0.
    hr = glpAudioClient->Initialize( gShareMode, AUDCLNT_STREAMFLAGS_EVENTCALLBACK
                                               | AUDCLNT_STREAMFLAGS_AUTOCONVERTPCM
-                                              | AUDCLNT_STREAMFLAGS_RATEADJUST
-                                                                                                , 0, 0, mixFormat, NULL );
+                                                                                  , 0, 0, mixFormat, NULL );
    if ( hr != S_OK ) {
       OutputDebugStringA( __FUNCTION__ ":  Failed to initialize the audio client" );
       return FALSE;
@@ -478,18 +477,6 @@ BOOL initAudioDevice( HWND hWnd ) {
       OutputDebugStringA( __FUNCTION__ ":  Failed to get capture client" );
       return FALSE;
    }
-
-   /*
-   /// Get the Rate Adjuster
-   hr = glpAudioClient->GetService( __uuidof( *gAudioClockAdjuster ), (void**) &gAudioClockAdjuster );
-   if ( hr != S_OK ) {
-      OutputDebugStringA( __FUNCTION__ ":  Failed to get rate adjuster" );
-      RPC_CSTR szUuid = NULL;  // TEMP
-      ::UuidToStringA( &__uuidof( *gAudioClockAdjuster ), &szUuid );  //TEMP
-      OutputDebugStringA( (LPCSTR) szUuid ); //TEMP
-      return FALSE;  //		hr	0x88890003= AUDCLNT_E_WRONG_ENDPOINT_TYPE
-   }
-   */
 
    /// Start the thread
    hCaptureThread = CreateThread( NULL, 0, captureThread, NULL, 0, NULL );
