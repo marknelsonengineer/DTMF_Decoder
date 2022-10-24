@@ -47,7 +47,7 @@ bool isRunning = false;
 
 
 static size_t queueSize = 0;
-static BYTE* pcmQueue = NULL;
+BYTE* pcmQueue = NULL;
 
 BOOL pcmSetQueueSize( size_t size ) {
    //assert( pcmQueue == NULL );
@@ -60,6 +60,7 @@ BOOL pcmSetQueueSize( size_t size ) {
    }
 
    queueSize = size;
+   queueHead = 0;
 
    ZeroMemory( pcmQueue, queueSize );
 
@@ -83,40 +84,4 @@ BOOL mvcInitModel() {
    return TRUE;
 }
 
-static size_t queueHead = 0;  // Points to the next available byte for writing
-
-void pcmEnqueue( BYTE data ) {
-   _ASSERTE( pcmQueue != NULL );   // TODO: Convert all assert to _ASSERTE
-   assert( queueHead < queueSize );
-
-   pcmQueue[ queueHead++ ] = data ;
-
-   queueHead %= queueSize;  // TODO:  There are more clever/efficient ways to do this, but this is very clear
-
-   _ASSERTE( _CrtCheckMemory() );
-}
-
-
-static size_t queueRead = queueHead;  // Points to the next available byte for reading
-
-void pcmResetReadQueue() {
-   queueRead = queueHead;
-}
-
-size_t pcmGetQueueSize() {
-   return queueSize;
-}
-
-
-BYTE pcmReadQueue() {
-   assert( pcmQueue != NULL );
-   assert( queueHead < queueSize );
-
-   // _ASSERTE( _CrtCheckMemory() );    // This slows down the realtime audio processing and breaks the program
-
-   BYTE returnValue = pcmQueue[ queueRead++ ];
-
-   queueRead %= queueSize;  // TODO:  There are more clever/efficient ways to do this, but this is very clear
-
-   return returnValue;
-}
+size_t queueHead = 0;  // Points to the next available byte for writing

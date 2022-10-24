@@ -18,20 +18,21 @@
 #define _USE_MATH_DEFINES // for C++  
 #include <math.h>
 #include "audio.h"  // for getSamplesPerSecond()
+#include "goertzel.h" 
 
 
-int numSamples = 0;
+// int numSamples = 0;
 int SAMPLING_RATE = 0;
 float   floatnumSamples = 0;
 float   scalingFactor = 0;
 
-BOOL goertzel_init( int numSamplesIn, int SAMPLING_RATE_IN ) {
-   numSamples = numSamplesIn;
+BOOL goertzel_init( int SAMPLING_RATE_IN ) {
+   // numSamples = numSamplesIn;
    SAMPLING_RATE = SAMPLING_RATE_IN;
 
-   floatnumSamples = (float) numSamples;
+   floatnumSamples = (float) queueSize;
 
-   scalingFactor = numSamples / 2.0;
+   scalingFactor = queueSize / 2.0;
 
    int     k;
 
@@ -54,18 +55,20 @@ BOOL goertzel_init( int numSamplesIn, int SAMPLING_RATE_IN ) {
 }
 
 
+
 float goertzel_magnitude( UINT8 index ) {
    float real, imag;
 
    float q1 = 0;
    float q2 = 0;
 
-   pcmResetReadQueue();
+   size_t queueRead = queueHead;  // Points to the next available byte for reading
 
-   for ( int i = 0; i < numSamples; i++ ) {
-      float q0 = dtmfTones[ index ].coeff * q1 - q2 + ( (float) pcmReadQueue() );
+   for ( int i = 0; i < queueSize; i++ ) {
+      float q0 = dtmfTones[ index ].coeff * q1 - q2 + ( (float) pcmQueue[ queueRead++ ] );
       q2 = q1;
       q1 = q0;
+      queueRead %= queueSize;  // TODO:  There are more clever/efficient ways to do this, but this is very clear
    }
 
    // calculate the real and imaginary results
@@ -86,7 +89,7 @@ float goertzel_magnitude( UINT8 index ) {
 
 
 BOOL compute_dtmf_tones_with_goertzel() {
-   float threshold = 5;
+   float threshold = THRESHOLD;
 
    for ( UINT8 i = 0 ; i < NUMBER_OF_DTMF_TONES ; i++ ) {
       dtmfTones[i].goertzelMagnitude = goertzel_magnitude( i );

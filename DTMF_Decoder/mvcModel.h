@@ -15,7 +15,8 @@
 
 #pragma once
 
-#include <windows.h>
+#include <windows.h>  // For WCHAR, BYTE, etc.
+#include "audio.h"    // For queueSize
 
 #define NUMBER_OF_DTMF_TONES (8)
 
@@ -49,12 +50,27 @@ extern HANDLE gAudioSamplesReadyEvent;  /// This event is signaled when the audi
 
 extern BOOL mvcInitModel();   /// Initialize the model
 
+extern BYTE* pcmQueue;  // We need to make this visible so we can the queue from Goertzel
+extern size_t queueHead;  // We need to make this visible so we can read the queue from Goertzel
 extern BOOL pcmSetQueueSize( size_t size );  /// Set the size of the queue
-extern size_t pcmGetQueueSize();       /// Get the size of the queue
-extern void pcmEnqueue( BYTE data );   /// Enqueue a byte of PCM data to `pcmQueue`
-extern BYTE pcmReadQueue();            /// Read from the current read pointer
-extern void pcmResetReadQueue();       /// Reset the read pointer to the head of the queue
+
+/// Enqueue a byte of PCM data to `pcmQueue`
+inline void pcmEnqueue( BYTE data ) {
+   //_ASSERTE( pcmQueue != NULL );   // TODO: Convert all assert to _ASSERTE
+   //assert( queueHead < queueSize );
+
+   pcmQueue[ queueHead++ ] = data ;
+
+   queueHead %= queueSize;  // TODO:  There are more clever/efficient ways to do this, but this is very clear
+
+   // _ASSERTE( _CrtCheckMemory() );
+}
+
 extern void pcmReleaseQueue();         /// Release the memory allocated for the queue
+
+/// Read from the current read pointer
+
+
 
 
 // TODO: Consider having the thread have an indicator light that its running

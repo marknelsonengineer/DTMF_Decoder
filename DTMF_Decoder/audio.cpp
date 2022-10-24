@@ -51,7 +51,7 @@ HANDLE          hCaptureThread = NULL;
 HANDLE          gAudioSamplesReadyEvent = NULL;  // This is externally delcared
 IAudioCaptureClient* gCaptureClient = NULL;
 // IAudioClockAdjustment* gAudioClockAdjuster = NULL;
-static size_t queueSize = 0;  /// Size in bytes of DTMF DFT queue = samplesPerSecond / 1000 * SIZE_OF_QUEUE_IN_MS
+size_t queueSize = 0;  /// Size in bytes of DTMF DFT queue = samplesPerSecond / 1000 * SIZE_OF_QUEUE_IN_MS
 
 CHAR            sBuf[ 256 ];  // Debug buffer   // TODO: put a guard around this
 WCHAR           wsBuf[ 256 ];  // Debug buffer   // TODO: put a guard around this
@@ -535,7 +535,7 @@ BOOL initAudioDevice( HWND hWnd ) {
    OutputDebugStringA( sBuf );
 
    /// Initialize the Goertzel module
-   if ( goertzel_init( queueSize, gpMixFormat->nSamplesPerSec ) != TRUE ) {
+   if ( goertzel_init( gpMixFormat->nSamplesPerSec ) != TRUE ) {
       OutputDebugStringA( __FUNCTION__ ":  Failed to initialioze Goertzel Function" );
       return FALSE;
    }

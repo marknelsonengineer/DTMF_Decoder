@@ -23,3 +23,4 @@ extern DWORD getSamplesPerSecond();   // TODO: This may be unused.  Get rid of i
  
 #define PCM_8_BIT_SILENCE 127     /* Silence is 127 */
 
+extern size_t queueSize;   

@@ -16,7 +16,9 @@
 #include <stdint.h>
 #include <windows.h>
 
-extern BOOL goertzel_init( int numSamplesIn, int SAMPLING_RATE_IN );
+#define THRESHOLD (3)
+
+extern BOOL goertzel_init( int SAMPLING_RATE_IN );
 
 extern float goertzel_magnitude( UINT8 index ) ;
 
