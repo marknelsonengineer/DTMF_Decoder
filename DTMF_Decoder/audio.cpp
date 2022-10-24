@@ -36,14 +36,16 @@ IMMDevice*      gDevice = NULL;
 LPWSTR          glpwstrDeviceId = NULL;
 DWORD           glpdwState = 0;
 IPropertyStore* glpPropertyStore = NULL;
+AUDCLNT_SHAREMODE gShareMode = AUDCLNT_SHAREMODE_SHARED;
 PROPVARIANT     DeviceInterfaceFriendlyName;  // Container for the friendly name of the audio adapter for the device
 PROPVARIANT     DeviceDescription;            // Container for the device's description
 PROPVARIANT     DeviceFriendlyName;           // Container for friendly name of the device
-WAVEFORMATEX    audioFormat;
+WAVEFORMATEX    audioFormatRequested;
+WAVEFORMATEX*   mixFormat = NULL;
+WAVEFORMATEX*   audioFormatUsed = NULL;
 IAudioClient*   glpAudioClient = NULL;
 REFERENCE_TIME  gDefaultDevicePeriod = -1;    // Expressed in 100ns units (dev machine = 101,587 = 10.1587ms)
 REFERENCE_TIME  gMinimumDevicePeriod = -1;    // Expressed in 100ns units (dev machine = 29,025  = 2.9025ms
-BOOL            gExclusiveAudioMode = false;
 UINT32          guBufferSize = 0;             // Dev Machine = 182
 HANDLE          hCaptureThread = NULL;
 HANDLE          gAudioSamplesReadyEvent = NULL;  // This is externally delcared
@@ -76,7 +78,7 @@ BYTE monitorCh1Min = 255;
 BOOL processAudioFrame( BYTE* pData, UINT32 frame, UINT64 framePosition ) {
    assert( pData != NULL );
 
-   BYTE ch1Sample = *(pData + (frame * audioFormat.nBlockAlign) );
+   BYTE ch1Sample = *(pData + (frame * audioFormatRequested.nBlockAlign) );
 
    pcmEnqueue( ch1Sample );
 
@@ -210,7 +212,7 @@ DWORD captureThread( LPVOID Context ) {
       OutputDebugStringA( __FUNCTION__ ":  Failed to set MMCSS on thread.  Continuing." );
    }
 
-   gFramesToMonitor = MONITOR_INTERVAL_SECONDS * audioFormat.nSamplesPerSec;
+   gFramesToMonitor = MONITOR_INTERVAL_SECONDS * audioFormatRequested.nSamplesPerSec;
 
    /// Audio capture loop
    /// isRunning gets set to false by WM_CLOSE
@@ -245,11 +247,75 @@ DWORD captureThread( LPVOID Context ) {
 }
 
 
-BOOL initAudioDevice( HWND hWnd ) {
-   /// Get IMMDeviceEnumerator from COM (CoCreateInstance)
+/// Print the WAVEFORMATEX or WAVEFORMATEXTENSIBLE structure to OutputDebug
+BOOL printAudioFormat( WAVEFORMATEX* pFmt ) {
+   if ( pFmt->wFormatTag == WAVE_FORMAT_EXTENSIBLE ) {
+      OutputDebugStringA( __FUNCTION__ ":  Using WAVE_FORMAT_EXTENSIBLE format" );
+      WAVEFORMATEXTENSIBLE* pFmtEx = (WAVEFORMATEXTENSIBLE*) pFmt;
 
+      sprintf_s( sBuf, sizeof( sBuf ), "   Channels=%" PRIu16, pFmtEx->Format.nChannels );
+      OutputDebugStringA( sBuf );
+
+      sprintf_s( sBuf, sizeof( sBuf ), "   Samples per Second=%" PRIu32, pFmtEx->Format.nSamplesPerSec );
+      OutputDebugStringA( sBuf );
+
+      sprintf_s( sBuf, sizeof( sBuf ), "   Bytes per Second=%" PRIu32, pFmtEx->Format.nAvgBytesPerSec );
+      OutputDebugStringA( sBuf );
+
+      sprintf_s( sBuf, sizeof( sBuf ), "   Block (frame) alignment, in bytes=%" PRIu32, pFmtEx->Format.nBlockAlign );
+      OutputDebugStringA( sBuf );
+
+      sprintf_s( sBuf, sizeof( sBuf ), "   Bits per sample=%" PRIu32, pFmtEx->Format.wBitsPerSample );
+      OutputDebugStringA( sBuf );
+
+      if ( pFmtEx->SubFormat == KSDATAFORMAT_SUBTYPE_PCM ) {
+         OutputDebugStringA( "   Wave format is PCM" );
+      } else if ( pFmtEx->SubFormat == KSDATAFORMAT_SUBTYPE_IEEE_FLOAT ) {
+         OutputDebugStringA( "   Wave format is IEEE Float" );
+      } else {
+         OutputDebugStringA( "   Wave format is not PCM" );
+      }
+   } else {
+      OutputDebugStringA( __FUNCTION__ ":  Using WAVE_FORMAT format" );
+
+      if ( pFmt->wFormatTag == WAVE_FORMAT_PCM ) {
+         OutputDebugStringA( "   Wave format is PCM" );
+      } else if ( pFmt->wFormatTag == WAVE_FORMAT_IEEE_FLOAT ) {
+         OutputDebugStringA( "   Wave format is IEEE Float" );
+      } else {
+         OutputDebugStringA( "   Wave format is not PCM" );
+      }
+
+      sprintf_s( sBuf, sizeof( sBuf ), "   Channels=%" PRIu16, pFmt->nChannels );
+      OutputDebugStringA( sBuf );
+
+      sprintf_s( sBuf, sizeof( sBuf ), "   Samples per Second=%" PRIu32, pFmt->nSamplesPerSec );
+      OutputDebugStringA( sBuf );
+
+      sprintf_s( sBuf, sizeof( sBuf ), "   Bytes per Second=%" PRIu32, pFmt->nAvgBytesPerSec );
+      OutputDebugStringA( sBuf );
+
+      sprintf_s( sBuf, sizeof( sBuf ), "   Block (frame) alignment, in bytes=%" PRIu32, pFmt->nBlockAlign );
+      OutputDebugStringA( sBuf );
+
+      sprintf_s( sBuf, sizeof( sBuf ), "   Bits per sample=%" PRIu32, pFmt->wBitsPerSample );
+      OutputDebugStringA( sBuf );
+   }
+
+   return TRUE;
+}
+
+
+BOOL initAudioDevice( HWND hWnd ) {
+   HRESULT hr;  /// Result handle used by just about all Windows API calls
+
+   if ( gShareMode == AUDCLNT_SHAREMODE_EXCLUSIVE ) {
+      OutputDebugStringA( __FUNCTION__ ":  Exclusive mode not supported right now" );
+      return FALSE;
+   }
+
+   /// Get IMMDeviceEnumerator from COM (CoCreateInstance)
    IMMDeviceEnumerator* deviceEnumerator = NULL;
-   HRESULT hr;
 
    hr = CoCreateInstance( __uuidof( MMDeviceEnumerator ), NULL, CLSCTX_INPROC_SERVER, IID_PPV_ARGS( &deviceEnumerator ) );
    if ( hr != S_OK ) {
@@ -334,78 +400,50 @@ BOOL initAudioDevice( HWND hWnd ) {
       return FALSE;
    }
 
-   /// The audio format we want to process
-   audioFormat.wFormatTag = WAVE_FORMAT_PCM;
-   audioFormat.nChannels = 1;
-   audioFormat.nSamplesPerSec = 8000;
-   audioFormat.nAvgBytesPerSec = 8000;
-   audioFormat.nBlockAlign = 1;
-   audioFormat.wBitsPerSample = 8;
-   audioFormat.cbSize = 0;
-
-   hr = glpAudioClient->IsFormatSupported( AUDCLNT_SHAREMODE_EXCLUSIVE, &audioFormat, NULL );
-   if ( hr == S_OK ) {
-      OutputDebugStringA( __FUNCTION__ ":  The requested format is supported in exclusive mode" );
-      gExclusiveAudioMode = true;
-   } else if ( hr == AUDCLNT_E_UNSUPPORTED_FORMAT ) {
-      OutputDebugStringA( __FUNCTION__ ":  The requested format is supported in shared mode" );
-      gExclusiveAudioMode = false;
-   } else {
-      OutputDebugStringA( __FUNCTION__ ":  Failed to check the requested format" );
+   /// Get the default audio format that the audio driver wants to use
+   hr = glpAudioClient->GetMixFormat( &mixFormat );
+   if ( hr != S_OK || mixFormat == NULL ) {
+      OutputDebugStringA( __FUNCTION__ ":  Failed to retrieve mix format" );
       return FALSE;
    }
 
+   OutputDebugStringA( __FUNCTION__ ":  The mix format follows" );
+   printAudioFormat( mixFormat );
 
-   if ( gExclusiveAudioMode ) {
-      OutputDebugStringA( __FUNCTION__ ":  Exclusive mode not supported right now... using shared mode until theres a problem" );
-      gExclusiveAudioMode = false;
+   hr = glpAudioClient->IsFormatSupported( gShareMode, mixFormat, &audioFormatUsed );
+   if ( hr == S_OK ) {
+      OutputDebugStringA( __FUNCTION__ ":  The requested format is supported" );
+   } else if ( hr == AUDCLNT_E_UNSUPPORTED_FORMAT ) {
+      OutputDebugStringA( __FUNCTION__ ":  The requested format is is not supported" );
+      return FALSE;
+   } else if( hr == S_FALSE && audioFormatUsed != NULL) {
+      OutputDebugStringA( __FUNCTION__ ":  The requested format is not available, but this format is..." );
+      printAudioFormat( audioFormatUsed );
+      return FALSE;
+   } else {
+      OutputDebugStringA( __FUNCTION__ ":  Failed to validate the requested format" );
+      return FALSE;
    }
 
    /// Initialize shared mode audio client
    //  Shared mode streams using event-driven buffering must set both periodicity and bufferDuration to 0.
-   hr = glpAudioClient->Initialize( AUDCLNT_SHAREMODE_SHARED, AUDCLNT_STREAMFLAGS_EVENTCALLBACK
-                                                            | AUDCLNT_STREAMFLAGS_AUTOCONVERTPCM
-                                                            | AUDCLNT_STREAMFLAGS_RATEADJUST
-                                                                                                , 0, 0, &audioFormat, NULL );
+   hr = glpAudioClient->Initialize( gShareMode, AUDCLNT_STREAMFLAGS_EVENTCALLBACK
+                                              | AUDCLNT_STREAMFLAGS_AUTOCONVERTPCM
+                                              | AUDCLNT_STREAMFLAGS_RATEADJUST
+                                                                                                , 0, 0, mixFormat, NULL );
    if ( hr != S_OK ) {
-      OutputDebugStringA( __FUNCTION__ ":  Failed to initialize the audio client in shared mode" );
+      OutputDebugStringA( __FUNCTION__ ":  Failed to initialize the audio client" );
       return FALSE;
    }
    // TODO: Look at the error code and print out higher-fidelity error message
 
-   OutputDebugStringA( __FUNCTION__ ":  The audio client has been initialized in shared mode" );
+   // OutputDebugStringA( __FUNCTION__ ":  The audio client has been initialized" );
 
    hr = glpAudioClient->GetBufferSize( &guBufferSize );
    if ( hr != S_OK ) {
       OutputDebugStringA( __FUNCTION__ ":  Failed to get buffer size" );
       return FALSE;
    }
-
-   OutputDebugStringA( __FUNCTION__ ":  In-use audio client format" );
-
-   sprintf_s( sBuf, sizeof( sBuf ), "   Buffer size=%" PRIu32 " frames", guBufferSize);
-   OutputDebugStringA( sBuf );
-
-   if ( audioFormat.wFormatTag != WAVE_FORMAT_PCM ) {
-      OutputDebugStringA( __FUNCTION__ ":  Wave format not PCM" );
-      return FALSE;
-   }
-
-   sprintf_s( sBuf, sizeof( sBuf ), "   Channels=%" PRIu16, audioFormat.nChannels );
-   OutputDebugStringA( sBuf );
-
-   sprintf_s( sBuf, sizeof( sBuf ), "   Samples per Second=%" PRIu32, audioFormat.nSamplesPerSec );
-   OutputDebugStringA( sBuf );
-
-   sprintf_s( sBuf, sizeof( sBuf ), "   Bytes per Second=%" PRIu32, audioFormat.nAvgBytesPerSec );
-   OutputDebugStringA( sBuf );
-
-   sprintf_s( sBuf, sizeof( sBuf ), "   Block (frame) alignment, in bytes=%" PRIu32, audioFormat.nBlockAlign );
-   OutputDebugStringA( sBuf );
-
-   sprintf_s( sBuf, sizeof( sBuf ), "   Bits per sample=%" PRIu32, audioFormat.wBitsPerSample );
-   OutputDebugStringA( sBuf );
-
 
    /// Get the device period
    hr = glpAudioClient->GetDevicePeriod( &gDefaultDevicePeriod, &gMinimumDevicePeriod );
@@ -467,6 +505,8 @@ BOOL initAudioDevice( HWND hWnd ) {
       return FALSE;
    }
 
+   OutputDebugStringA( __FUNCTION__ ":  The audio capture interface has been initialized" );
+
    /// The thread of execution goes back to wWinMain, which starts the main message loop
    return TRUE;
 }
@@ -513,6 +553,16 @@ BOOL cleanupAudioDevice() {
    PropVariantClear( &DeviceInterfaceFriendlyName );
 
    SafeRelease( &glpPropertyStore );
+
+   if ( mixFormat != NULL ) {
+      CoTaskMemFree( mixFormat );
+      mixFormat = NULL;
+   }
+
+   if ( audioFormatUsed != NULL ) {
+      CoTaskMemFree( audioFormatUsed );
+      audioFormatUsed = NULL;
+   }
 
    if ( glpwstrDeviceId != NULL ) {
       CoTaskMemFree( glpwstrDeviceId );
