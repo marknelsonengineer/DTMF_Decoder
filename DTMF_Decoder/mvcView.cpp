@@ -265,7 +265,7 @@ BOOL mvcViewPaintWindow( HWND hWnd ) {
    gpRenderTarget->BeginDraw() ;
 
    // Clear to the background color
-   gpRenderTarget->Clear( D2D1::ColorF( BACKGROUND_COLOR, 1.0f ) );
+   // gpRenderTarget->Clear( D2D1::ColorF( BACKGROUND_COLOR, 1.0f ) );
 
    // Paint each of the digits
    for ( int i = 0 ; i < 16 ; i++ ) {
