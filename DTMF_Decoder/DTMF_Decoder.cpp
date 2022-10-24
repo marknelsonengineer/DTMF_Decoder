@@ -17,6 +17,7 @@
 #include "audio.h"        // For capturing audio
 #include <combaseapi.h>   // For initializing COM
 #include "DTMF_Decoder.h" // Resource.h
+#include "goertzel.h"     // For goertzel_end()
 
 
 #define MAX_LOADSTRING    (100)
@@ -200,6 +201,8 @@ LRESULT CALLBACK WndProc( HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam 
       case WM_CLOSE:    /// WM_CLOSE - Start the process of closing the application
          {
             isRunning = false;
+            goertzel_end();
+
             if ( gAudioSamplesReadyEvent != NULL ) {
                SetEvent( gAudioSamplesReadyEvent );
             }
@@ -212,6 +215,8 @@ LRESULT CALLBACK WndProc( HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam 
          }
       case WM_DESTROY:  /// WM_DESTROY - Post a quit message and return
          mvcViewCleanupResources();
+
+         goertzel_cleanup();
 
          PostQuitMessage( 0 );
 

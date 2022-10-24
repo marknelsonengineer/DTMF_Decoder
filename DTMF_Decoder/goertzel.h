@@ -20,6 +20,7 @@
 
 extern BOOL goertzel_init( int SAMPLING_RATE_IN );
 
-extern float goertzel_magnitude( UINT8 index ) ;
+extern void goertzel_end();  // TODO:  Return BOOL
+void goertzel_cleanup();  // TODO: Return BOOL
 
 extern BOOL compute_dtmf_tones_with_goertzel();

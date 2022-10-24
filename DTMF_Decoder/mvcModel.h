@@ -21,6 +21,7 @@
 #define NUMBER_OF_DTMF_TONES (8)
 
 typedef struct {
+   int   index;
    float frequency;    /// The DTMF tone
    bool  detected;     /// True if the tone is present, false if it's not
    WCHAR label[ 16 ];  /// A label for the tone
@@ -67,10 +68,5 @@ inline void pcmEnqueue( BYTE data ) {
 }
 
 extern void pcmReleaseQueue();         /// Release the memory allocated for the queue
-
-/// Read from the current read pointer
-
-
-
 
 // TODO: Consider having the thread have an indicator light that its running

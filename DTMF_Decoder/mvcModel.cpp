@@ -20,14 +20,14 @@
 #include "mvcModel.h"
 
 dtmfTones_t dtmfTones[ NUMBER_OF_DTMF_TONES ] = {
-   { 697.0, false, L"697" },
-   { 770.0, false, L"770" },  
-   { 852.0, false, L"852" },
-   { 941.0, false, L"941" },
-   {1209.0, false, L"1209" },
-   {1336.0, false, L"1336" }, 
-   {1477.0, false, L"1477" }, 
-   {1633.0, false, L"1633" }
+   { 0,  697.0, false, L"697" },
+   { 1,  770.0, false, L"770" },  
+   { 2,  852.0, false, L"852" },
+   { 3,  941.0, false, L"941" },
+   { 4, 1209.0, false, L"1209" },
+   { 5, 1336.0, false, L"1336" }, 
+   { 6, 1477.0, false, L"1477" }, 
+   { 7, 1633.0, false, L"1633" }
 };
 
 bool hasDtmfTonesChanged = false;

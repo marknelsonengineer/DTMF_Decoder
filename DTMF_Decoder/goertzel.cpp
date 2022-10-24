@@ -18,6 +18,8 @@
 #define _USE_MATH_DEFINES // for C++  
 #include <math.h>
 #include "audio.h"  // for getSamplesPerSecond()
+#include <avrt.h>    // For AvSetMmThreadCharacteristics()
+#include <stdio.h>
 #include "goertzel.h" 
 
 
@@ -25,6 +27,89 @@
 int SAMPLING_RATE = 0;
 float   floatnumSamples = 0;
 float   scalingFactor = 0;
+
+HANDLE startDFTevent[ NUMBER_OF_DTMF_TONES ];
+HANDLE doneDFTevent[ NUMBER_OF_DTMF_TONES ];
+HANDLE hWorkThreads[ NUMBER_OF_DTMF_TONES ];
+
+
+void goertzel_magnitude( UINT8 index ) {
+   float real, imag;
+
+   float q1 = 0;
+   float q2 = 0;
+
+   size_t queueRead = queueHead;  // Thread safe method to point to the next available byte for reading
+
+   for ( int i = 0; i < queueSize; i++ ) {
+      float q0 = dtmfTones[ index ].coeff * q1 - q2 + ( (float) pcmQueue[ queueRead++ ] );
+      q2 = q1;
+      q1 = q0;
+      queueRead %= queueSize;  // TODO:  There are probably more clever/efficient ways to do this, but this is very clear
+   }
+
+   // calculate the real and imaginary results
+   // scaling appropriately
+   real = ( q1 * dtmfTones[ index ].cosine - q2 );
+   imag = ( q1 * dtmfTones[ index ].sine );
+
+   dtmfTones[ index ].goertzelMagnitude = sqrtf( real * real + imag * imag ) / scalingFactor;
+
+   float threshold = THRESHOLD;
+
+   if ( dtmfTones[ index ].goertzelMagnitude >= threshold ) {
+      editToneDetectedStatus( index, true );
+   } else {
+      editToneDetectedStatus( index, false );
+   }
+
+   SetEvent( doneDFTevent[ index ] );
+}
+
+
+
+DWORD goertzelWorkThread( LPVOID Context ) {
+   CHAR sBuf[ 256 ];  // Debug buffer   // TODO: put a guard around this
+   int index = *(int*) Context;
+   sprintf_s( sBuf, sizeof( sBuf ), __FUNCTION__ ":  Start Goertzel DFT thread index=%d", index );
+   OutputDebugStringA( sBuf );
+
+   HRESULT hr;
+   HANDLE mmcssHandle = NULL;
+   DWORD mmcssTaskIndex = 0;
+
+   /// Set the multimedia class scheduler service, which will set the CPU
+   /// priority for this thread
+   mmcssHandle = AvSetMmThreadCharacteristics( L"Capture", &mmcssTaskIndex );
+   if ( mmcssHandle == NULL ) {
+      OutputDebugStringA( __FUNCTION__ ":  Failed to set MMCSS on Goertzel work thread.  Continuing." );
+   }
+   OutputDebugStringA( __FUNCTION__ ":  Set MMCSS on Goertzel work thread." );
+
+   while ( isRunning ) {
+      DWORD dwWaitResult;
+
+      dwWaitResult = WaitForSingleObject( startDFTevent[index], INFINITE);
+      if ( dwWaitResult == WAIT_OBJECT_0 ) {
+         if ( isRunning ) {
+            goertzel_magnitude( index );
+         }
+      } else if ( dwWaitResult == WAIT_FAILED ) {
+         OutputDebugStringA( __FUNCTION__ ":  The wait was failed.  Exiting" );
+         isRunning = false;
+         break;  // While loop
+      } else {
+         OutputDebugStringA( __FUNCTION__ ":  The wait was ended for some other reason.  Exiting.  Investigate!" );
+         isRunning = false;
+         break;  // While loop
+      }
+   }
+
+   OutputDebugStringA( __FUNCTION__ ":  End Goertzel DFT thread" );
+
+   ExitThread( 0 );
+}
+
 
 BOOL goertzel_init( int SAMPLING_RATE_IN ) {
    // numSamples = numSamplesIn;
@@ -38,7 +123,6 @@ BOOL goertzel_init( int SAMPLING_RATE_IN ) {
 
    float   omega, sine, cosine, coeff;
 
-
    for ( int i = 0 ; i < NUMBER_OF_DTMF_TONES ; i++ ) {
       k = (int) ( 0.5 + ( ( floatnumSamples * dtmfTones[ i ].frequency ) / (float) SAMPLING_RATE ) );
       omega = ( 2.0 * M_PI * k ) / floatnumSamples;
@@ -51,55 +135,66 @@ BOOL goertzel_init( int SAMPLING_RATE_IN ) {
       dtmfTones[ i ].coeff = coeff;
    }
  
+
+   for ( int i = 0 ; i < NUMBER_OF_DTMF_TONES ; i++ ) {
+      startDFTevent[ i ] = CreateEventA( NULL, FALSE, FALSE, NULL );
+      if ( startDFTevent[ i ] == NULL ) {
+         OutputDebugStringA( __FUNCTION__ ":  Failed to create a startDFTevent event handle" );
+         return FALSE;
+      }
+
+      doneDFTevent[ i ] = CreateEventA( NULL, FALSE, FALSE, NULL );
+      if ( doneDFTevent[ i ] == NULL ) {
+         OutputDebugStringA( __FUNCTION__ ":  Failed to create a doneDFTevent event handle" );
+         return FALSE;
+      }
+
+         /// Start the thread
+      hWorkThreads[i] = CreateThread(NULL, 0, goertzelWorkThread, &dtmfTones[i].index, 0, NULL);
+      if ( hWorkThreads[ i ] == NULL ) {
+         OutputDebugStringA( __FUNCTION__ ":  Failed to create a Goertzel work thread" );
+         return FALSE;
+      }
+
+   }
+
    return TRUE;
 }
 
 
+void goertzel_end() {
+   isRunning = false;  // Just to be sure
 
-float goertzel_magnitude( UINT8 index ) {
-   float real, imag;
-
-   float q1 = 0;
-   float q2 = 0;
-
-   size_t queueRead = queueHead;  // Points to the next available byte for reading
-
-   for ( int i = 0; i < queueSize; i++ ) {
-      float q0 = dtmfTones[ index ].coeff * q1 - q2 + ( (float) pcmQueue[ queueRead++ ] );
-      q2 = q1;
-      q1 = q0;
-      queueRead %= queueSize;  // TODO:  There are more clever/efficient ways to do this, but this is very clear
+   for ( int i = 0 ; i < NUMBER_OF_DTMF_TONES ; i++ ) {
+      // Trigger all of the threads to run... and spin their loops
+      SetEvent( startDFTevent[ i ] );
+      SetEvent( doneDFTevent[ i ] );
    }
-
-   // calculate the real and imaginary results
-   // scaling appropriately
-   /*
-   real = ( q1 * dtmfTones[ index ].cosine - q2 ) / scalingFactor;
-   imag = ( q1 * dtmfTones[ index ].sine ) / scalingFactor;
-
-   return sqrtf( real * real + imag * imag );
-   */
-
-   real = ( q1 * dtmfTones[ index ].cosine - q2 );
-   imag = ( q1 * dtmfTones[ index ].sine );
-
-   return sqrtf( real * real + imag * imag ) / scalingFactor;
-
 }
 
 
+void goertzel_cleanup() {
+   for ( int i = 0 ; i < NUMBER_OF_DTMF_TONES ; i++ ) {
+      hWorkThreads[ i ] = NULL;
+
+      CloseHandle( startDFTevent[ i ] );
+      startDFTevent[ i ] = NULL;
+      CloseHandle( doneDFTevent[ i ] );
+      doneDFTevent[ i ] = NULL;
+
+      // TODO: I probably need to cleanup AvSetMmThreadCharacteristics as well
+   }
+}
+
+
+
 BOOL compute_dtmf_tones_with_goertzel() {
-   float threshold = THRESHOLD;
 
    for ( UINT8 i = 0 ; i < NUMBER_OF_DTMF_TONES ; i++ ) {
-      dtmfTones[i].goertzelMagnitude = goertzel_magnitude( i );
-
-      if ( dtmfTones[ i ].goertzelMagnitude >= threshold ) {
-         editToneDetectedStatus( i, true );
-      } else {
-         editToneDetectedStatus( i, false );
-      }
+      SetEvent( startDFTevent[i] );
    }
-   
+
+   WaitForMultipleObjects( NUMBER_OF_DTMF_TONES, doneDFTevent, TRUE, INFINITE );
+
    return TRUE;
 }
