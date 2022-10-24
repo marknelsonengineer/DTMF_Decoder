@@ -50,7 +50,7 @@ UINT32          guBufferSize = 0;             // Dev Machine = 182
 HANDLE          hCaptureThread = NULL;
 HANDLE          gAudioSamplesReadyEvent = NULL;  // This is externally delcared
 IAudioCaptureClient* gCaptureClient = NULL;
-IAudioClockAdjustment* gAudioClockAdjuster = NULL;
+// IAudioClockAdjustment* gAudioClockAdjuster = NULL;
 static size_t queueSize = 0;  /// Size in bytes of DTMF DFT queue = samplesPerSecond / 1000 * SIZE_OF_QUEUE_IN_MS
 
 CHAR            sBuf[ 256 ];  // Debug buffer   // TODO: put a guard around this
@@ -526,8 +526,14 @@ BOOL initAudioDevice( HWND hWnd ) {
 
    /// Initialize the DTMF buffer
    queueSize = gpMixFormat->nSamplesPerSec / 1000 * SIZE_OF_QUEUE_IN_MS;
-   if ( pcmSetQueueSize( queueSize ) == FALSE ) {
+   if ( pcmSetQueueSize( queueSize ) != TRUE ) {
       OutputDebugStringA( __FUNCTION__ ":  Failed to allocate PCM queue" );
+      return FALSE;
+   }
+
+   /// Initialize the Goertzel module
+   if ( goertxzel_init( queueSize, gpMixFormat->nSamplesPerSec ) != TRUE ) {
+      OutputDebugStringA( __FUNCTION__ ":  Failed to initialioze Goertzel Function" );
       return FALSE;
    }
 

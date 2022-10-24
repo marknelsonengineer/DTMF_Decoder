@@ -19,7 +19,7 @@ extern BOOL initAudioDevice( HWND );
 extern BOOL stopAudioDevice( HWND );
 extern BOOL cleanupAudioDevice();
 
-extern DWORD getSamplesPerSecond();
-
+extern DWORD getSamplesPerSecond();   // TODO: This may be unused.  Get rid of it
+ 
 #define PCM_8_BIT_SILENCE 127     /* Silence is 127 */
 

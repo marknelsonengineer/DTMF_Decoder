@@ -16,7 +16,8 @@
 #include <stdint.h>
 #include <windows.h>
 
+extern BOOL goertxzel_init( int numSamplesIn, int SAMPLING_RATE_IN );
 
-extern float goertzel_magnitude( int numSamples, float TARGET_FREQUENCY, int SAMPLING_RATE ) ;
+extern float goertzel_magnitude( UINT8 index ) ;
 
 extern BOOL compute_dtmf_tones_with_goertzel();

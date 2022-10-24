@@ -112,7 +112,7 @@ BYTE pcmReadQueue() {
    assert( pcmQueue != NULL );
    assert( queueHead < queueSize );
 
-   _ASSERTE( _CrtCheckMemory() );
+   // _ASSERTE( _CrtCheckMemory() );    // This slows down the realtime audio processing and breaks the program
 
    BYTE returnValue = pcmQueue[ queueRead++ ];
 

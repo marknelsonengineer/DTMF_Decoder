@@ -24,6 +24,9 @@ typedef struct {
    bool  detected;     /// True if the tone is present, false if it's not
    WCHAR label[ 16 ];  /// A label for the tone
    float goertzelMagnitude;  /// The latest magnitude
+   float sine;
+   float cosine;
+   float coeff;
 } dtmfTones_t;
 
 // TODO: I should convert this to a read-only interface
@@ -42,7 +45,7 @@ extern HANDLE gAudioSamplesReadyEvent;  /// This event is signaled when the audi
                                         /// driver has some data to send.  It's
                                         /// what makes this program event-driven.
 
-#define SIZE_OF_QUEUE_IN_MS (100)
+#define SIZE_OF_QUEUE_IN_MS (50)
 
 extern BOOL mvcInitModel();   /// Initialize the model
 
