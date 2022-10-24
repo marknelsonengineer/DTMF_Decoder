@@ -55,21 +55,8 @@ BOOL goertzel_init( int numSamplesIn, int SAMPLING_RATE_IN ) {
 
 
 float goertzel_magnitude( UINT8 index ) {
-   // int     k;
-   
-   // float   omega, sine, cosine, coeff;
-   // float q0;
-   // float q1, q2;
-   float magnitude, real, imag;
+   float real, imag;
 
-   // float data;
-
-   //k = (int) ( 0.5 + ( ( floatnumSamples * dtmfTones[index].frequency ) / (float) SAMPLING_RATE ) );
-   //omega = ( 2.0 * M_PI * k ) / floatnumSamples;
-   //sine = sin( omega );
-   //cosine = cos( omega );
-   //coeff = 2.0 * cosine;
-  //  q0 = 0;
    float q1 = 0;
    float q2 = 0;
 
@@ -83,12 +70,18 @@ float goertzel_magnitude( UINT8 index ) {
 
    // calculate the real and imaginary results
    // scaling appropriately
+   /*
    real = ( q1 * dtmfTones[ index ].cosine - q2 ) / scalingFactor;
    imag = ( q1 * dtmfTones[ index ].sine ) / scalingFactor;
 
-   magnitude = sqrtf( real * real + imag * imag );
-   //phase = atan(imag/real)
-   return magnitude;
+   return sqrtf( real * real + imag * imag );
+   */
+
+   real = ( q1 * dtmfTones[ index ].cosine - q2 );
+   imag = ( q1 * dtmfTones[ index ].sine );
+
+   return sqrtf( real * real + imag * imag ) / scalingFactor;
+
 }
 
 
