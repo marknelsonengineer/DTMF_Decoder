@@ -18,3 +18,6 @@
 BOOL initAudioDevice( HWND );
 BOOL stopAudioDevice( HWND );
 BOOL cleanupAudioDevice();
+
+#define PCM_8_BIT_SILENCE 127     /* Silence is 127 */
+

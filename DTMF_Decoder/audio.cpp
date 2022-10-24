@@ -40,8 +40,8 @@ AUDCLNT_SHAREMODE gShareMode = AUDCLNT_SHAREMODE_SHARED;
 PROPVARIANT     DeviceInterfaceFriendlyName;  // Container for the friendly name of the audio adapter for the device
 PROPVARIANT     DeviceDescription;            // Container for the device's description
 PROPVARIANT     DeviceFriendlyName;           // Container for friendly name of the device
-WAVEFORMATEX    audioFormatRequested;
-WAVEFORMATEX*   mixFormat = NULL;
+//WAVEFORMATEX    audioFormatRequested;
+WAVEFORMATEX*   gpMixFormat = NULL;
 WAVEFORMATEX*   audioFormatUsed = NULL;
 IAudioClient*   glpAudioClient = NULL;
 REFERENCE_TIME  gDefaultDevicePeriod = -1;    // Expressed in 100ns units (dev machine = 101,587 = 10.1587ms)
@@ -72,13 +72,35 @@ BOOL   gbMonitor = false;     /// Briefly set to 1 to output monitor data
 BYTE monitorCh1Max = 0;
 BYTE monitorCh1Min = 255;
 
+BOOL isPCM = false;
+BOOL isIEEE = false;
+
+
 // TODO: Make this generic (good for a variety of formats -- there's a good 
 //       example in the git history just before commit 563da34a)
+// TODO:  Preprocess this stuff
 // NOTE: For now, this code assumes that pData is a 1 channel, 8-bit PCM data stream
 BOOL processAudioFrame( BYTE* pData, UINT32 frame, UINT64 framePosition ) {
    assert( pData != NULL );
+   assert( isPCM || isIEEE );
 
-   BYTE ch1Sample = *(pData + (frame * audioFormatRequested.nBlockAlign) );
+   BYTE ch1Sample = PCM_8_BIT_SILENCE;
+
+   if ( isIEEE && gpMixFormat->wBitsPerSample == 32 ) {  // IEEE float
+      float* fSample = (float*) (pData + ( frame * gpMixFormat->nBlockAlign ));
+
+      INT8 signedSample = *fSample * PCM_8_BIT_SILENCE;
+      if ( signedSample >= 0 ) {
+         ch1Sample = signedSample + PCM_8_BIT_SILENCE;
+      } else {
+         ch1Sample = PCM_8_BIT_SILENCE + signedSample;  // -1, -2, -3, will turn into 127, 126, 125, ...
+      }
+   } else if ( isPCM && gpMixFormat->wBitsPerSample == 8 ) {  // 8-bit PCM
+      ch1Sample = *(pData + (frame * gpMixFormat->nBlockAlign) );
+   } else {
+      // Punch out
+   }
+
 
    pcmEnqueue( ch1Sample );
 
@@ -108,6 +130,8 @@ BOOL processAudioFrame( BYTE* pData, UINT32 frame, UINT64 framePosition ) {
 
 // TODO:  Watch the program with Process Monitor and make sure it's not
 // over-spinning a thread
+
+/// Collect the audio frames and process them
 BOOL captureAudio() {
    HRESULT hr;
 
@@ -128,26 +152,32 @@ BOOL captureAudio() {
             processAudioFrame( pData, i, framePosition+i );
          }
          
-         compute_dtmf_tones_with_goertzel();
-
-         if ( hasDtmfTonesChanged ) {
-            mvcViewRefreshWindow();
-         }
+         // compute_dtmf_tones_with_goertzel();
+          
+         // if ( hasDtmfTonesChanged ) {
+         //    mvcViewRefreshWindow();
+         // }
       } 
 
       if ( flags & AUDCLNT_BUFFERFLAGS_SILENT ) {
          OutputDebugStringA( __FUNCTION__ ":  Buffer flag set:  SILENT" );
          // Nothing so see here.  Move along.
+         flags &= !AUDCLNT_BUFFERFLAGS_SILENT;  // Clear AUDCLNT_BUFFERFLAGS_SILENT from flags
       } 
       if ( flags & AUDCLNT_BUFFERFLAGS_DATA_DISCONTINUITY ) {
          OutputDebugStringA( __FUNCTION__ ":  Buffer flag set:  DATA_DISCONTINUITY" );
          // Throw the first packet out
+         flags &= !AUDCLNT_BUFFERFLAGS_DATA_DISCONTINUITY;  // Clear AUDCLNT_BUFFERFLAGS_DATA_DISCONTINUITY from flags
       } 
       if ( flags & AUDCLNT_BUFFERFLAGS_TIMESTAMP_ERROR ) {
          OutputDebugStringA( __FUNCTION__ ":  Buffer flag set:  TIMESTAMP_ERROR" );
          // Throw this packet out as well
+         flags &= !AUDCLNT_BUFFERFLAGS_TIMESTAMP_ERROR;  // Clear AUDCLNT_BUFFERFLAGS_TIMESTAMP_ERROR from flags
       }
-      // TODO: Print an error if you get a flag that's not in this list 
+      if ( flags != 0 ) {
+         OutputDebugStringA( __FUNCTION__ ":  Some other bufer flags are set.  Investigate!" );
+         // Throw this packet out as well
+      }
 
       if ( framesAvailable > 0 ) {
          gbMonitor = false;
@@ -189,8 +219,6 @@ BOOL captureAudio() {
 }
 
 
-// TODO I still have some checks I need to do in init.  I also need to think through how to shutdown the program.
-
 DWORD captureThread( LPVOID Context ) {
    OutputDebugStringA( __FUNCTION__ ":  Start capture thread" );
 
@@ -211,8 +239,9 @@ DWORD captureThread( LPVOID Context ) {
    if ( mmcssHandle == NULL ) {
       OutputDebugStringA( __FUNCTION__ ":  Failed to set MMCSS on thread.  Continuing." );
    }
+   OutputDebugStringA( __FUNCTION__ ":  Set MMCSS on thread." );
 
-   gFramesToMonitor = MONITOR_INTERVAL_SECONDS * audioFormatRequested.nSamplesPerSec;
+   gFramesToMonitor = MONITOR_INTERVAL_SECONDS * gpMixFormat->nSamplesPerSec;
 
    /// Audio capture loop
    /// isRunning gets set to false by WM_CLOSE
@@ -269,11 +298,11 @@ BOOL printAudioFormat( WAVEFORMATEX* pFmt ) {
       OutputDebugStringA( sBuf );
 
       if ( pFmtEx->SubFormat == KSDATAFORMAT_SUBTYPE_PCM ) {
-         OutputDebugStringA( "   Wave format is PCM" );
+         OutputDebugStringA( "   Extended wave format is PCM" );
       } else if ( pFmtEx->SubFormat == KSDATAFORMAT_SUBTYPE_IEEE_FLOAT ) {
-         OutputDebugStringA( "   Wave format is IEEE Float" );
+         OutputDebugStringA( "   Extended wave format is IEEE Float" );
       } else {
-         OutputDebugStringA( "   Wave format is not PCM" );
+         OutputDebugStringA( "   Extended wave format is not PCM" );
       }
    } else {
       OutputDebugStringA( __FUNCTION__ ":  Using WAVE_FORMAT format" );
@@ -401,16 +430,16 @@ BOOL initAudioDevice( HWND hWnd ) {
    }
 
    /// Get the default audio format that the audio driver wants to use
-   hr = glpAudioClient->GetMixFormat( &mixFormat );
-   if ( hr != S_OK || mixFormat == NULL ) {
+   hr = glpAudioClient->GetMixFormat( &gpMixFormat );
+   if ( hr != S_OK || gpMixFormat == NULL ) {
       OutputDebugStringA( __FUNCTION__ ":  Failed to retrieve mix format" );
       return FALSE;
    }
 
    OutputDebugStringA( __FUNCTION__ ":  The mix format follows" );
-   printAudioFormat( mixFormat );
+   printAudioFormat( gpMixFormat );
 
-   hr = glpAudioClient->IsFormatSupported( gShareMode, mixFormat, &audioFormatUsed );
+   hr = glpAudioClient->IsFormatSupported( gShareMode, gpMixFormat, &audioFormatUsed );
    if ( hr == S_OK ) {
       OutputDebugStringA( "   " __FUNCTION__ ":  The requested format is supported");
    } else if ( hr == AUDCLNT_E_UNSUPPORTED_FORMAT ) {
@@ -425,11 +454,33 @@ BOOL initAudioDevice( HWND hWnd ) {
       return FALSE;
    }
 
+   if ( gpMixFormat->wFormatTag == WAVE_FORMAT_PCM ) {
+      isPCM = true;
+   } else if ( gpMixFormat->wFormatTag == WAVE_FORMAT_IEEE_FLOAT ) {
+      isIEEE = true;
+   } else if ( gpMixFormat->wFormatTag == WAVE_FORMAT_EXTENSIBLE ) {
+      WAVEFORMATEXTENSIBLE* pFmtEx = (WAVEFORMATEXTENSIBLE*) gpMixFormat;
+
+      if ( pFmtEx->SubFormat == KSDATAFORMAT_SUBTYPE_PCM ) {
+         isPCM = true;
+      } else if ( pFmtEx->SubFormat == KSDATAFORMAT_SUBTYPE_IEEE_FLOAT ) {
+         isIEEE = true;
+      } else {
+         OutputDebugStringA( __FUNCTION__ ":  Unknown extended audio format" );
+         return FALSE;
+      }
+   } else {
+      OutputDebugStringA( __FUNCTION__ ":  Unknown audio format" );
+      return FALSE;
+   }
+
+   assert( isPCM || isIEEE );
+
    /// Initialize shared mode audio client
    //  Shared mode streams using event-driven buffering must set both periodicity and bufferDuration to 0.
    hr = glpAudioClient->Initialize( gShareMode, AUDCLNT_STREAMFLAGS_EVENTCALLBACK
                                               | AUDCLNT_STREAMFLAGS_AUTOCONVERTPCM
-                                                                                  , 0, 0, mixFormat, NULL );
+                                                                                  , 0, 0, gpMixFormat, NULL );
    if ( hr != S_OK ) {
       OutputDebugStringA( __FUNCTION__ ":  Failed to initialize the audio client" );
       return FALSE;
@@ -541,9 +592,9 @@ BOOL cleanupAudioDevice() {
 
    SafeRelease( &glpPropertyStore );
 
-   if ( mixFormat != NULL ) {
-      CoTaskMemFree( mixFormat );
-      mixFormat = NULL;
+   if ( gpMixFormat != NULL ) {
+      CoTaskMemFree( gpMixFormat );
+      gpMixFormat = NULL;
    }
 
    if ( audioFormatUsed != NULL ) {
