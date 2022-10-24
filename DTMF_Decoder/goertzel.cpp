@@ -27,7 +27,7 @@ float goertzel_magnitude( int numSamples, float TARGET_FREQUENCY, int SAMPLING_R
 
    float   scalingFactor = numSamples / 2.0;
 
-   float data;
+   // float data;
 
    floatnumSamples = (float) numSamples;
    k = (int) ( 0.5 + ( ( floatnumSamples * TARGET_FREQUENCY ) / (float) SAMPLING_RATE ) );
@@ -59,14 +59,12 @@ float goertzel_magnitude( int numSamples, float TARGET_FREQUENCY, int SAMPLING_R
 
 
 BOOL compute_dtmf_tones_with_goertzel() {
-   float m = 0;
    float threshold = 10;
 
    for ( UINT8 i = 0 ; i < NUMBER_OF_DTMF_TONES ; i++ ) {
-      m = goertzel_magnitude( pcmGetQueueSize(), dtmfTones[i].frequency, getSamplesPerSecond() );
-      // TODO: Replace 8000 with a global
+      dtmfTones[i].goertzelMagnitude = goertzel_magnitude(pcmGetQueueSize(), dtmfTones[i].frequency, getSamplesPerSecond() );
 
-      if ( m >= threshold ) {
+      if ( dtmfTones[ i ].goertzelMagnitude >= threshold ) {
          editToneDetectedStatus( i, true );
       } else {
          editToneDetectedStatus( i, false );

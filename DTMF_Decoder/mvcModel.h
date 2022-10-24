@@ -23,6 +23,7 @@ typedef struct {
    float frequency;    /// The DTMF tone
    bool  detected;     /// True if the tone is present, false if it's not
    WCHAR label[ 16 ];  /// A label for the tone
+   float goertzelMagnitude;  /// The latest magnitude
 } dtmfTones_t;
 
 // TODO: I should convert this to a read-only interface

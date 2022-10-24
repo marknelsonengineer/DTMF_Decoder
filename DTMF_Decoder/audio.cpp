@@ -160,7 +160,7 @@ BOOL captureAudio() {
             processAudioFrame( pData, i, framePosition+i );
          }
          
-         // compute_dtmf_tones_with_goertzel();
+         compute_dtmf_tones_with_goertzel();
           
          if ( hasDtmfTonesChanged ) {
             mvcViewRefreshWindow();
@@ -204,6 +204,13 @@ BOOL captureAudio() {
          if ( gbMonitor ) {  // Monitor data on this pass
             OutputDebugStringA( __FUNCTION__ ":  Monitoring loop" );
             sprintf_s( sBuf, sizeof( sBuf ), "Frames available=%" PRIu32 "    frame position=%" PRIu64, framesAvailable, framePosition );
+            OutputDebugStringA( sBuf );
+
+            memset( sBuf, 0, 1 );
+
+            for ( int i = 0 ; i < NUMBER_OF_DTMF_TONES ; i++ ) {
+               sprintf_s( sBuf+strlen(sBuf), sizeof(sBuf), "  %4.0fHz=%4.2f", dtmfTones[i].frequency, dtmfTones[i].goertzelMagnitude);
+            }
             OutputDebugStringA( sBuf );
          }
 
