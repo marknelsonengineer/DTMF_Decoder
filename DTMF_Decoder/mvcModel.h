@@ -25,6 +25,7 @@ typedef struct {
    WCHAR label[ 16 ];  /// A label for the tone
 } dtmfTones_t;
 
+// TODO: I should convert this to a read-only interface
 extern dtmfTones_t dtmfTones[ NUMBER_OF_DTMF_TONES ];
 
 extern bool hasDtmfTonesChanged;
@@ -40,17 +41,15 @@ extern HANDLE gAudioSamplesReadyEvent;  /// This event is signaled when the audi
                                         /// driver has some data to send.  It's
                                         /// what makes this program event-driven.
 
-#define SIZE_OF_QUEUE (800)  /* 100ms of data @ 8000Hz sampling rate */
-
-extern BYTE pcmQueue[ SIZE_OF_QUEUE ];  /// A circular queue (really, a ring buffer)
-                                        /// of PCM samples to analyze
+#define SIZE_OF_QUEUE_IN_MS (100)
 
 extern BOOL mvcInitModel();   /// Initialize the model
 
+extern BOOL pcmSetQueueSize( size_t size );  /// Set the size of the queue
 extern void pcmEnqueue( BYTE data );   /// Enqueue a byte of PCM data to `pcmQueue`
+extern BYTE pcmReadQueue();            /// Read from the current read pointer
+extern void pcmResetReadQueue();       /// Reset the read pointer to the head of the queue
+extern void pcmReleaseQueue();         /// Release the memory allocated for the queue
 
 
 // TODO: Consider having the thread have an indicator light that its running
-
-
-// TODO: I should convert this to a read-only interface

@@ -51,6 +51,7 @@ float goertzel_magnitude( const uint16_t iNumSamples, const uint16_t targetFrequ
 
 
 BOOL compute_dtmf_tones_with_goertzel() {
+   /*
    float m = 0;
    float threshold = 10;
 
@@ -64,6 +65,6 @@ BOOL compute_dtmf_tones_with_goertzel() {
          editToneDetectedStatus( i, false );
       }
    }
-
+   */
    return TRUE;
 }

@@ -51,7 +51,7 @@ HANDLE          hCaptureThread = NULL;
 HANDLE          gAudioSamplesReadyEvent = NULL;  // This is externally delcared
 IAudioCaptureClient* gCaptureClient = NULL;
 IAudioClockAdjustment* gAudioClockAdjuster = NULL;
-
+static size_t queueSize = 0;  /// Size in bytes of DTMF DFT queue = samplesPerSecond / 1000 * SIZE_OF_QUEUE_IN_MS
 
 CHAR            sBuf[ 256 ];  // Debug buffer   // TODO: put a guard around this
 WCHAR           wsBuf[ 256 ];  // Debug buffer   // TODO: put a guard around this
@@ -83,13 +83,14 @@ BOOL isIEEE = false;
 BOOL processAudioFrame( BYTE* pData, UINT32 frame, UINT64 framePosition ) {
    assert( pData != NULL );
    assert( isPCM || isIEEE );
+   assert( gpMixFormat != NULL );
 
    BYTE ch1Sample = PCM_8_BIT_SILENCE;
 
    if ( isIEEE && gpMixFormat->wBitsPerSample == 32 ) {  // IEEE float
       float* fSample = (float*) (pData + ( frame * gpMixFormat->nBlockAlign ));
 
-      INT8 signedSample = *fSample * PCM_8_BIT_SILENCE;
+      INT8 signedSample = (INT8) ( *fSample * (float) PCM_8_BIT_SILENCE );  // This is +127 to -127
       if ( signedSample >= 0 ) {
          ch1Sample = signedSample + PCM_8_BIT_SILENCE;
       } else {
@@ -101,6 +102,8 @@ BOOL processAudioFrame( BYTE* pData, UINT32 frame, UINT64 framePosition ) {
       // Punch out
    }
 
+   if ( gbMonitor )
+      ch1Sample = ch1Sample;
 
    pcmEnqueue( ch1Sample );
 
@@ -509,6 +512,14 @@ BOOL initAudioDevice( HWND hWnd ) {
    OutputDebugStringA( sBuf );
 
 
+   /// Initialize the DTMF buffer
+   queueSize = gpMixFormat->nSamplesPerSec / 1000 * SIZE_OF_QUEUE_IN_MS;
+   if ( pcmSetQueueSize( queueSize ) == FALSE ) {
+      OutputDebugStringA( __FUNCTION__ ":  Failed to allocate PCM queue" );
+      return FALSE;
+   }
+
+
    /// Create the callback events
    gAudioSamplesReadyEvent = CreateEventEx( NULL, NULL, 0, EVENT_MODIFY_STATE | SYNCHRONIZE );
    if ( gAudioSamplesReadyEvent == NULL ) {
@@ -583,6 +594,8 @@ BOOL cleanupAudioDevice() {
       glpAudioClient->Reset();
       glpAudioClient = NULL;
    }
+
+   pcmReleaseQueue();
 
    SafeRelease( &glpAudioClient );
 

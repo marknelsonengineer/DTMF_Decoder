@@ -15,6 +15,7 @@
 
 #include "framework.h"    // Standard system include files
 #include <assert.h>       // For assert()
+#include <crtdbg.h>       // For _malloc_dbg()
 
 #include "mvcModel.h"
 
@@ -42,22 +43,53 @@ void editToneDetectedStatus( size_t toneIndex, bool detectedStatus ) {
 }
 
 
-
 bool isRunning = false;
 
-BYTE pcmQueue[SIZE_OF_QUEUE];
 
-BOOL mvcInitModel() {
-   ZeroMemory( pcmQueue, SIZE_OF_QUEUE );
+static size_t queueSize = 0;
+static BYTE* pcmQueue = NULL;
+
+BOOL pcmSetQueueSize( size_t size ) {
+   //assert( pcmQueue == NULL );
+   //assert( queueSize == 0 );
+
+   pcmQueue = (BYTE*)_malloc_dbg(size, _CLIENT_BLOCK, __FILE__, __LINE__);
+   if ( pcmQueue == NULL ) {
+      OutputDebugStringA( __FUNCTION__ ":  Failed to allocate memory for PCM queue" );
+      return FALSE;
+   }
+
+   queueSize = size;
+
+   ZeroMemory( pcmQueue, queueSize );
+
+   assert( pcmQueue != NULL );
+   assert( queueSize != 0 );
 
    return TRUE;
 }
 
-static INT64 queueHead = 0;  // Points to the next available byte
+
+void pcmReleaseQueue() {
+   if ( pcmQueue == NULL )
+      return;
+
+   _free_dbg( pcmQueue, _CLIENT_BLOCK );
+}
+
+
+/// TODO: Currently does nothing. 
+BOOL mvcInitModel() {
+   return TRUE;
+}
+
+static size_t queueHead = 0;  // Points to the next available byte
 
 void pcmEnqueue( BYTE data ) {
-   assert( queueHead < sizeof( pcmQueue ) );
-   pcmQueue[ queueHead++ ] ;
+   assert( pcmQueue != NULL );
+   assert( queueHead < queueSize );
 
-   queueHead %= sizeof( pcmQueue );  // There are more clever/efficient ways to do this, but this is very clear
+   pcmQueue[ queueHead++ ] = data ;
+
+   queueHead %= queueSize;  // There are more clever/efficient ways to do this, but this is very clear
 }
