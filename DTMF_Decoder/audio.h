@@ -15,9 +15,11 @@
 
 #include <Windows.h>
 
-BOOL initAudioDevice( HWND );
-BOOL stopAudioDevice( HWND );
-BOOL cleanupAudioDevice();
+extern BOOL initAudioDevice( HWND );
+extern BOOL stopAudioDevice( HWND );
+extern BOOL cleanupAudioDevice();
+
+extern DWORD getSamplesPerSecond();
 
 #define PCM_8_BIT_SILENCE 127     /* Silence is 127 */
 

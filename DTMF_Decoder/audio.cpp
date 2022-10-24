@@ -76,6 +76,11 @@ BOOL isPCM = false;
 BOOL isIEEE = false;
 
 
+DWORD getSamplesPerSecond() {
+   return gpMixFormat->nSamplesPerSec;
+}
+
+
 // TODO: Make this generic (good for a variety of formats -- there's a good 
 //       example in the git history just before commit 563da34a)
 // TODO:  Preprocess this stuff
@@ -157,9 +162,9 @@ BOOL captureAudio() {
          
          // compute_dtmf_tones_with_goertzel();
           
-         // if ( hasDtmfTonesChanged ) {
-         //    mvcViewRefreshWindow();
-         // }
+         if ( hasDtmfTonesChanged ) {
+            mvcViewRefreshWindow();
+         }
       } 
 
       if ( flags & AUDCLNT_BUFFERFLAGS_SILENT ) {

@@ -46,6 +46,7 @@ extern HANDLE gAudioSamplesReadyEvent;  /// This event is signaled when the audi
 extern BOOL mvcInitModel();   /// Initialize the model
 
 extern BOOL pcmSetQueueSize( size_t size );  /// Set the size of the queue
+extern size_t pcmGetQueueSize();       /// Get the size of the queue
 extern void pcmEnqueue( BYTE data );   /// Enqueue a byte of PCM data to `pcmQueue`
 extern BYTE pcmReadQueue();            /// Read from the current read pointer
 extern void pcmResetReadQueue();       /// Reset the read pointer to the head of the queue

@@ -17,46 +17,53 @@
 #include <stdint.h>
 #define _USE_MATH_DEFINES // for C++  
 #include <math.h>
+#include "audio.h"  // for getSamplesPerSecond()
 
 
-float goertzel_magnitude( const uint16_t iNumSamples, const uint16_t targetFrequency, const uint16_t samplingRate, const BYTE pcmData[] ) {
+float goertzel_magnitude( int numSamples, float TARGET_FREQUENCY, int SAMPLING_RATE ) {
+   int     k, i;
+   float   floatnumSamples;
+   float   omega, sine, cosine, coeff, q0, q1, q2, magnitude, real, imag;
 
-   float scalingFactor = iNumSamples / 2.0;
+   float   scalingFactor = numSamples / 2.0;
 
-   float floatnumSamples = (float) iNumSamples;
+   float data;
 
-   int k = (int) ( 0.5 + ( ( floatnumSamples * targetFrequency ) / samplingRate ) );
+   floatnumSamples = (float) numSamples;
+   k = (int) ( 0.5 + ( ( floatnumSamples * TARGET_FREQUENCY ) / (float) SAMPLING_RATE ) );
+   omega = ( 2.0 * M_PI * k ) / floatnumSamples;
+   sine = sin( omega );
+   cosine = cos( omega );
+   coeff = 2.0 * cosine;
+   q0 = 0;
+   q1 = 0;
+   q2 = 0;
 
-   float omega = ( 2.0 * M_PI * k ) / floatnumSamples;
+   pcmResetReadQueue();
 
-   float sine = sin( omega );
-   float cosine = cos( omega );
-   float coeff = 2.0 * ( cosine );
-
-   int q0 = 0;
-   int q1 = 0;
-   int q2 = 0;
-
-   for ( uint16_t i = 0 ; i < iNumSamples ; i++ ) {
-      q0 = coeff * q1 - q2 + (float)pcmData[ i ];
+   for ( i = 0; i < numSamples; i++ ) {
+      q0 = coeff * q1 - q2 + ( (float) pcmReadQueue() );
       q2 = q1;
       q1 = q0;
    }
 
-   float real = ( q1 * cosine - q2 ) / scalingFactor;
-   float imag = ( q1 * sine ) / scalingFactor;
+   // calculate the real and imaginary results
+   // scaling appropriately
+   real = ( q1 * cosine - q2 ) / scalingFactor;
+   imag = ( q1 * sine ) / scalingFactor;
 
-   return sqrtf( real * real + imag * imag );
+   magnitude = sqrtf( real * real + imag * imag );
+   //phase = atan(imag/real)
+   return magnitude;
 }
 
 
 BOOL compute_dtmf_tones_with_goertzel() {
-   /*
    float m = 0;
    float threshold = 10;
 
    for ( UINT8 i = 0 ; i < NUMBER_OF_DTMF_TONES ; i++ ) {
-      m = goertzel_magnitude( SIZE_OF_QUEUE, dtmfTones[i].frequency, 8000, pcmQueue);
+      m = goertzel_magnitude( pcmGetQueueSize(), dtmfTones[i].frequency, getSamplesPerSecond() );
       // TODO: Replace 8000 with a global
 
       if ( m >= threshold ) {
@@ -65,6 +72,6 @@ BOOL compute_dtmf_tones_with_goertzel() {
          editToneDetectedStatus( i, false );
       }
    }
-   */
+   
    return TRUE;
 }
