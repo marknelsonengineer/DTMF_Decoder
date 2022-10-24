@@ -16,7 +16,7 @@
 #include <stdint.h>
 #include <windows.h>
 
-extern BOOL goertxzel_init( int numSamplesIn, int SAMPLING_RATE_IN );
+extern BOOL goertzel_init( int numSamplesIn, int SAMPLING_RATE_IN );
 
 extern float goertzel_magnitude( UINT8 index ) ;
 

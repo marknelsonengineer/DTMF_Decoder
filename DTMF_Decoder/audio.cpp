@@ -535,7 +535,7 @@ BOOL initAudioDevice( HWND hWnd ) {
    OutputDebugStringA( sBuf );
 
    /// Initialize the Goertzel module
-   if ( goertxzel_init( queueSize, gpMixFormat->nSamplesPerSec ) != TRUE ) {
+   if ( goertzel_init( queueSize, gpMixFormat->nSamplesPerSec ) != TRUE ) {
       OutputDebugStringA( __FUNCTION__ ":  Failed to initialioze Goertzel Function" );
       return FALSE;
    }

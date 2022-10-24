@@ -25,7 +25,7 @@ int SAMPLING_RATE = 0;
 float   floatnumSamples = 0;
 float   scalingFactor = 0;
 
-BOOL goertxzel_init( int numSamplesIn, int SAMPLING_RATE_IN ) {
+BOOL goertzel_init( int numSamplesIn, int SAMPLING_RATE_IN ) {
    numSamples = numSamplesIn;
    SAMPLING_RATE = SAMPLING_RATE_IN;
 
