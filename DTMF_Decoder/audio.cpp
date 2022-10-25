@@ -82,8 +82,7 @@ BOOL isIEEE = false;
 
 // TODO: Make this generic (good for a variety of formats -- there's a good 
 //       example in the git history just before commit 563da34a)
-// TODO:  Preprocess this stuff
-// NOTE: For now, this code assumes that pData is a 1 channel, 8-bit PCM data stream
+// TODO: Preprocess this stuff
 BOOL processAudioFrame( BYTE* pData, UINT32 frame, UINT64 framePosition ) {
    assert( pData != NULL );
    assert( isPCM || isIEEE );
@@ -135,8 +134,8 @@ BOOL processAudioFrame( BYTE* pData, UINT32 frame, UINT64 framePosition ) {
 }
 
 
-// TODO:  Watch the program with Process Monitor and make sure it's not
-// over-spinning a thread
+/// TODO:  Watch the program with Process Monitor and make sure it's not
+///        over-spinning a thread.
 
 /// Collect the audio frames and process them
 BOOL captureAudio() {
@@ -499,7 +498,7 @@ BOOL initAudioDevice( HWND hWnd ) {
       OutputDebugStringA( __FUNCTION__ ":  Failed to initialize the audio client" );
       return FALSE;
    }
-   // TODO: Look at the error code and print out higher-fidelity error message
+   // TODO: Look at more error codes and print out higher-fidelity error messages
 
    // OutputDebugStringA( __FUNCTION__ ":  The audio client has been initialized" );
 

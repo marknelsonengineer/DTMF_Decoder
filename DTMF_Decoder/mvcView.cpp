@@ -9,6 +9,8 @@
 ///
 /// @file mvcView.cpp
 /// @version 1.0
+/// 
+/// @see http://www.catch22.net/tuts/win32/flicker-free-drawing
 ///
 /// @author Mark Nelson <marknels@hawaii.edu>
 /// @date   10_Oct_2022
@@ -261,6 +263,7 @@ BOOL mvcViewCleanupResources() {
 
 // TODO: Make this based on changes to the model... get rid of the flicker. 
 //       Think Microsoft Windows
+// @see:  http://www.catch22.net/tuts/win32/flicker-free-drawing#
 BOOL mvcViewPaintWindow( HWND hWnd ) {
    gpRenderTarget->BeginDraw() ;
 

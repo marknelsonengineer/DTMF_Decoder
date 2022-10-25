@@ -46,7 +46,9 @@ void goertzel_magnitude( UINT8 index ) {
       float q0 = dtmfTones[ index ].coeff * q1 - q2 + ( (float) pcmQueue[ queueRead++ ] );
       q2 = q1;
       q1 = q0;
-      queueRead %= queueSize;  // TODO:  There are probably more clever/efficient ways to do this, but this is very clear
+      if ( queueRead >= queueSize ) { // Wrap around at the end of the queue
+         queueRead = 0;
+      }
    }
 
    // calculate the real and imaginary results

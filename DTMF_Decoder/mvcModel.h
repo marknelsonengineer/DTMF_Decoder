@@ -62,7 +62,9 @@ inline void pcmEnqueue( BYTE data ) {
 
    pcmQueue[ queueHead++ ] = data ;
 
-   queueHead %= queueSize;  // TODO:  There are more clever/efficient ways to do this, but this is very clear
+   if ( queueHead >= queueSize ) {  // This is an efficient wraparound
+      queueHead = 0;
+   }
 
    // _ASSERTE( _CrtCheckMemory() );
 }

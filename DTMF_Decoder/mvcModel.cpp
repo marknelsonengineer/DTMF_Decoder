@@ -80,11 +80,13 @@ void pcmReleaseQueue() {
    if ( pcmQueue == NULL )
       return;
 
+   _ASSERTE( _CrtCheckMemory() );  // Check memory and see if there's a problem
+
    _free_dbg( pcmQueue, _CLIENT_BLOCK );
 }
 
 
-/// TODO: Currently does nothing. 
+/// Currently does nothing, but it's good to have around
 BOOL mvcInitModel() {
    return TRUE;
 }

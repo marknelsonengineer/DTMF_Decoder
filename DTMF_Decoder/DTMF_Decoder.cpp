@@ -72,7 +72,6 @@ int APIENTRY wWinMain(
    wcex.hInstance = hInstance;
    wcex.hIcon = LoadIcon( hInstance, MAKEINTRESOURCE( IDI_DTMFDECODER ) );
    wcex.hCursor = LoadCursor( nullptr, IDC_ARROW );
-   // wcex.hbrBackground = CreateSolidBrush( BACKGROUND_COLOR );
    wcex.hbrBackground = NULL;  // To avoid flicker
    wcex.lpszMenuName = MAKEINTRESOURCEW( IDC_DTMFDECODER );
    wcex.lpszClassName = gszWindowClass;
@@ -183,7 +182,7 @@ LRESULT CALLBACK WndProc( HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam 
             PAINTSTRUCT ps;
             HDC hdc = BeginPaint( hWnd, &ps );
 
-            // TODO: Add any drawing code that uses hdc here...
+            // Add any drawing code that uses hdc here...
             mvcViewPaintWindow( hWnd ) ;
 
             EndPaint( hWnd, &ps );
