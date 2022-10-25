@@ -188,7 +188,7 @@ LRESULT CALLBACK WndProc( HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam 
             EndPaint( hWnd, &ps );
          }
          break;
-      case WM_KEYDOWN:  /// WM_KEYDOWN - Exit if <ESC> is pressed
+      case WM_KEYDOWN:  /// WM_KEYDOWN - Exit if ESC is pressed
          {
             switch ( wParam ) {
                case VK_ESCAPE:
