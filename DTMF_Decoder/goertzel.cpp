@@ -34,7 +34,18 @@ HANDLE hWorkThreads[ NUMBER_OF_DTMF_TONES ];   /// The worker threads
 static float gfScaleFactor = 0;  /// Set in goertzel_init() and used in goertzel_magnitude()
 
 
-void goertzel_magnitude( UINT8 index ) {
+/// Compute the Goertzel magnitude of 8-bit PCM data
+/// 
+/// This 1-pass loop over the pcmQueue has been optimized for performance as it is 
+/// processing audio data in realtime.
+/// 
+/// The original version of this algorithm came from:
+/// @see https://github.com/Harvie/Programs/blob/master/c/goertzel/goertzel.c
+///
+/// @param index       The index into the DTMF tones array
+/// @param toneStruct  A pointer to the DTMF tones structure (so it doesn't have to
+///                    re-multiply the index each time
+void goertzel_magnitude( UINT8 index, dtmfTones_t* toneStruct ) {
    float real, imag;
 
    float q1 = 0;
@@ -43,7 +54,7 @@ void goertzel_magnitude( UINT8 index ) {
    size_t queueRead = queueHead;  // Thread safe method to point to the next available byte for reading
 
    for ( size_t i = 0; i < queueSize; i++ ) {
-      float q0 = dtmfTones[ index ].coeff * q1 - q2 + ( (float) pcmQueue[ queueRead++ ] );
+      float q0 = toneStruct->coeff * q1 - q2 + ( (float) pcmQueue[ queueRead++ ] );
       q2 = q1;
       q1 = q0;
       if ( queueRead >= queueSize ) { // Wrap around at the end of the queue
@@ -53,20 +64,10 @@ void goertzel_magnitude( UINT8 index ) {
 
    // calculate the real and imaginary results
    // scaling appropriately
-   real = ( q1 * dtmfTones[ index ].cosine - q2 );
-   imag = ( q1 * dtmfTones[ index ].sine );
+   real = ( q1 * toneStruct->cosine - q2 );
+   imag = ( q1 * toneStruct->sine );
 
-   dtmfTones[ index ].goertzelMagnitude = sqrtf( real * real + imag * imag ) / gfScaleFactor;
-
-   float threshold = GOERTZEL_MAGNITUDE_THRESHOLD;
-
-   if ( dtmfTones[ index ].goertzelMagnitude >= threshold ) {
-      editToneDetectedStatus( index, true );
-   } else {
-      editToneDetectedStatus( index, false );
-   }
-
-   SetEvent( doneDFTevent[ index ] );
+   toneStruct->goertzelMagnitude = sqrtf( real * real + imag * imag ) / gfScaleFactor;
 }
 
 
@@ -93,7 +94,16 @@ DWORD WINAPI goertzelWorkThread( LPVOID Context ) {
       dwWaitResult = WaitForSingleObject( startDFTevent[index], INFINITE);
       if ( dwWaitResult == WAIT_OBJECT_0 ) {
          if ( isRunning ) {
-            goertzel_magnitude( index );
+            goertzel_magnitude( index, &dtmfTones[index] );
+
+            if ( dtmfTones[index].goertzelMagnitude >= GOERTZEL_MAGNITUDE_THRESHOLD ) {
+               editToneDetectedStatus( index, true );
+            } else {
+               editToneDetectedStatus( index, false );
+            }
+
+            SetEvent( doneDFTevent[ index ] );
+
          }
       } else if ( dwWaitResult == WAIT_FAILED ) {
          OutputDebugStringA( __FUNCTION__ ":  The wait was failed.  Exiting" );
