@@ -364,3 +364,4 @@ FodyWeavers.xsd
 
 # Ignore Doxygen
 /Doxygen/html
+*.DS_Store

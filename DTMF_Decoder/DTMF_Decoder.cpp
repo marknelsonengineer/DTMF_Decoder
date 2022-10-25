@@ -6,7 +6,7 @@
 ///
 /// The main loop (with wWinMain and WndProc)
 ///
-/// @file DTMF_Decoder.cpp
+/// @file    DTMF_Decoder.cpp
 /// @version 1.0
 ///
 /// @author Mark Nelson <marknels@hawaii.edu>
