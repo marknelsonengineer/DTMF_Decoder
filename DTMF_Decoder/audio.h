@@ -4,6 +4,8 @@
 //
 /// A Windows Desktop C program that decodes DTMF tones
 /// 
+/// Windows Audio Driver code
+/// 
 /// @file audio.h
 /// @version 1.0
 ///
@@ -19,8 +21,7 @@ extern BOOL initAudioDevice( HWND );
 extern BOOL stopAudioDevice( HWND );
 extern BOOL cleanupAudioDevice();
 
-extern DWORD getSamplesPerSecond();   // TODO: This may be unused.  Get rid of it
- 
+
 #define PCM_8_BIT_SILENCE 127     /* Silence is 127 */
 
 extern size_t queueSize;   

@@ -4,9 +4,13 @@
 //
 /// A Windows Desktop C program that decodes DTMF tones
 /// 
+/// Windows Audio Driver code
+/// 
 /// @file audio.cpp
 /// @version 1.0
 ///
+/// @see https://learn.microsoft.com/en-us/windows/win32/api/_coreaudio/
+/// 
 /// @author Mark Nelson <marknels@hawaii.edu>
 /// @date   10_Oct_2022
 ///////////////////////////////////////////////////////////////////////////////
@@ -74,11 +78,6 @@ BYTE monitorCh1Min = 255;
 
 BOOL isPCM = false;
 BOOL isIEEE = false;
-
-
-DWORD getSamplesPerSecond() {
-   return gpMixFormat->nSamplesPerSec;
-}
 
 
 // TODO: Make this generic (good for a variety of formats -- there's a good 
@@ -160,7 +159,7 @@ BOOL captureAudio() {
             processAudioFrame( pData, i, framePosition+i );
          }
          
-         compute_dtmf_tones_with_goertzel();
+         goertzel_compute_dtmf_tones();
           
          if ( hasDtmfTonesChanged ) {
             mvcViewRefreshWindow();

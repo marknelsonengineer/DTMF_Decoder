@@ -4,7 +4,9 @@
 //
 /// A Windows Desktop C program that decodes DTMF tones
 ///
-/// The model will hold state between the controller and view code
+/// The model will hold state between the various modules.
+/// 
+/// TODO:  Consolidate all exported global variables into here
 ///
 /// @file mvcModel.cpp
 /// @version 1.0
@@ -16,9 +18,10 @@
 #include "framework.h"    // Standard system include files
 #include <assert.h>       // For assert()
 #include <crtdbg.h>       // For _malloc_dbg()
+#include "mvcModel.h"     // For yo bad self
 
-#include "mvcModel.h"
-
+/// @note:  There are several other members to dtmfTones that are computed and
+///         set by goertzel_init()
 dtmfTones_t dtmfTones[ NUMBER_OF_DTMF_TONES ] = {
    { 0,  697.0, false, L"697" },
    { 1,  770.0, false, L"770" },  
@@ -29,6 +32,7 @@ dtmfTones_t dtmfTones[ NUMBER_OF_DTMF_TONES ] = {
    { 6, 1477.0, false, L"1477" }, 
    { 7, 1633.0, false, L"1633" }
 };
+
 
 bool hasDtmfTonesChanged = false;
 
@@ -48,6 +52,7 @@ bool isRunning = false;
 
 static size_t queueSize = 0;
 BYTE* pcmQueue = NULL;
+
 
 BOOL pcmSetQueueSize( size_t size ) {
    //assert( pcmQueue == NULL );
@@ -84,4 +89,10 @@ BOOL mvcInitModel() {
    return TRUE;
 }
 
-size_t queueHead = 0;  // Points to the next available byte for writing
+
+size_t queueHead = 0;  /// Points to the next available byte for writing
+                       /// This is thread safe because all of the threads
+                       /// read from the same, unchanging queue.
+                       /// 
+                       /// It's the readHead pointer that needs to be thread
+                       /// local.

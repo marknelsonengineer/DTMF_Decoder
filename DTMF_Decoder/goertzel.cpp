@@ -1,36 +1,37 @@
 ///////////////////////////////////////////////////////////////////////////////
 //          University of Hawaii, College of Engineering
-//          DTMF_Decoder22X!Vqrpp1kz9C!ma3mCkbd - EE 469 - Fall 2022
+//          DTMF_Decoder - EE 469 - Fall 2022
 //
 /// A Windows Desktop C program that decodes DTMF tones
+///
+/// An 8-way multi-threaded Discrete Fast Forier Transform - specifically, 
+/// the Goertzel algorithm for 8-bit PCM data.
 /// 
 /// @file goertzel.cpp
 /// @version 1.0
 ///
+/// @see https://github.com/Harvie/Programs/blob/master/c/goertzel/goertzel.c
+/// @see https://en.wikipedia.org/wiki/Goertzel_algorithm
+/// 
 /// @author Mark Nelson <marknels@hawaii.edu>
 /// @date   10_Oct_2022
 ///////////////////////////////////////////////////////////////////////////////
 
 #include "framework.h"
-#include "DTMF_Decoder.h" 
-#include "mvcModel.h"
-#include <stdint.h>
-#define _USE_MATH_DEFINES // for C++  
-#include <math.h>
-#include "audio.h"  // for getSamplesPerSecond()
-#include <avrt.h>    // For AvSetMmThreadCharacteristics()
-#include <stdio.h>
-#include "goertzel.h" 
+#include "mvcModel.h"     // For pcmQueue and friends
+#define _USE_MATH_DEFINES // For C++ (this is a .cpp file) 
+#include <math.h>         // For sinf() and cosf()
+#include "audio.h"        // For getSamplesPerSecond()
+#include <avrt.h>         // For AvSetMmThreadCharacteristics()
+#include <stdio.h>        // For sprintf_s()
+#include "goertzel.h"     // For yo bad self
 
 
-// int numSamples = 0;
-int SAMPLING_RATE = 0;
-float   floatnumSamples = 0;
-float   scalingFactor = 0;
+HANDLE startDFTevent[ NUMBER_OF_DTMF_TONES ];  /// Handles to events
+HANDLE doneDFTevent[ NUMBER_OF_DTMF_TONES ];   /// Handles to events
+HANDLE hWorkThreads[ NUMBER_OF_DTMF_TONES ];   /// The worker threads
 
-HANDLE startDFTevent[ NUMBER_OF_DTMF_TONES ];
-HANDLE doneDFTevent[ NUMBER_OF_DTMF_TONES ];
-HANDLE hWorkThreads[ NUMBER_OF_DTMF_TONES ];
+static float gfScaleFactor = 0;  /// Set in goertzel_init() and used in goertzel_magnitude()
 
 
 void goertzel_magnitude( UINT8 index ) {
@@ -53,9 +54,9 @@ void goertzel_magnitude( UINT8 index ) {
    real = ( q1 * dtmfTones[ index ].cosine - q2 );
    imag = ( q1 * dtmfTones[ index ].sine );
 
-   dtmfTones[ index ].goertzelMagnitude = sqrtf( real * real + imag * imag ) / scalingFactor;
+   dtmfTones[ index ].goertzelMagnitude = sqrtf( real * real + imag * imag ) / gfScaleFactor;
 
-   float threshold = THRESHOLD;
+   float threshold = GOERTZEL_MAGNITUDE_THRESHOLD;
 
    if ( dtmfTones[ index ].goertzelMagnitude >= threshold ) {
       editToneDetectedStatus( index, true );
@@ -108,22 +109,22 @@ DWORD WINAPI goertzelWorkThread( LPVOID Context ) {
    ExitThread( 0 );
 }
 
+
 #define M_PIF 3.141592653589793238462643383279502884e+00F
 
-BOOL goertzel_init( int SAMPLING_RATE_IN ) {
-   // numSamples = numSamplesIn;
-   SAMPLING_RATE = SAMPLING_RATE_IN;
+BOOL goertzel_init( int intSamplingRateParm ) {
+   float floatSamplingRate = (float) intSamplingRateParm;
 
-   floatnumSamples = (float) queueSize;
+   float floatnumSamples = (float) queueSize;
 
-   scalingFactor = queueSize / 2.0f;
+   gfScaleFactor = queueSize / 2.0f;
 
    int     k;
 
    float   omega, sine, cosine, coeff;
 
    for ( int i = 0 ; i < NUMBER_OF_DTMF_TONES ; i++ ) {
-      k = (int) ( 0.5f + ( ( floatnumSamples * dtmfTones[ i ].frequency ) / (float) SAMPLING_RATE ) );
+      k = (int) ( 0.5f + ( ( floatnumSamples * dtmfTones[ i ].frequency ) / (float) floatSamplingRate ) );
       omega = ( 2.0f * M_PIF * k ) / floatnumSamples;
       sine = sinf( omega );
       cosine = cosf( omega );
@@ -134,7 +135,7 @@ BOOL goertzel_init( int SAMPLING_RATE_IN ) {
       dtmfTones[ i ].coeff = coeff;
    }
  
-
+   /// Create the events for synchronizing the threads
    for ( int i = 0 ; i < NUMBER_OF_DTMF_TONES ; i++ ) {
       startDFTevent[ i ] = CreateEventA( NULL, FALSE, FALSE, NULL );
       if ( startDFTevent[ i ] == NULL ) {
@@ -148,19 +149,19 @@ BOOL goertzel_init( int SAMPLING_RATE_IN ) {
          return FALSE;
       }
 
-         /// Start the thread
+      /// Start the threads
       hWorkThreads[i] = CreateThread(NULL, 0, goertzelWorkThread, &dtmfTones[i].index, 0, NULL);
       if ( hWorkThreads[ i ] == NULL ) {
          OutputDebugStringA( __FUNCTION__ ":  Failed to create a Goertzel work thread" );
          return FALSE;
       }
-
    }
 
    return TRUE;
 }
 
 
+// TODO:  Return BOOL and then check it where it's called
 void goertzel_end() {
    isRunning = false;  // Just to be sure
 
@@ -172,6 +173,7 @@ void goertzel_end() {
 }
 
 
+// TODO:  Return BOOL and then check it where it's called
 void goertzel_cleanup() {
    for ( int i = 0 ; i < NUMBER_OF_DTMF_TONES ; i++ ) {
       hWorkThreads[ i ] = NULL;
@@ -186,13 +188,14 @@ void goertzel_cleanup() {
 }
 
 
-
-BOOL compute_dtmf_tones_with_goertzel() {
+BOOL goertzel_compute_dtmf_tones() {
 
    for ( UINT8 i = 0 ; i < NUMBER_OF_DTMF_TONES ; i++ ) {
+      /// Start each of the worker threads
       SetEvent( startDFTevent[i] );
    }
 
+   /// Wait for all of the worker threads to signal their doneDFTevent
    WaitForMultipleObjects( NUMBER_OF_DTMF_TONES, doneDFTevent, TRUE, INFINITE );
 
    return TRUE;
