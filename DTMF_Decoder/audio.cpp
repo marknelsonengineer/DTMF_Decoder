@@ -234,7 +234,7 @@ BOOL captureAudio() {
 }
 
 
-DWORD captureThread( LPVOID Context ) {
+DWORD WINAPI captureThread( LPVOID Context ) {
    OutputDebugStringA( __FUNCTION__ ":  Start capture thread" );
 
    HRESULT hr;

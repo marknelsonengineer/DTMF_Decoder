@@ -41,7 +41,7 @@ void goertzel_magnitude( UINT8 index ) {
 
    size_t queueRead = queueHead;  // Thread safe method to point to the next available byte for reading
 
-   for ( int i = 0; i < queueSize; i++ ) {
+   for ( size_t i = 0; i < queueSize; i++ ) {
       float q0 = dtmfTones[ index ].coeff * q1 - q2 + ( (float) pcmQueue[ queueRead++ ] );
       q2 = q1;
       q1 = q0;
@@ -67,14 +67,12 @@ void goertzel_magnitude( UINT8 index ) {
 }
 
 
-
-DWORD goertzelWorkThread( LPVOID Context ) {
+DWORD WINAPI goertzelWorkThread( LPVOID Context ) {
    CHAR sBuf[ 256 ];  // Debug buffer   // TODO: put a guard around this
    int index = *(int*) Context;
    sprintf_s( sBuf, sizeof( sBuf ), __FUNCTION__ ":  Start Goertzel DFT thread index=%d", index );
    OutputDebugStringA( sBuf );
 
-   HRESULT hr;
    HANDLE mmcssHandle = NULL;
    DWORD mmcssTaskIndex = 0;
 
@@ -110,6 +108,7 @@ DWORD goertzelWorkThread( LPVOID Context ) {
    ExitThread( 0 );
 }
 
+#define M_PIF 3.141592653589793238462643383279502884e+00F
 
 BOOL goertzel_init( int SAMPLING_RATE_IN ) {
    // numSamples = numSamplesIn;
@@ -117,18 +116,18 @@ BOOL goertzel_init( int SAMPLING_RATE_IN ) {
 
    floatnumSamples = (float) queueSize;
 
-   scalingFactor = queueSize / 2.0;
+   scalingFactor = queueSize / 2.0f;
 
    int     k;
 
    float   omega, sine, cosine, coeff;
 
    for ( int i = 0 ; i < NUMBER_OF_DTMF_TONES ; i++ ) {
-      k = (int) ( 0.5 + ( ( floatnumSamples * dtmfTones[ i ].frequency ) / (float) SAMPLING_RATE ) );
-      omega = ( 2.0 * M_PI * k ) / floatnumSamples;
-      sine = sin( omega );
-      cosine = cos( omega );
-      coeff = 2.0 * cosine;
+      k = (int) ( 0.5f + ( ( floatnumSamples * dtmfTones[ i ].frequency ) / (float) SAMPLING_RATE ) );
+      omega = ( 2.0f * M_PIF * k ) / floatnumSamples;
+      sine = sinf( omega );
+      cosine = cosf( omega );
+      coeff = 2.0f * cosine;
 
       dtmfTones[ i ].sine = sine;
       dtmfTones[ i ].cosine = cosine;
