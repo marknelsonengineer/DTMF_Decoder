@@ -33,6 +33,11 @@ HANDLE hWorkThreads[ NUMBER_OF_DTMF_TONES ];   /// The worker threads
 
 static float gfScaleFactor = 0;  /// Set in goertzel_init() and used in goertzel_magnitude()
 
+#ifdef _WIN64
+   #pragma message( "Compiling 64-bit program" )
+#else
+   #pragma message( "Compiling 32-bit program" )
+#endif
 
 /// Compute the Goertzel magnitude of 8-bit PCM data
 /// 
