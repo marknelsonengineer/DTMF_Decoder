@@ -92,9 +92,14 @@ BOOL paintColFreq( HWND hWnd, size_t index );
 
 
 BOOL mvcViewRefreshWindow() {
-   // TODO: Fix assertions and do error checking
-   InvalidateRect( gHwnd, NULL, TRUE );
-   UpdateWindow( gHwnd );
+   if ( !InvalidateRect( gHwnd, NULL, FALSE ) ) {
+      OutputDebugStringA( APP_NAME ": Failed to invalidate rectangle" );
+      return FALSE;
+   }
+   if ( !UpdateWindow( gHwnd ) ) {
+      OutputDebugStringA( APP_NAME ": Failed to update window" );
+      return FALSE;
+   }
 
    return TRUE;
 }
@@ -268,7 +273,8 @@ BOOL mvcViewPaintWindow( HWND hWnd ) {
    gpRenderTarget->BeginDraw() ;
 
    // Clear to the background color
-   // gpRenderTarget->Clear( D2D1::ColorF( BACKGROUND_COLOR, 1.0f ) );
+   // Failing to do this makes the window smudgy
+   gpRenderTarget->Clear( D2D1::ColorF( BACKGROUND_COLOR, 1.0f ) );
 
    // Paint each of the digits
    for ( int i = 0 ; i < 16 ; i++ ) {
