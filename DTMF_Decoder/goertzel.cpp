@@ -31,7 +31,7 @@ HANDLE startDFTevent[ NUMBER_OF_DTMF_TONES ];  /// Handles to events
 HANDLE doneDFTevent[ NUMBER_OF_DTMF_TONES ];   /// Handles to events
 HANDLE hWorkThreads[ NUMBER_OF_DTMF_TONES ];   /// The worker threads
 
-static float gfScaleFactor = 0;  /// Set in goertzel_init() and used in goertzel_magnitude()
+extern "C" float gfScaleFactor = 0;  /// Set in goertzel_init() and used in goertzel_magnitude()
 
 #ifdef _WIN64
    #pragma message( "Compiling 64-bit program" )
@@ -97,8 +97,8 @@ DWORD WINAPI goertzelWorkThread( LPVOID Context ) {
    }
    OutputDebugStringA( __FUNCTION__ ":  Set MMCSS on Goertzel work thread." );
 
-   while ( isRunning && index == 4 ) {
-//   while ( isRunning ) {
+//   while ( isRunning && index == 4 ) {
+   while ( isRunning ) {
          DWORD dwWaitResult;
 
       dwWaitResult = WaitForSingleObject( startDFTevent[index], INFINITE);
@@ -106,9 +106,9 @@ DWORD WINAPI goertzelWorkThread( LPVOID Context ) {
          if ( isRunning ) {
             #ifdef _WIN64
                goertzel_magnitude_64( index, &dtmfTones[ index ] );
+            #else 
+              goertzel_magnitude( index, &dtmfTones[index] );
             #endif
-
-            goertzel_magnitude( index, &dtmfTones[index] );
 
             if ( dtmfTones[index].goertzelMagnitude >= GOERTZEL_MAGNITUDE_THRESHOLD ) {
                editToneDetectedStatus( index, true );
