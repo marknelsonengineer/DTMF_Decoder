@@ -1,10 +1,11 @@
-# DTMF_Decoder
-
-<img src="images/DTMF_Decoder_iOS.PNG" style="width:200px; float: left; margin: 0 10px 10px 0;" alt="DTMF Decoder iOS"/>
+# DTMF Decoder for Windows
 
 <img src="images/DTMF_Decoder_Windows.jpg" style="width:200px; float: left; margin: 0 10px 10px 0;" alt="DTMF Decoder Windows"/>
 
-This project was inspired by [Blue Box DTMF Decoder](https://apps.apple.com/us/app/blue-box/id391832739), an iOS app developed by [Sunshine Valley Systems](http://www.sunshinevalleysystems.com/BlueBox/index.html).
+<img src="images/DTMF_Decoder_iOS.PNG" style="width:200px; float: right; margin: 0 10px 10px 0;" alt="DTMF Decoder iOS"/>
+
+This project (left) was inspired by [Blue Box DTMF Decoder](https://apps.apple.com/us/app/blue-box/id391832739), an iOS app developed by [Sunshine Valley Systems](http://www.sunshinevalleysystems.com/BlueBox/index.html) (right)
+
 
 ## Goals
 - Write a DTMF and a tone decoder
