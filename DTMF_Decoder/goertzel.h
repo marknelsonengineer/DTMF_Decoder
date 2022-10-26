@@ -22,7 +22,7 @@
 #include <stdint.h>
 #include <windows.h>
 
-#define GOERTZEL_MAGNITUDE_THRESHOLD  3.0f
+#define GOERTZEL_MAGNITUDE_THRESHOLD  10.0f
 
 extern BOOL goertzel_init( int SAMPLING_RATE_IN );  /// Initialize this module
 

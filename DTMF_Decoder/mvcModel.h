@@ -47,7 +47,7 @@ extern HANDLE gAudioSamplesReadyEvent;  /// This event is signaled when the audi
                                         /// driver has some data to send.  It's
                                         /// what makes this program event-driven.
 
-#define SIZE_OF_QUEUE_IN_MS (50)
+#define SIZE_OF_QUEUE_IN_MS (150)
 
 extern BOOL mvcInitModel();   /// Initialize the model
 
