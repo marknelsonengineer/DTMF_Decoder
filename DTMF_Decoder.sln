@@ -8,7 +8,16 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{0FC234A6-A252-4D75-97A2-F9E5C1997AC8}"
 	ProjectSection(SolutionItems) = preProject
 		.gitignore = .gitignore
+		Doxyfile = Doxyfile
+		README.md = README.md
 	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "html", "html", "{8C0060C4-F258-4A3A-9246-C89EEA7D050F}"
+	ProjectSection(SolutionItems) = preProject
+		html\extraStyleSheet.css = html\extraStyleSheet.css
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "images", "images", "{921F6D11-A804-4B40-84A9-834B011DEE8F}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

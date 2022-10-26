@@ -1,5 +1,9 @@
 # DTMF_Decoder
 
+<img src="images/DTMF_Decoder_Full.PNG" style="width:200px; float: left; margin: 0 10px 10px 0;" alt="DTMF Decoder"/>
+
+This project was inspired by [Blue Box DTMF Decoder](https://apps.apple.com/us/app/blue-box/id391832739), an iOS app developed by [Sunshine Valley Systems](http://www.sunshinevalleysystems.com/BlueBox/index.html).
+
 ## Goals
 - Write a DTMF and a tone decoder
 - Get back to my roots as a Windows C Usermode programmer
