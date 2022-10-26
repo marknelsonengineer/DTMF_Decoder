@@ -35,6 +35,10 @@ static float gfScaleFactor = 0;  /// Set in goertzel_init() and used in goertzel
 
 #ifdef _WIN64
    #pragma message( "Compiling 64-bit program" )
+
+   extern "C" {
+      void goertzel_magnitude_64( UINT8 index, dtmfTones_t* toneStruct );
+   };
 #else
    #pragma message( "Compiling 32-bit program" )
 #endif
@@ -93,12 +97,17 @@ DWORD WINAPI goertzelWorkThread( LPVOID Context ) {
    }
    OutputDebugStringA( __FUNCTION__ ":  Set MMCSS on Goertzel work thread." );
 
-   while ( isRunning ) {
-      DWORD dwWaitResult;
+   while ( isRunning && index == 4 ) {
+//   while ( isRunning ) {
+         DWORD dwWaitResult;
 
       dwWaitResult = WaitForSingleObject( startDFTevent[index], INFINITE);
       if ( dwWaitResult == WAIT_OBJECT_0 ) {
          if ( isRunning ) {
+            #ifdef _WIN64
+               goertzel_magnitude_64( index, &dtmfTones[ index ] );
+            #endif
+
             goertzel_magnitude( index, &dtmfTones[index] );
 
             if ( dtmfTones[index].goertzelMagnitude >= GOERTZEL_MAGNITUDE_THRESHOLD ) {

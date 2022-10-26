@@ -51,8 +51,8 @@ extern HANDLE gAudioSamplesReadyEvent;  /// This event is signaled when the audi
 
 extern BOOL mvcInitModel();   /// Initialize the model
 
-extern BYTE* pcmQueue;  // We need to make this visible so we can the queue from Goertzel
-extern size_t queueHead;  // We need to make this visible so we can read the queue from Goertzel
+extern "C" BYTE * pcmQueue;  // We need to make this visible so we can the queue from Goertzel
+extern "C" size_t queueHead;  // We need to make this visible so we can read the queue from Goertzel
 extern BOOL pcmSetQueueSize( size_t size );  /// Set the size of the queue
 
 /// Enqueue a byte of PCM data to `pcmQueue`
