@@ -365,3 +365,6 @@ FodyWeavers.xsd
 # Ignore Doxygen
 /Doxygen/html
 *.DS_Store
+
+# Ignore Ghidra work Files
+~*.bak
