@@ -60,17 +60,17 @@ goertzel_magnitude_64 PROC
 forLoop:
 	CMP R8, R9                   ; pcmQueue < (pcmQueue + queueSize);
 	JNB exitForLoop
-	; Do the work of the for loop
+	; Do the work of the for() loop
 
 	MOV AL, byte ptr [R8]         ; Get the PCM byte from the queue
 	VMULSS XMM0, XMM3, XMM1       ; q0 = toneStruct->coeff * q1
-	VSUBSS XMM0, XMM0, XMM2       ; q0 -= q2
 	CVTSI2SS XMM4, EAX            ; Copy the PCM byte into XMM4
-	VADDSS XMM0, XMM0, XMM4       ; q0 += the PCM byte
+	VSUBSS XMM0, XMM0, XMM2       ; q0 -= q2
 	MOVSS XMM2, XMM1              ; q2 = q1
+	VADDSS XMM0, XMM0, XMM4       ; q0 += the PCM byte
 	MOVSS XMM1, XMM0              ; q1 = q0
 
-	; Done inside the for loop
+	; Done inside the for() loop
 	INC R8                        ; i++
 	JMP forLoop
 
