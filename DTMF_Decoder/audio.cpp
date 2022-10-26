@@ -52,6 +52,7 @@ REFERENCE_TIME  gDefaultDevicePeriod = -1;    // Expressed in 100ns units (dev m
 REFERENCE_TIME  gMinimumDevicePeriod = -1;    // Expressed in 100ns units (dev machine = 29,025  = 2.9025ms
 UINT32          guBufferSize = 0;             // Dev Machine = 182
 HANDLE          hCaptureThread = NULL;
+DWORD           mmcssTaskIndex = 0;
 HANDLE          gAudioSamplesReadyEvent = NULL;  // This is externally delcared
 IAudioCaptureClient* gCaptureClient = NULL;
 // IAudioClockAdjustment* gAudioClockAdjuster = NULL;
@@ -237,7 +238,6 @@ DWORD WINAPI captureThread( LPVOID Context ) {
 
    HRESULT hr;
    HANDLE mmcssHandle = NULL;
-   DWORD mmcssTaskIndex = 0;
 
    /// Initialize COM for the thread
    hr = CoInitializeEx( NULL, COINIT_MULTITHREADED );

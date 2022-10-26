@@ -25,3 +25,5 @@ extern BOOL cleanupAudioDevice();
 #define PCM_8_BIT_SILENCE 127     /* Silence is 127 */
 
 extern "C" size_t queueSize;
+extern DWORD mmcssTaskIndex;
+

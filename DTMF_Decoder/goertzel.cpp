@@ -87,10 +87,11 @@ DWORD WINAPI goertzelWorkThread( LPVOID Context ) {
    OutputDebugStringA( sBuf );
 
    HANDLE mmcssHandle = NULL;
-   DWORD mmcssTaskIndex = 0;
 
    /// Set the multimedia class scheduler service, which will set the CPU
    /// priority for this thread
+   /// 
+   /// Note:  Uses the exported &mmcssTaskIndex that was originally set in audio.cpp
    mmcssHandle = AvSetMmThreadCharacteristics( L"Capture", &mmcssTaskIndex );
    if ( mmcssHandle == NULL ) {
       OutputDebugStringA( __FUNCTION__ ":  Failed to set MMCSS on Goertzel work thread.  Continuing." );
