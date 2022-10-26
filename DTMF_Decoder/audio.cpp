@@ -250,7 +250,7 @@ DWORD WINAPI captureThread( LPVOID Context ) {
    /// priority for this thread
    mmcssHandle = AvSetMmThreadCharacteristics( L"Capture", &mmcssTaskIndex );
    if ( mmcssHandle == NULL ) {
-      OutputDebugStringA( __FUNCTION__ ":  Failed to set MMCSS on thread.  Continuing." );
+      OutputDebugStringA( __FUNCTION__ ":  Failed to set MMCSS on the audio capture thread.  Continuing." );
    }
    OutputDebugStringA( __FUNCTION__ ":  Set MMCSS on thread." );
 
@@ -278,6 +278,13 @@ DWORD WINAPI captureThread( LPVOID Context ) {
          isRunning = false;
          break;  // While loop
       }
+   }
+
+   if ( mmcssHandle != NULL ) {
+      if ( !AvRevertMmThreadCharacteristics( mmcssHandle ) ) {
+         OutputDebugStringA( __FUNCTION__ ":  Failed to revert MMCSS on the audio capture thread.  Continuing." );
+      }
+      mmcssHandle = NULL;
    }
 
    /// Cleanup the thread

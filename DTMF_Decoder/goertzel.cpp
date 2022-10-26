@@ -131,6 +131,13 @@ DWORD WINAPI goertzelWorkThread( LPVOID Context ) {
       }
    }
 
+   if ( mmcssHandle != NULL ) {
+      if( !AvRevertMmThreadCharacteristics( mmcssHandle ) ) {
+         OutputDebugStringA( __FUNCTION__ ":  Failed to revert MMCSS on Goertzel work thread.  Continuing." );
+      }
+      mmcssHandle = NULL;
+   }
+
    OutputDebugStringA( __FUNCTION__ ":  End Goertzel DFT thread" );
 
    ExitThread( 0 );
@@ -209,8 +216,6 @@ void goertzel_cleanup() {
       startDFTevent[ i ] = NULL;
       CloseHandle( doneDFTevent[ i ] );
       doneDFTevent[ i ] = NULL;
-
-      // TODO: I probably need to cleanup AvSetMmThreadCharacteristics as well
    }
 }
 

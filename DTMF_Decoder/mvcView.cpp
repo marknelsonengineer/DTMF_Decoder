@@ -270,6 +270,7 @@ BOOL mvcViewCleanupResources() {
 //       Think Microsoft Windows
 // @see:  http://www.catch22.net/tuts/win32/flicker-free-drawing#
 BOOL mvcViewPaintWindow( HWND hWnd ) {
+   /// TODO Look into error checking for all of these methods
    gpRenderTarget->BeginDraw() ;
 
    // Clear to the background color
@@ -287,7 +288,6 @@ BOOL mvcViewPaintWindow( HWND hWnd ) {
    }
 
    gpRenderTarget->EndDraw();
-   /// TODO Look into error checking for these methods
 
    hasDtmfTonesChanged = false;  /// Reset the mvcModel changed bit
 
