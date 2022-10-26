@@ -2,7 +2,7 @@
 //          University of Hawaii, College of Engineering
 //          DTMF_Decoder - EE 469 - Fall 2022
 //
-/// A Windows Desktop C program that decodes DTMF tones
+//  A Windows Desktop C program that decodes DTMF tones
 /// 
 /// Windows Audio Driver code
 /// 

@@ -2,7 +2,7 @@
 //          University of Hawaii, College of Engineering
 //          DTMF_Decoder - EE 469 - Fall 2022
 //
-/// A Windows Desktop C program that decodes DTMF tones
+//  A Windows Desktop C program that decodes DTMF tones
 ///
 /// An 8-way multi-threaded Discrete Fast Forier Transform - specifically, 
 /// the Goertzel algorithm for 8-bit PCM data.
@@ -81,7 +81,7 @@ void goertzel_magnitude( UINT8 index, dtmfTones_t* toneStruct ) {
 
 
 DWORD WINAPI goertzelWorkThread( LPVOID Context ) {
-   CHAR sBuf[ 256 ];  // Debug buffer   // TODO: put a guard around this
+   CHAR sBuf[ 256 ];  // Debug buffer   /// @todo put a guard around this
    int index = *(int*) Context;
    sprintf_s( sBuf, sizeof( sBuf ), __FUNCTION__ ":  Start Goertzel DFT thread index=%d", index );
    OutputDebugStringA( sBuf );
@@ -195,7 +195,7 @@ BOOL goertzel_init( int intSamplingRateParm ) {
 }
 
 
-// TODO:  Return BOOL and then check it where it's called
+/// @todo  Return BOOL and then check it where it's called
 void goertzel_end() {
    isRunning = false;  // Just to be sure
 
@@ -207,7 +207,7 @@ void goertzel_end() {
 }
 
 
-// TODO:  Return BOOL and then check it where it's called
+/// @todo  Return BOOL and then check it where it's called
 void goertzel_cleanup() {
    for ( int i = 0 ; i < NUMBER_OF_DTMF_TONES ; i++ ) {
       hWorkThreads[ i ] = NULL;

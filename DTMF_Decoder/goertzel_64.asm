@@ -2,7 +2,7 @@
 ;//          University of Hawaii, College of Engineering
 ;//          DTMF_Decoder - EE 469 - Fall 2022
 ;//
-;/// A Windows Desktop C program that decodes DTMF tones
+;//  A Windows Desktop C program that decodes DTMF tones
 ;///
 ;/// A hand-coded, optimized Goertzel DFT that's intended to do all of its
 ;/// calculations in the CPU/registers.

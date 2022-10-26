@@ -2,11 +2,11 @@
 //          University of Hawaii, College of Engineering
 //          DTMF_Decoder - EE 469 - Fall 2022
 //
-/// A Windows Desktop C program that decodes DTMF tones
-///
+//  A Windows Desktop C program that decodes DTMF tones
+//
 /// The model will hold state between the various modules.
 /// 
-/// TODO:  Consolidate all exported global variables into here
+/// @todo Consolidate all exported global variables into here
 ///
 /// @file mvcModel.cpp
 /// @version 1.0
@@ -47,11 +47,20 @@ void editToneDetectedStatus( size_t toneIndex, bool detectedStatus ) {
 }
 
 
+/// `true` if the Audio and Goertzel threads should be processing/spinning.
+/// Set to `false` when it's time to shutdown the program.  Then, these threads
+/// will see that isRunning is `false`, exit out of their `while()` loops and 
+/// the threads will terminate naturally, cleaning up their resources.
 bool isRunning = false;
 
 
 static size_t queueSize = 0;
 BYTE* pcmQueue = NULL;
+
+
+/// Points to the next available byte for writing.  This is thread safe because
+/// all of the threads read from the same, unchanging queue.
+size_t queueHead = 0;
 
 
 BOOL pcmSetQueueSize( size_t size ) {
@@ -90,11 +99,3 @@ void pcmReleaseQueue() {
 BOOL mvcInitModel() {
    return TRUE;
 }
-
-
-size_t queueHead = 0;  /// Points to the next available byte for writing
-                       /// This is thread safe because all of the threads
-                       /// read from the same, unchanging queue.
-                       /// 
-                       /// It's the readHead pointer that needs to be thread
-                       /// local.

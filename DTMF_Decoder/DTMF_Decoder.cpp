@@ -183,7 +183,7 @@ LRESULT CALLBACK WndProc( HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam 
             HDC hdc = BeginPaint( hWnd, &ps );
 
             // Add any drawing code that uses hdc here...
-            mvcViewPaintWindow( hWnd ) ;
+            mvcViewPaintWindow() ;
 
             EndPaint( hWnd, &ps );
          }

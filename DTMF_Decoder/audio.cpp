@@ -2,7 +2,7 @@
 //          University of Hawaii, College of Engineering
 //          DTMF_Decoder22X!Vqrpp1kz9C!ma3mCkbd - EE 469 - Fall 2022
 //
-/// A Windows Desktop C program that decodes DTMF tones
+//  A Windows Desktop C program that decodes DTMF tones
 /// 
 /// Windows Audio Driver code
 /// 
@@ -58,8 +58,8 @@ IAudioCaptureClient* gCaptureClient = NULL;
 // IAudioClockAdjustment* gAudioClockAdjuster = NULL;
 size_t queueSize = 0;  /// Size in bytes of DTMF DFT queue = samplesPerSecond / 1000 * SIZE_OF_QUEUE_IN_MS
 
-CHAR            sBuf[ 256 ];  // Debug buffer   // TODO: put a guard around this
-WCHAR           wsBuf[ 256 ];  // Debug buffer   // TODO: put a guard around this
+CHAR            sBuf[ 256 ];  // Debug buffer   /// @todo put a guard around this
+WCHAR           wsBuf[ 256 ];  // Debug buffer  /// @todo put a guard around this
 
 
 template <class T> void SafeRelease( T** ppT ) {
@@ -81,9 +81,9 @@ BOOL isPCM = false;
 BOOL isIEEE = false;
 
 
-// TODO: Make this generic (good for a variety of formats -- there's a good 
-//       example in the git history just before commit 563da34a)
-// TODO: Preprocess this stuff
+/// @todo Make this generic (good for a variety of formats -- there's a good 
+///        example in the git history just before commit 563da34a)
+/// @todo Preprocess this stuff
 BOOL processAudioFrame( BYTE* pData, UINT32 frame, UINT64 framePosition ) {
    assert( pData != NULL );
    assert( isPCM || isIEEE );
@@ -135,7 +135,7 @@ BOOL processAudioFrame( BYTE* pData, UINT32 frame, UINT64 framePosition ) {
 }
 
 
-/// TODO:  Watch the program with Process Monitor and make sure it's not
+/// @todo  Watch the program with Process Monitor and make sure it's not
 ///        over-spinning a thread.
 
 /// Collect the audio frames and process them
@@ -505,7 +505,7 @@ BOOL initAudioDevice( HWND hWnd ) {
       OutputDebugStringA( __FUNCTION__ ":  Failed to initialize the audio client" );
       return FALSE;
    }
-   // TODO: Look at more error codes and print out higher-fidelity error messages
+   /// @todo Look at more error codes and print out higher-fidelity error messages
 
    // OutputDebugStringA( __FUNCTION__ ":  The audio client has been initialized" );
 

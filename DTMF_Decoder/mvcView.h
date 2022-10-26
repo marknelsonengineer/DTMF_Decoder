@@ -2,10 +2,10 @@
 //          University of Hawaii, College of Engineering
 //          DTMF_Decoder - EE 469 - Fall 2022
 //
-/// A Windows Desktop C program that decodes DTMF tones
-///
-/// This is the implementation of the Direct2D paint commands as the view 
-/// component of a model-view-controller architecture.
+//  A Windows Desktop C program that decodes DTMF tones
+//
+/// The implementation of the GDI and Direct2D paint commands as the view 
+/// component of this model-view-controller application.
 /// 
 /// @file mvcView.h
 /// @version 1.0
@@ -16,14 +16,16 @@
 
 #pragma once
 
-#define FOREGROUND_COLOR  (0x63B5FE)
-#define HIGHLIGHT_COLOR   (0x75F0FF)
-#define BACKGROUND_COLOR  (0x181737)
+#define FOREGROUND_COLOR  (0x63B5FE)   /**< A light blue - courtesey of <a href="https://apps.apple.com/us/app/blue-box/id391832739">BlueBox</a>         */
+#define HIGHLIGHT_COLOR   (0x75F0FF)   /**< A bright, light blue - courtesey of <a href="https://apps.apple.com/us/app/blue-box/id391832739">BlueBox</a> */
+#define BACKGROUND_COLOR  (0x181737)   /**< A dark blue - courtesey of <a href="https://apps.apple.com/us/app/blue-box/id391832739">BlueBox</a>          */
 
-BOOL mvcViewInitResources( HWND );
+BOOL mvcViewInitResources( HWND );  
 BOOL mvcViewCleanupResources();
-BOOL mvcViewPaintWindow( HWND );
+BOOL mvcViewPaintWindow();
 BOOL mvcViewRefreshWindow();
 
-extern const int windowWidth;
-extern const int windowHeight;
+extern const int windowWidth;   ///< The overall width of the main window, 
+                                ///< computed based on button size and spacing
+extern const int windowHeight;  ///< The overall height of the main window
+                                ///< computed based on button size and spacing
