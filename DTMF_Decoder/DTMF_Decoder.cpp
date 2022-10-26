@@ -231,7 +231,6 @@ LRESULT CALLBACK WndProc( HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam 
 
 // Message handler for the About box
 INT_PTR CALLBACK About( HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam ) {
-   UNREFERENCED_PARAMETER( lParam );
    switch ( message ) {
       case WM_INITDIALOG:
          return (INT_PTR) TRUE;
