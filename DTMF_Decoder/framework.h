@@ -1,13 +1,9 @@
-// header.h : include file for standard system include files,
-// or project specific include files
-//
-
 ///////////////////////////////////////////////////////////////////////////////
 //          University of Hawaii, College of Engineering
 //          DTMF_Decoder - EE 469 - Fall 2022
 //
 //  A Windows Desktop C program that decodes DTMF tones
-/// 
+// 
 /// Include file for standard system include files or project specific include files
 /// 
 /// @file framework.h
@@ -29,8 +25,18 @@
 #include <memory.h>
 #include <tchar.h>
 
+
+/// Release the pointer P to a COM object by calling the IUnknown::Release
+/// method and then setting P to NULL
+/// 
+/// @see https://learn.microsoft.com/en-us/windows/win32/medfound/saferelease
+/// @see https://learn.microsoft.com/en-us/windows/win32/api/unknwn/nf-unknwn-iunknown-release
 #ifndef SAFE_RELEASE
-#define SAFE_RELEASE(P) if(P){P->Release() ; P = NULL ;}
+   #define SAFE_RELEASE( P )                        \
+      if( P != NULL ) {                             \
+         P->Release();  /* Release does not return a meaningful result code */  \
+         P = NULL;                                  \
+      }
 #endif
 
 
