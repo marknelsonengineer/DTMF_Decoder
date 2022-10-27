@@ -70,13 +70,6 @@ IAudioCaptureClient* gCaptureClient = NULL; ///< The audio capture client
 CHAR            sBuf[ 256 ];   ///< Debug buffer  @todo put a guard around this
 WCHAR           wsBuf[ 256 ];  ///< Debug buffer  @todo put a guard around this
 
-/// @todo replace with SAFE_RELEASE
-template <class T> void SafeRelease( T** ppT ) {
-   if ( *ppT ) {
-      ( *ppT )->Release();
-      *ppT = NULL;
-   }
-}
 
 #define MONITOR_INTERVAL_SECONDS (4)   /**< Set to 0 to disable monitoring */
 UINT64 gFramesToMonitor = 0;           ///< set gMonitor when the current frame is > gStartOfMonitor + gFramesToMonitor
@@ -622,7 +615,7 @@ BOOL audioCleanup() {
       hCaptureThread = NULL;
    }
 
-   SafeRelease( &gCaptureClient );
+   SAFE_RELEASE( gCaptureClient );
 
    if ( gAudioSamplesReadyEvent != NULL ) {
       CloseHandle( gAudioSamplesReadyEvent );
@@ -636,13 +629,13 @@ BOOL audioCleanup() {
 
    pcmReleaseQueue();
 
-   SafeRelease( &glpAudioClient );
+   SAFE_RELEASE( glpAudioClient );
 
    PropVariantClear( &gDeviceFriendlyName );
    PropVariantClear( &gDeviceDescription );
    PropVariantClear( &gDeviceInterfaceFriendlyName );
 
-   SafeRelease( &glpPropertyStore );
+   SAFE_RELEASE( glpPropertyStore );
 
    if ( gpMixFormat != NULL ) {
       CoTaskMemFree( gpMixFormat );
@@ -659,7 +652,7 @@ BOOL audioCleanup() {
       glpwstrDeviceId = NULL;
    }
 
-   SafeRelease( &gDevice );
+   SAFE_RELEASE( gDevice );
 
    return TRUE;
 }
