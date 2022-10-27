@@ -18,7 +18,7 @@
 #include <Windows.h>      // For BOOL, HWND, etc.
 
 
-extern BOOL audioInit( HWND );
+extern BOOL audioInit();
 extern BOOL audioStopDevice( HWND );
 extern BOOL audioCleanup();
 

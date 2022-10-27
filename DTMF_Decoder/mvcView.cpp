@@ -28,7 +28,6 @@
 #pragma comment(lib, "Dwrite")  // Link the DirectWrite library (for fonts and text)
 
 // Global Variables (private to this source file)
-HWND                   gHwnd               = NULL;  ///< Handle to the main window
 ID2D1Factory*          gpD2DFactory        = NULL;  ///< The Direct2D Factory
 ID2D1HwndRenderTarget* gpRenderTarget      = NULL;	 ///< Render target
 ID2D1SolidColorBrush*  gpBrushForeground   = NULL;  ///< A light blue brush for the foreground
@@ -104,10 +103,10 @@ BOOL paintColFreq( size_t index );
 BOOL mvcViewRefreshWindow() {
    BOOL    br;  // BOOL result
 
-   br = InvalidateRect( gHwnd, NULL, FALSE );
+   br = InvalidateRect( ghMainWindow, NULL, FALSE );
    CHECK_BOOL_RESULT( "Failed to invalidate rectangle" );
 
-   br = UpdateWindow( gHwnd );
+   br = UpdateWindow( ghMainWindow );
    CHECK_BOOL_RESULT( "Failed to update window" );
 
    return TRUE;
@@ -118,11 +117,9 @@ BOOL mvcViewRefreshWindow() {
 /// 
 /// @param hWnd Window handle
 /// @return `true` if successful.  `false` if there was a problem.
-BOOL mvcViewInitResources( HWND hWnd ) {
+BOOL mvcViewInitResources( HWND hWndXX ) {
    HRESULT hr;  // HRESULT result
    BOOL    br;  // BOOL result
-
-   gHwnd = hWnd;  // Save in global mvcViewRefreshWindow 
 
    /// Initialize Direct2D
    hr = D2D1CreateFactory( D2D1_FACTORY_TYPE_MULTI_THREADED, &gpD2DFactory );
@@ -204,12 +201,12 @@ BOOL mvcViewInitResources( HWND hWnd ) {
 
    /// Create the Direct2D render target
    RECT clientRectangle ;
-   br = GetClientRect( hWnd, &clientRectangle );
+   br = GetClientRect( ghMainWindow, &clientRectangle );
    CHECK_BOOL_RESULT( "Failed to get the window size" );
 
    hr = gpD2DFactory->CreateHwndRenderTarget(
       D2D1::RenderTargetProperties(),
-      D2D1::HwndRenderTargetProperties( hWnd, D2D1::SizeU( clientRectangle.right - clientRectangle.left, clientRectangle.bottom - clientRectangle.top ) ),
+      D2D1::HwndRenderTargetProperties( ghMainWindow, D2D1::SizeU( clientRectangle.right - clientRectangle.left, clientRectangle.bottom - clientRectangle.top ) ),
       &gpRenderTarget
    );
    CHECK_RESULT( "Failed to create Direct2D Render Target" );

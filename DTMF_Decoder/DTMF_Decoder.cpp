@@ -122,7 +122,7 @@ int APIENTRY wWinMain(
       return FALSE;
    }
 
-   if ( !audioInit( hWnd ) ) {
+   if ( !audioInit() ) {
       OutputDebugStringA( APP_NAME ": Failed to initialize the audio system.  Exiting." );
       return FALSE;
    }

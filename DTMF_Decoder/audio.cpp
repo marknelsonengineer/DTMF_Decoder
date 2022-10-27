@@ -376,8 +376,11 @@ BOOL audioPrintWaveFormat( WAVEFORMATEX* pFmt ) {
 }
 
 
-BOOL audioInit( HWND hWnd ) {
-   HRESULT hr;  /// Result handle used by just about all Windows API calls
+/// Initialize the audio capture device and start the capture thread
+/// 
+/// @return `true` if successful.  `false` if there was a problem.
+BOOL audioInit() {
+   HRESULT hr;  // Result handle used by just about all Windows API calls
 
    if ( gShareMode == AUDCLNT_SHAREMODE_EXCLUSIVE ) {
       OutputDebugStringA( __FUNCTION__ ":  Exclusive mode not supported right now" );
