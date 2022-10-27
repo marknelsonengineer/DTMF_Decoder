@@ -18,7 +18,6 @@
 #include <crtdbg.h>       // For _malloc_dbg()
 #include "mvcModel.h"     // For yo bad self
 
-
 /// Currently does nothing, but it's good to have around
 BOOL mvcModelInit() {
    return TRUE;
@@ -43,7 +42,7 @@ bool hasDtmfTonesChanged = false;
 bool isRunning = false;
 
 
-BYTE*  pcmQueue  = NULL;
+BYTE* pcmQueue = NULL;
 size_t queueHead = 0;
 size_t queueSize = 0;
 

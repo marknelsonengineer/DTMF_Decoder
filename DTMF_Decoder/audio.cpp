@@ -73,9 +73,9 @@ WCHAR           wsBuf[ 256 ];  ///< Debug buffer  @todo put a guard around this
 
 #ifdef MONITOR_PCM_AUDIO
    #define MONITOR_INTERVAL_SECONDS (4)   /**< The monitoring interval.  Set to 0 to disable monitoring */
-   UINT64 gFramesToMonitor = 0;           ///< set gMonitor when the current frame is > gStartOfMonitor + gFramesToMonitor
+   UINT64 gFramesToMonitor = 0;           ///< set #gbMonitor when the current frame is > #gStartOfMonitor + #gFramesToMonitor
    UINT64 gStartOfMonitor = UINT64_MAX;   ///< The frame position of the start time of the monitor
-   BOOL   gbMonitor = false;              ///< Briefly set to 1 to output monitor data
+   BOOL   gbMonitor = false;              ///< Briefly set to 1 to output monitored data
    
    BYTE monitorCh1Max = 0;                ///< The lowest PCM value on Channel 1 during this monitoing period
    BYTE monitorCh1Min = 255;              ///< The highest PCM value on Channel 1 during this monitoring period
@@ -88,7 +88,7 @@ BOOL isIEEE = false;
 /// @todo Make this generic (good for a variety of formats -- there's a good 
 ///        example in the git history just before commit 563da34a)
 /// @todo Preprocess this stuff
-BOOL processAudioFrame( BYTE* pData, UINT32 frame, UINT64 framePosition ) {
+BOOL processAudioFrame( BYTE* pData, UINT32 frame ) {
    assert( pData != NULL );
    assert( isPCM || isIEEE );
    assert( gpMixFormat != NULL );
@@ -159,7 +159,7 @@ void audioCapture() {
       if ( flags == 0 ) {
          // Normal processing
          for ( UINT32 i = 0 ; i < framesAvailable ; i++ ) {
-            processAudioFrame( pData, i, framePosition+i );
+            processAudioFrame( pData, i );
          }
          
          goertzel_compute_dtmf_tones();
@@ -246,7 +246,7 @@ DWORD WINAPI audioCaptureThread( LPVOID Context ) {
    hr = CoInitializeEx( NULL, COINIT_MULTITHREADED );
    if ( hr != S_OK ) {
       OutputDebugStringA( __FUNCTION__ ":  Failed to initialize COM in thread" );
-      ExitThread( -1 );
+      ExitThread( 0xFFFF );
    }
 
    /// Set the multimedia class scheduler service, which will set the CPU
@@ -302,7 +302,7 @@ DWORD WINAPI audioCaptureThread( LPVOID Context ) {
 
 
 /// Print the WAVEFORMATEX or WAVEFORMATEXTENSIBLE structure to OutputDebug
-BOOL printAudioFormat( WAVEFORMATEX* pFmt ) {
+BOOL audioPrintWaveFormat( WAVEFORMATEX* pFmt ) {
    if ( pFmt->wFormatTag == WAVE_FORMAT_EXTENSIBLE ) {
       OutputDebugStringA( "   " __FUNCTION__ ":  Using WAVE_FORMAT_EXTENSIBLE format");
       WAVEFORMATEXTENSIBLE* pFmtEx = (WAVEFORMATEXTENSIBLE*) pFmt;
@@ -320,6 +320,9 @@ BOOL printAudioFormat( WAVEFORMATEX* pFmt ) {
       OutputDebugStringA( sBuf );
 
       sprintf_s( sBuf, sizeof( sBuf ), "   Bits per sample=%" PRIu32, pFmtEx->Format.wBitsPerSample );
+      OutputDebugStringA( sBuf );
+
+      sprintf_s( sBuf, sizeof( sBuf ), "   Valid bits per sample=%" PRIu16, pFmtEx->Samples.wValidBitsPerSample );
       OutputDebugStringA( sBuf );
 
       if ( pFmtEx->SubFormat == KSDATAFORMAT_SUBTYPE_PCM ) {
@@ -462,7 +465,7 @@ BOOL audioInit( HWND hWnd ) {
    }
 
    OutputDebugStringA( __FUNCTION__ ":  The mix format follows" );
-   printAudioFormat( gpMixFormat );
+   audioPrintWaveFormat( gpMixFormat );
 
    hr = glpAudioClient->IsFormatSupported( gShareMode, gpMixFormat, &gpAudioFormatUsed );
    if ( hr == S_OK ) {
@@ -472,7 +475,7 @@ BOOL audioInit( HWND hWnd ) {
       return FALSE;
    } else if( hr == S_FALSE && gpAudioFormatUsed != NULL) {
       OutputDebugStringA( __FUNCTION__ ":  The requested format is not available, but this format is..." );
-      printAudioFormat( gpAudioFormatUsed );
+      audioPrintWaveFormat( gpAudioFormatUsed );
       return FALSE;
    } else {
       OutputDebugStringA( __FUNCTION__ ":  Failed to validate the requested format" );
@@ -539,8 +542,7 @@ BOOL audioInit( HWND hWnd ) {
 
 
    /// Initialize the DTMF buffer
-   queueSize = gpMixFormat->nSamplesPerSec / 1000 * SIZE_OF_QUEUE_IN_MS;
-   if ( pcmSetQueueSize( queueSize ) != TRUE ) {
+   if ( pcmSetQueueSize( gpMixFormat->nSamplesPerSec / 1000 * SIZE_OF_QUEUE_IN_MS ) != TRUE ) {
       OutputDebugStringA( __FUNCTION__ ":  Failed to allocate PCM queue" );
       return FALSE;
    }

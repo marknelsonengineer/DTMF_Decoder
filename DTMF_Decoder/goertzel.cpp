@@ -89,9 +89,10 @@ void goertzel_magnitude( UINT8 index, dtmfTones_t* toneStruct ) {
 DWORD WINAPI goertzelWorkThread( LPVOID Context ) {
    CHAR sBuf[ 256 ];  // Debug buffer   /// @todo put a guard around this
 
-   int index = *(int*) Context;
+   int iIndex = *(int*) Context;  // This comes to us as an int from dtmfTones_t 
+   size_t index = iIndex;         // But we use it as an index into an array, so convert to size_t
    
-   sprintf_s( sBuf, sizeof( sBuf ), __FUNCTION__ ":  Start Goertzel DFT thread index=%d", index );
+   sprintf_s( sBuf, sizeof( sBuf ), __FUNCTION__ ":  Start Goertzel DFT thread index=%zu", index );
    OutputDebugStringA( sBuf );
 
    HANDLE mmcssHandle = NULL;  // Local to the thread for safety
@@ -117,7 +118,7 @@ DWORD WINAPI goertzelWorkThread( LPVOID Context ) {
       if ( dwWaitResult == WAIT_OBJECT_0 ) {
          if ( isRunning ) {
             #ifdef _WIN64
-               goertzel_magnitude_64( index, &dtmfTones[ index ] );
+               goertzel_magnitude_64( (UINT8) index, &dtmfTones[index] );
             #else 
               goertzel_magnitude( index, &dtmfTones[index] );
             #endif
