@@ -3,7 +3,7 @@
 //          DTMF_Decoder - EE 469 - Fall 2022
 //
 //  A Windows Desktop C program that decodes DTMF tones
-///
+//
 /// An 8-way multi-threaded Discrete Fast Forier Transform - specifically, 
 /// the Goertzel algorithm for 8-bit PCM data.
 /// 
@@ -17,7 +17,7 @@
 /// @date   10_Oct_2022
 ///////////////////////////////////////////////////////////////////////////////
 
-#include "framework.h"
+#include "framework.h"    // Standard system include files
 #include "mvcModel.h"     // For pcmQueue and friends
 #define _USE_MATH_DEFINES // For C++ (this is a .cpp file) 
 #include <math.h>         // For sinf() and cosf()
@@ -27,11 +27,11 @@
 #include "goertzel.h"     // For yo bad self
 
 
-HANDLE startDFTevent[ NUMBER_OF_DTMF_TONES ];  /// Handles to events
-HANDLE doneDFTevent[ NUMBER_OF_DTMF_TONES ];   /// Handles to events
-HANDLE hWorkThreads[ NUMBER_OF_DTMF_TONES ];   /// The worker threads
+HANDLE startDFTevent[ NUMBER_OF_DTMF_TONES ];  ///< Handles to events
+HANDLE doneDFTevent[ NUMBER_OF_DTMF_TONES ];   ///< Handles to events
+HANDLE hWorkThreads[ NUMBER_OF_DTMF_TONES ];   ///< The worker threads
 
-extern "C" float gfScaleFactor = 0;  /// Set in goertzel_init() and used in goertzel_magnitude()
+extern "C" float gfScaleFactor = 0;  ///< Set in goertzel_init() and used in goertzel_magnitude()
 
 #ifdef _WIN64
    #pragma message( "Compiling 64-bit program" )
@@ -112,9 +112,9 @@ DWORD WINAPI goertzelWorkThread( LPVOID Context ) {
             #endif
 
             if ( dtmfTones[index].goertzelMagnitude >= GOERTZEL_MAGNITUDE_THRESHOLD ) {
-               editToneDetectedStatus( index, true );
+               mvcModelToggleToneDetectedStatus( index, true );
             } else {
-               editToneDetectedStatus( index, false );
+               mvcModelToggleToneDetectedStatus( index, false );
             }
 
             SetEvent( doneDFTevent[ index ] );

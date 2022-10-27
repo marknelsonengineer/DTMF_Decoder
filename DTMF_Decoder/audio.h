@@ -3,7 +3,7 @@
 //          DTMF_Decoder - EE 469 - Fall 2022
 //
 //  A Windows Desktop C program that decodes DTMF tones
-/// 
+//
 /// Windows Audio Driver code
 /// 
 /// @file audio.h
@@ -15,15 +15,12 @@
 
 #pragma once
 
-#include <Windows.h>
+#include <Windows.h>      // For BOOL, HWND, etc.
 
-extern BOOL initAudioDevice( HWND );
-extern BOOL stopAudioDevice( HWND );
-extern BOOL cleanupAudioDevice();
+extern BOOL audioInit( HWND );
+extern BOOL audioStopDevice( HWND );
+extern BOOL audioCleanup();
 
 
+/// The definition of PCM silence is 127 (in this prgram)
 #define PCM_8_BIT_SILENCE 127     /* Silence is 127 */
-
-extern "C" size_t queueSize;
-extern DWORD mmcssTaskIndex;
-

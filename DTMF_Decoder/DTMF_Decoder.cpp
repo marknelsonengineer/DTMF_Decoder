@@ -109,7 +109,7 @@ int APIENTRY wWinMain(
    }
 
    /// Initialize the model
-   if ( !mvcInitModel() ) {
+   if ( !mvcModelInit() ) {
       OutputDebugStringA( APP_NAME ": Failed to do initialize the model.  Exiting." );
       return FALSE;
    }
@@ -120,7 +120,7 @@ int APIENTRY wWinMain(
       return FALSE;
    }
 
-   if ( !initAudioDevice( hWnd ) ) {
+   if ( !audioInit( hWnd ) ) {
       OutputDebugStringA( APP_NAME ": Failed to do initialize the audio system.  Exiting." );
       return FALSE;
    }
@@ -154,7 +154,7 @@ int APIENTRY wWinMain(
    }
 
    /// Cleanup all resources
-   cleanupAudioDevice();
+   audioCleanup();
 
    CoUninitialize();  /// Unwind COM
 
@@ -218,7 +218,7 @@ LRESULT CALLBACK WndProc( HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam 
                SetEvent( gAudioSamplesReadyEvent );
             }
 
-            stopAudioDevice( hWnd );
+            audioStopDevice( hWnd );
 
             DestroyWindow( hWnd );
 

@@ -3,7 +3,7 @@
 //          DTMF_Decoder22X!Vqrpp1kz9C!ma3mCkbd - EE 469 - Fall 2022
 //
 //  A Windows Desktop C program that decodes DTMF tones
-/// 
+//
 /// Windows Audio Driver code
 /// 
 /// @file audio.cpp
@@ -52,16 +52,13 @@ REFERENCE_TIME  gDefaultDevicePeriod = -1;    // Expressed in 100ns units (dev m
 REFERENCE_TIME  gMinimumDevicePeriod = -1;    // Expressed in 100ns units (dev machine = 29,025  = 2.9025ms
 UINT32          guBufferSize = 0;             // Dev Machine = 182
 HANDLE          hCaptureThread = NULL;
-DWORD           mmcssTaskIndex = 0;
-HANDLE          gAudioSamplesReadyEvent = NULL;  // This is externally delcared
 IAudioCaptureClient* gCaptureClient = NULL;
 // IAudioClockAdjustment* gAudioClockAdjuster = NULL;
-size_t queueSize = 0;  /// Size in bytes of DTMF DFT queue = samplesPerSecond / 1000 * SIZE_OF_QUEUE_IN_MS
 
 CHAR            sBuf[ 256 ];  // Debug buffer   /// @todo put a guard around this
 WCHAR           wsBuf[ 256 ];  // Debug buffer  /// @todo put a guard around this
 
-
+/// @brief  @todo replace with SAFE_RELEASE
 template <class T> void SafeRelease( T** ppT ) {
    if ( *ppT ) {
       ( *ppT )->Release();
@@ -92,7 +89,7 @@ BOOL processAudioFrame( BYTE* pData, UINT32 frame, UINT64 framePosition ) {
    BYTE ch1Sample = PCM_8_BIT_SILENCE;
 
    if ( isIEEE && gpMixFormat->wBitsPerSample == 32 ) {  // IEEE float
-      float* fSample = (float*) (pData + ( frame * gpMixFormat->nBlockAlign ));
+      float* fSample = (float*) (pData + ( frame * gpMixFormat->nBlockAlign ));  // This is from +1 to -1
 
       INT8 signedSample = (INT8) ( *fSample * (float) PCM_8_BIT_SILENCE );  // This is +127 to -127
       if ( signedSample >= 0 ) {
@@ -106,30 +103,29 @@ BOOL processAudioFrame( BYTE* pData, UINT32 frame, UINT64 framePosition ) {
       // Punch out
    }
 
-   if ( gbMonitor )
-      ch1Sample = ch1Sample;
-
    pcmEnqueue( ch1Sample );
 
-   // Optional code I use to characterize the samples by tracking the min and max
-   // levels, peridoically printing them and then resetting them.  This way, I can
-   // get a feel for what silence and various volumes look like in the data.  This
-   // is an easy way to validate that the data I'm getting is real sound collected by
-   // the microphone.
-   if ( gFramesToMonitor > 0 ) {
-      if ( ch1Sample > monitorCh1Max ) monitorCh1Max = ch1Sample;
-      if ( ch1Sample < monitorCh1Min ) monitorCh1Min = ch1Sample;
+   #ifdef _DEBUG
+      // Optional code I use to characterize the samples by tracking the min and max
+      // levels, peridoically printing them and then resetting them.  This way, I can
+      // get a feel for what silence and various volumes look like in the data.  This
+      // is an easy way to validate that the data I'm getting is real sound collected by
+      // the microphone.
+      if ( gFramesToMonitor > 0 ) {
+         if ( ch1Sample > monitorCh1Max ) monitorCh1Max = ch1Sample;
+         if ( ch1Sample < monitorCh1Min ) monitorCh1Min = ch1Sample;
 
-      if ( gbMonitor ) {
-         sprintf_s( sBuf, sizeof( sBuf ), "Channel 1:  Min: %" PRIu8 "   Max: %" PRIu8, monitorCh1Min, monitorCh1Max );
-         OutputDebugStringA( sBuf );
+         if ( gbMonitor ) {
+            sprintf_s( sBuf, sizeof( sBuf ), "Channel 1:  Min: %" PRIu8 "   Max: %" PRIu8, monitorCh1Min, monitorCh1Max );
+            OutputDebugStringA( sBuf );
 
-         monitorCh1Max = 0;
-         monitorCh1Min = 255;
+            monitorCh1Max = 0;
+            monitorCh1Min = 255;
 
-         gbMonitor = false;
+            gbMonitor = false;
+         }
       }
-   }
+   #endif
 
    return TRUE;
 }
@@ -139,7 +135,7 @@ BOOL processAudioFrame( BYTE* pData, UINT32 frame, UINT64 framePosition ) {
 ///        over-spinning a thread.
 
 /// Collect the audio frames and process them
-BOOL captureAudio() {
+void audioCapture() {
    HRESULT hr;
 
    BYTE*  pData;
@@ -187,31 +183,33 @@ BOOL captureAudio() {
       }
 
       if ( framesAvailable > 0 ) {
-         gbMonitor = false;
-         if ( gFramesToMonitor > 0 ) {
-            if ( gStartOfMonitor > framePosition ) {
-               gStartOfMonitor = framePosition;
+         #ifdef _DEBUG
+            gbMonitor = false;
+            if ( gFramesToMonitor > 0 ) {
+               if ( gStartOfMonitor > framePosition ) {
+                  gStartOfMonitor = framePosition;
+               }
+          
+               if ( gStartOfMonitor + gFramesToMonitor < framePosition ) {
+                  gbMonitor = true;
+                  gStartOfMonitor = framePosition;
+               }
+          
             }
-
-            if ( gStartOfMonitor + gFramesToMonitor < framePosition ) {
-               gbMonitor = true;
-               gStartOfMonitor = framePosition;
+          
+            if ( gbMonitor ) {  // Monitor data on this pass
+               OutputDebugStringA( __FUNCTION__ ":  Monitoring loop" );
+               sprintf_s( sBuf, sizeof( sBuf ), "Frames available=%" PRIu32 "    frame position=%" PRIu64, framesAvailable, framePosition );
+               OutputDebugStringA( sBuf );
+          
+               memset( sBuf, 0, 1 );
+          
+               for ( int i = 0 ; i < NUMBER_OF_DTMF_TONES ; i++ ) {
+                  sprintf_s( sBuf+strlen(sBuf), sizeof(sBuf), "  %4.0fHz=%4.2f", dtmfTones[i].frequency, dtmfTones[i].goertzelMagnitude);
+               }
+               OutputDebugStringA( sBuf );
             }
-
-         }
-
-         if ( gbMonitor ) {  // Monitor data on this pass
-            OutputDebugStringA( __FUNCTION__ ":  Monitoring loop" );
-            sprintf_s( sBuf, sizeof( sBuf ), "Frames available=%" PRIu32 "    frame position=%" PRIu64, framesAvailable, framePosition );
-            OutputDebugStringA( sBuf );
-
-            memset( sBuf, 0, 1 );
-
-            for ( int i = 0 ; i < NUMBER_OF_DTMF_TONES ; i++ ) {
-               sprintf_s( sBuf+strlen(sBuf), sizeof(sBuf), "  %4.0fHz=%4.2f", dtmfTones[i].frequency, dtmfTones[i].goertzelMagnitude);
-            }
-            OutputDebugStringA( sBuf );
-         }
+         #endif
 
          hr = gCaptureClient->ReleaseBuffer( framesAvailable );
          if ( hr != S_OK ) {
@@ -228,12 +226,10 @@ BOOL captureAudio() {
       OutputDebugStringA( __FUNCTION__ ":  GetBuffer did not return S_OK.  Investigate!!" );
       isRunning = false;
    }
-
-   return TRUE;
 }
 
 
-DWORD WINAPI captureThread( LPVOID Context ) {
+DWORD WINAPI audioCaptureThread( LPVOID Context ) {
    OutputDebugStringA( __FUNCTION__ ":  Start capture thread" );
 
    HRESULT hr;
@@ -267,7 +263,7 @@ DWORD WINAPI captureThread( LPVOID Context ) {
       dwWaitResult = WaitForSingleObject( gAudioSamplesReadyEvent, INFINITE );
       if ( dwWaitResult == WAIT_OBJECT_0 ) {
          if ( isRunning ) {
-            captureAudio();
+            audioCapture();
          }
       } else if ( dwWaitResult == WAIT_FAILED ) {
          OutputDebugStringA( __FUNCTION__ ":  The wait was failed.  Exiting" );
@@ -355,7 +351,7 @@ BOOL printAudioFormat( WAVEFORMATEX* pFmt ) {
 }
 
 
-BOOL initAudioDevice( HWND hWnd ) {
+BOOL audioInit( HWND hWnd ) {
    HRESULT hr;  /// Result handle used by just about all Windows API calls
 
    if ( gShareMode == AUDCLNT_SHAREMODE_EXCLUSIVE ) {
@@ -568,7 +564,7 @@ BOOL initAudioDevice( HWND hWnd ) {
    }
 
    /// Start the thread
-   hCaptureThread = CreateThread( NULL, 0, captureThread, NULL, 0, NULL );
+   hCaptureThread = CreateThread( NULL, 0, audioCaptureThread, NULL, 0, NULL );
    if ( hCaptureThread == NULL ) {
       OutputDebugStringA( __FUNCTION__ ":  Failed to create the capture thread" );
       return FALSE;
@@ -588,7 +584,7 @@ BOOL initAudioDevice( HWND hWnd ) {
 }
 
 
-BOOL stopAudioDevice( HWND ) {
+BOOL audioStopDevice( HWND ) {
    HRESULT hr;
 
    if ( glpAudioClient != NULL ) {
@@ -603,7 +599,7 @@ BOOL stopAudioDevice( HWND ) {
 }
 
 
-BOOL cleanupAudioDevice() {
+BOOL audioCleanup() {
 
    if ( hCaptureThread != NULL ) {
       CloseHandle( hCaptureThread );
