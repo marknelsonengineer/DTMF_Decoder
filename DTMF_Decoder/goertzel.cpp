@@ -246,6 +246,8 @@ BOOL goertzel_cleanup() {
       CHECK_BOOL_RESULT( "Failed to close doneDFTevent handle" );
       doneDFTevent[ i ] = NULL;
    }
+
+   return TRUE;
 }
 
 

@@ -110,18 +110,18 @@ int APIENTRY wWinMain(
 
    /// Initialize the model
    if ( !mvcModelInit() ) {
-      OutputDebugStringA( APP_NAME ": Failed to do initialize the model.  Exiting." );
+      OutputDebugStringA( APP_NAME ": Failed to initialize the model.  Exiting." );
       return FALSE;
    }
 
    /// Initialize the view
    if( !mvcViewInitResources( hWnd ) ) {
-      OutputDebugStringA( APP_NAME ": Failed to do initialize the view.  Exiting." );
+      OutputDebugStringA( APP_NAME ": Failed to initialize the view.  Exiting." );
       return FALSE;
    }
 
    if ( !audioInit( hWnd ) ) {
-      OutputDebugStringA( APP_NAME ": Failed to do initialize the audio system.  Exiting." );
+      OutputDebugStringA( APP_NAME ": Failed to initialize the audio system.  Exiting." );
       return FALSE;
    }
 
