@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////
 //          University of Hawaii, College of Engineering
-//          DTMF_Decoder22X!Vqrpp1kz9C!ma3mCkbd - EE 469 - Fall 2022
+//          DTMF_Decoder - EE 469 - Fall 2022
 //
 //  A Windows Desktop C program that decodes DTMF tones
 //
@@ -10,55 +10,67 @@
 /// @version 1.0
 ///
 /// @see https://learn.microsoft.com/en-us/windows/win32/api/_coreaudio/
+/// @see https://learn.microsoft.com/en-us/windows/win32/api/mmdeviceapi/nn-mmdeviceapi-immdevice
+/// @see https://learn.microsoft.com/en-us/windows/win32/api/audioclient/nn-audioclient-iaudioclient
+/// @see https://learn.microsoft.com/en-us/windows/win32/api/audioclient/nf-audioclient-iaudioclient-initialize
+/// @see https://learn.microsoft.com/en-us/windows/win32/api/audioclient/nf-audioclient-iaudioclient-getbuffersize
+/// @see https://learn.microsoft.com/en-us/windows/win32/api/propsys/nn-propsys-ipropertystore
+/// @see https://learn.microsoft.com/en-us/windows/win32/api/mmeapi/ns-mmeapi-waveformatex
+/// @see https://learn.microsoft.com/en-us/windows/win32/api/mmreg/ns-mmreg-waveformatextensible
+/// @see https://learn.microsoft.com/en-us/windows/win32/api/audioclient/nn-audioclient-iaudiocaptureclient
 /// 
 /// @author Mark Nelson <marknels@hawaii.edu>
 /// @date   10_Oct_2022
 ///////////////////////////////////////////////////////////////////////////////
 
-#include "framework.h"
-#include <mmdeviceapi.h>
-#include <Functiondiscoverykeys_devpkey.h>
-#include <strsafe.h>
-#include <AudioClient.h>
+#include "framework.h"    // Standard system include files
+#include <mmdeviceapi.h>  // For the audio API
+#include <Functiondiscoverykeys_devpkey.h>  // For some audio GUIDs
+#include <strsafe.h>      // For sprintf_s
+#include <AudioClient.h>  // For the audio API
 
-#include "audio.h"
-#include "mvcModel.h"
-#include "goertzel.h"
-#include "mvcView.h"
+#include "audio.h"        // For yo bad self
+#include "mvcModel.h"     // For the model
+#include "goertzel.h"     // For goertzel_compute_dtmf_tones
+#include "mvcView.h"      // For mvcViewRefreshWindow
 
-#include <assert.h>  // For assert
-#include <avrt.h>    // For AvSetMmThreadCharacteristics()
-#include <inttypes.h> // For the printf fixed-integer mappings
-#include <float.h>    // For FLT_MIN and FLT_MAX
+#include <assert.h>       // For assert
+#include <avrt.h>         // For AvSetMmThreadCharacteristics
+#include <inttypes.h>     // For printf to format fixed-integers
+#include <float.h>        // For FLT_MIN and FLT_MAX
 
-#pragma comment(lib, "avrt")    // Link the MMCSS library
-#pragma comment(lib, "rpcrt4.lib")  // TEMP TEMP TEMP
-
+#pragma comment(lib, "avrt")  // Link the MMCSS library
 
 
-IMMDevice*      gDevice = NULL;
-LPWSTR          glpwstrDeviceId = NULL;
-DWORD           glpdwState = 0;
-IPropertyStore* glpPropertyStore = NULL;
+/// The share mode for the audio capture device.  It can be either
+/// `SHARED` or `EXCLUSIVE`.  Because this was developed in a VM, I suspect
+/// that VMWare won't allow exclusive access.  Therefore, all this program 
+/// supports (for now) is `SHARED`
+/// 
+/// @todo Consider supporting `EXCLUSIVE` audio device access someday
 AUDCLNT_SHAREMODE gShareMode = AUDCLNT_SHAREMODE_SHARED;
-PROPVARIANT     DeviceInterfaceFriendlyName;  // Container for the friendly name of the audio adapter for the device
-PROPVARIANT     DeviceDescription;            // Container for the device's description
-PROPVARIANT     DeviceFriendlyName;           // Container for friendly name of the device
-//WAVEFORMATEX    audioFormatRequested;
-WAVEFORMATEX*   gpMixFormat = NULL;
-WAVEFORMATEX*   audioFormatUsed = NULL;
-IAudioClient*   glpAudioClient = NULL;
-REFERENCE_TIME  gDefaultDevicePeriod = -1;    // Expressed in 100ns units (dev machine = 101,587 = 10.1587ms)
-REFERENCE_TIME  gMinimumDevicePeriod = -1;    // Expressed in 100ns units (dev machine = 29,025  = 2.9025ms
-UINT32          guBufferSize = 0;             // Dev Machine = 182
-HANDLE          hCaptureThread = NULL;
-IAudioCaptureClient* gCaptureClient = NULL;
-// IAudioClockAdjustment* gAudioClockAdjuster = NULL;
 
-CHAR            sBuf[ 256 ];  // Debug buffer   /// @todo put a guard around this
-WCHAR           wsBuf[ 256 ];  // Debug buffer  /// @todo put a guard around this
 
-/// @brief  @todo replace with SAFE_RELEASE
+IMMDevice*      gDevice         = NULL;  ///< COM object for a multimedia device
+LPWSTR          glpwstrDeviceId = NULL;  ///< Device endpoint ID string `{0.0.1.00000000}.{722038ce-3a4e-4de0-8e7d-bd3fa6865a89}`
+DWORD           glpdwState      =    0;  ///< The current device state `ACTIVE`, `DISABLED`, `NOT PRESENT` or `UNPLUGGED`
+IPropertyStore* glpPropertyStore = NULL; ///< A multimedia device's property store
+PROPVARIANT     gDeviceInterfaceFriendlyName;  ///< Container for the friendly name of the audio adapter for the device:  `High Definition Audio Device`
+PROPVARIANT     gDeviceDescription;      ///< Container for the device's description:  `Microphone`
+PROPVARIANT     gDeviceFriendlyName;     ///< Container for friendly name of the device:  `Microphone (High Definition Audio Device)`
+WAVEFORMATEX*   gpMixFormat     = NULL;  ///< The internal audio format used by the device
+WAVEFORMATEX*   gpAudioFormatUsed = NULL;///< The acutal format we will used by this app
+IAudioClient*   glpAudioClient  = NULL;  ///< COM object for the audio client
+REFERENCE_TIME  gDefaultDevicePeriod = -1; ///< Expressed in 100ns units (dev machine = 101,587 = 10.1587ms)
+REFERENCE_TIME  gMinimumDevicePeriod = -1; ///< Expressed in 100ns units (dev machine = 29,025  = 2.9025ms
+UINT32          guBufferSize    = 0;     ///< The maximum capacity of the endpoint buffer in frames = 182 frames
+HANDLE          hCaptureThread  = NULL;  ///< The audio capture thread
+IAudioCaptureClient* gCaptureClient = NULL; ///< The audio capture client
+
+CHAR            sBuf[ 256 ];   ///< Debug buffer  @todo put a guard around this
+WCHAR           wsBuf[ 256 ];  ///< Debug buffer  @todo put a guard around this
+
+/// @todo replace with SAFE_RELEASE
 template <class T> void SafeRelease( T** ppT ) {
    if ( *ppT ) {
       ( *ppT )->Release();
@@ -66,10 +78,10 @@ template <class T> void SafeRelease( T** ppT ) {
    }
 }
 
-#define MONITOR_INTERVAL_SECONDS (4)   /* Set to 0 to disable monitoring */
-UINT64 gFramesToMonitor = 0;           /// set gMonitor when the current frame is > gStartOfMonitor + gFramesToMonitor
+#define MONITOR_INTERVAL_SECONDS (4)   /**< Set to 0 to disable monitoring */
+UINT64 gFramesToMonitor = 0;           ///< set gMonitor when the current frame is > gStartOfMonitor + gFramesToMonitor
 UINT64 gStartOfMonitor = UINT64_MAX;
-BOOL   gbMonitor = false;     /// Briefly set to 1 to output monitor data
+BOOL   gbMonitor = false;     ///< Briefly set to 1 to output monitor data
 
 BYTE monitorCh1Max = 0;
 BYTE monitorCh1Min = 255;
@@ -407,34 +419,34 @@ BOOL audioInit( HWND hWnd ) {
    }
 
    /// Get the device's properties from the property store
-   PropVariantInit( &DeviceInterfaceFriendlyName );     /// Get the friendly name of the audio adapter for the device
-   PropVariantInit( &DeviceDescription );               /// Get the device's description
-   PropVariantInit( &DeviceFriendlyName );              /// Get the friendly name of the device
+   PropVariantInit( &gDeviceInterfaceFriendlyName );     /// Get the friendly name of the audio adapter for the device
+   PropVariantInit( &gDeviceDescription );               /// Get the device's description
+   PropVariantInit( &gDeviceFriendlyName );              /// Get the friendly name of the device
 
-   hr = glpPropertyStore->GetValue( PKEY_DeviceInterface_FriendlyName, &DeviceInterfaceFriendlyName );
+   hr = glpPropertyStore->GetValue( PKEY_DeviceInterface_FriendlyName, &gDeviceInterfaceFriendlyName );
    if ( hr != S_OK ) {
       OutputDebugStringA( __FUNCTION__ ":  Failed to retrieve the friendly name of the audio adapter for the device.  Continuing." );
-      DeviceInterfaceFriendlyName.pcVal = NULL;
+      gDeviceInterfaceFriendlyName.pcVal = NULL;
    } else {
-      swprintf_s( wsBuf, sizeof( wsBuf ), __FUNCTIONW__ L":  Device audio adapter friendly name=%s", DeviceInterfaceFriendlyName.pwszVal );
+      swprintf_s( wsBuf, sizeof( wsBuf ), __FUNCTIONW__ L":  Device audio adapter friendly name=%s", gDeviceInterfaceFriendlyName.pwszVal );
       OutputDebugStringW( wsBuf );
    }
 
-   hr = glpPropertyStore->GetValue( PKEY_Device_DeviceDesc, &DeviceDescription );
+   hr = glpPropertyStore->GetValue( PKEY_Device_DeviceDesc, &gDeviceDescription );
    if ( hr != S_OK ) {
       OutputDebugStringA( __FUNCTION__ ":  Failed to retrieve the device's description.  Continuing." );
-      DeviceDescription.pcVal = NULL;
+      gDeviceDescription.pcVal = NULL;
    } else {
-      swprintf_s( wsBuf, sizeof( wsBuf ), __FUNCTIONW__ L":  Device description=%s", DeviceDescription.pwszVal );
+      swprintf_s( wsBuf, sizeof( wsBuf ), __FUNCTIONW__ L":  Device description=%s", gDeviceDescription.pwszVal );
       OutputDebugStringW( wsBuf );
    }
 
-   hr = glpPropertyStore->GetValue( PKEY_Device_FriendlyName, &DeviceFriendlyName );
+   hr = glpPropertyStore->GetValue( PKEY_Device_FriendlyName, &gDeviceFriendlyName );
    if ( hr != S_OK ) {
       OutputDebugStringA( __FUNCTION__ ":  Failed to retrieve the friendly name of the device.  Continuing." );
-      DeviceFriendlyName.pcVal = NULL;
+      gDeviceFriendlyName.pcVal = NULL;
    } else {
-      swprintf_s( wsBuf, sizeof( wsBuf ), __FUNCTIONW__ L":  Device friendly name=%s", DeviceFriendlyName.pwszVal );
+      swprintf_s( wsBuf, sizeof( wsBuf ), __FUNCTIONW__ L":  Device friendly name=%s", gDeviceFriendlyName.pwszVal );
       OutputDebugStringW( wsBuf );
    }
 
@@ -455,15 +467,15 @@ BOOL audioInit( HWND hWnd ) {
    OutputDebugStringA( __FUNCTION__ ":  The mix format follows" );
    printAudioFormat( gpMixFormat );
 
-   hr = glpAudioClient->IsFormatSupported( gShareMode, gpMixFormat, &audioFormatUsed );
+   hr = glpAudioClient->IsFormatSupported( gShareMode, gpMixFormat, &gpAudioFormatUsed );
    if ( hr == S_OK ) {
       OutputDebugStringA( __FUNCTION__ ":  The requested format is supported");
    } else if ( hr == AUDCLNT_E_UNSUPPORTED_FORMAT ) {
       OutputDebugStringA( __FUNCTION__ ":  The requested format is is not supported" );
       return FALSE;
-   } else if( hr == S_FALSE && audioFormatUsed != NULL) {
+   } else if( hr == S_FALSE && gpAudioFormatUsed != NULL) {
       OutputDebugStringA( __FUNCTION__ ":  The requested format is not available, but this format is..." );
-      printAudioFormat( audioFormatUsed );
+      printAudioFormat( gpAudioFormatUsed );
       return FALSE;
    } else {
       OutputDebugStringA( __FUNCTION__ ":  Failed to validate the requested format" );
@@ -510,6 +522,10 @@ BOOL audioInit( HWND hWnd ) {
       OutputDebugStringA( __FUNCTION__ ":  Failed to get buffer size" );
       return FALSE;
    }
+   sprintf_s( sBuf, sizeof( sBuf ), "%s:  The maximum capacity of the buffer is %" PRIu32" frames or %i ms", __FUNCTION__, guBufferSize, (int) (1.0 / gpMixFormat->nSamplesPerSec * 1000 * guBufferSize ) );
+   OutputDebugStringA( sBuf );
+   /// Right now, the buffer is ~22ms or about the perfect size to capture
+   /// VoIP voice, which is 20ms.
 
    /// Get the device period
    hr = glpAudioClient->GetDevicePeriod( &gDefaultDevicePeriod, &gMinimumDevicePeriod );
@@ -532,7 +548,7 @@ BOOL audioInit( HWND hWnd ) {
       return FALSE;
    }
 
-   sprintf_s( sBuf, sizeof( sBuf ), "%s:  Queue size=%zu", __FUNCTION__, queueSize );
+   sprintf_s( sBuf, sizeof( sBuf ), "%s:  Queue size=%zu bytes or %d ms", __FUNCTION__, queueSize, SIZE_OF_QUEUE_IN_MS );
    OutputDebugStringA( sBuf );
 
    /// Initialize the Goertzel module
@@ -622,9 +638,9 @@ BOOL audioCleanup() {
 
    SafeRelease( &glpAudioClient );
 
-   PropVariantClear( &DeviceFriendlyName );
-   PropVariantClear( &DeviceDescription );
-   PropVariantClear( &DeviceInterfaceFriendlyName );
+   PropVariantClear( &gDeviceFriendlyName );
+   PropVariantClear( &gDeviceDescription );
+   PropVariantClear( &gDeviceInterfaceFriendlyName );
 
    SafeRelease( &glpPropertyStore );
 
@@ -633,9 +649,9 @@ BOOL audioCleanup() {
       gpMixFormat = NULL;
    }
 
-   if ( audioFormatUsed != NULL ) {
-      CoTaskMemFree( audioFormatUsed );
-      audioFormatUsed = NULL;
+   if ( gpAudioFormatUsed != NULL ) {
+      CoTaskMemFree( gpAudioFormatUsed );
+      gpAudioFormatUsed = NULL;
    }
 
    if ( glpwstrDeviceId != NULL ) {
