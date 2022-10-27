@@ -4,10 +4,8 @@
 //
 //  A Windows Desktop C program that decodes DTMF tones
 //
-/// The model will hold state between the various modules.
+/// The model holds the state between the various modules
 /// 
-/// @todo Consolidate all exported global variables into here
-///
 /// @file mvcModel.cpp
 /// @version 1.0
 ///
@@ -20,8 +18,13 @@
 #include <crtdbg.h>       // For _malloc_dbg()
 #include "mvcModel.h"     // For yo bad self
 
-/// @note:  There are several other members to dtmfTones that are computed and
-///         set by goertzel_init()
+
+/// Currently does nothing, but it's good to have around
+BOOL mvcModelInit() {
+   return TRUE;
+}
+
+
 dtmfTones_t dtmfTones[ NUMBER_OF_DTMF_TONES ] = {
    { 0,  697.0, false, L"697" },
    { 1,  770.0, false, L"770" },  
@@ -37,35 +40,17 @@ dtmfTones_t dtmfTones[ NUMBER_OF_DTMF_TONES ] = {
 bool hasDtmfTonesChanged = false;
 
 
-void editToneDetectedStatus( size_t toneIndex, bool detectedStatus ) {
-   assert( toneIndex < NUMBER_OF_DTMF_TONES );
-
-   if ( dtmfTones[ toneIndex ].detected != detectedStatus ) {
-      dtmfTones[ toneIndex ].detected = detectedStatus;
-      hasDtmfTonesChanged = true;
-   }
-}
-
-
-/// `true` if the Audio and Goertzel threads should be processing/spinning.
-/// Set to `false` when it's time to shutdown the program.  Then, these threads
-/// will see that isRunning is `false`, exit out of their `while()` loops and 
-/// the threads will terminate naturally, cleaning up their resources.
 bool isRunning = false;
 
 
-static size_t queueSize = 0;
-BYTE* pcmQueue = NULL;
-
-
-/// Points to the next available byte for writing.  This is thread safe because
-/// all of the threads read from the same, unchanging queue.
+BYTE*  pcmQueue  = NULL;
 size_t queueHead = 0;
+size_t queueSize = 0;
 
 
 BOOL pcmSetQueueSize( size_t size ) {
-   //assert( pcmQueue == NULL );
-   //assert( queueSize == 0 );
+   assert( pcmQueue == NULL );
+   assert( queueSize == 0 );
 
    pcmQueue = (BYTE*)_malloc_dbg(size, _CLIENT_BLOCK, __FILE__, __LINE__);
    if ( pcmQueue == NULL ) {
@@ -95,7 +80,5 @@ void pcmReleaseQueue() {
 }
 
 
-/// Currently does nothing, but it's good to have around
-BOOL mvcInitModel() {
-   return TRUE;
-}
+DWORD   mmcssTaskIndex          = 0;
+HANDLE  gAudioSamplesReadyEvent = NULL; 
