@@ -22,22 +22,29 @@
 #include "goertzel.h"     // For goertzel_end()
 
 
-#define MAX_LOADSTRING    (100)
+/// Defines the size of the wide-string buffer used to get strings from the
+/// resource file.  If MAX_LOADSTRING is 100, then it can hold at most 49
+/// characters.
+/// 
+/// @internal The value of 128 is chosen for byte-alignment purposes
+#define MAX_LOADSTRING    (128) 
 
 
 // Global Variables
-HINSTANCE ghInst = NULL;                       /// Current instance
-WCHAR     gszTitle[ MAX_LOADSTRING ];          /// The title bar text
-WCHAR     gszWindowClass[ MAX_LOADSTRING ];    /// The main window class name
+HINSTANCE ghInst = NULL;                       ///< Current instance
+WCHAR     gszTitle[ MAX_LOADSTRING ];          ///< The title bar text
+WCHAR     gszWindowClass[ MAX_LOADSTRING ];    ///< The main window class name
 
 
 // Forward declarations of private functions in this file
 LRESULT CALLBACK WndProc( HWND, UINT, WPARAM, LPARAM );
 INT_PTR CALLBACK About( HWND, UINT, WPARAM, LPARAM );
-VOID             DrawRectangle( HWND );
 
 
 /// Program entrypoint
+///
+/// @see https://learn.microsoft.com/en-us/windows/win32/learnwin32/winmain--the-application-entry-point
+/// 
 int APIENTRY wWinMain( 
    _In_     HINSTANCE hInstance,
    _In_opt_ HINSTANCE hPrevInstance,
@@ -158,6 +165,9 @@ int APIENTRY wWinMain(
 
 
 /// Message handler for the main window
+///
+/// @see https://learn.microsoft.com/en-us/windows/win32/api/winuser/nc-winuser-wndproc
+/// 
 LRESULT CALLBACK WndProc( HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam ) {
    switch ( message ) {
       case WM_COMMAND:  /// WM_COMMAND - Process the application menu
@@ -229,7 +239,11 @@ LRESULT CALLBACK WndProc( HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam 
 }
 
 
-// Message handler for the About box
+/// Message handler for the About dialog box
+///
+/// @see https://learn.microsoft.com/en-us/windows/win32/api/winuser/nc-winuser-wndproc
+/// 
+/// @todo Issue #3:  The About dialog box is not displaying
 INT_PTR CALLBACK About( HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam ) {
    switch ( message ) {
       case WM_INITDIALOG:

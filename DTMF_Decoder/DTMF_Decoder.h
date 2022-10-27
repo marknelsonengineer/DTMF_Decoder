@@ -4,8 +4,6 @@
 //
 /// A Windows Desktop C program that decodes DTMF tones
 ///
-/// The main loop (with wWinMain and WndProc)
-/// 
 /// @file DTMF_Decoder.h
 /// @version 1.0
 ///
@@ -17,4 +15,5 @@
 
 #include "resource.h"
 
+/// The name of the application
 #define APP_NAME "DTMF Decoder"
