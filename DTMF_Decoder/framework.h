@@ -64,3 +64,12 @@
       OutputDebugStringA( APP_NAME ": " message );  \
       return FALSE;                                 \
    }
+
+
+#ifdef _DEBUGXX
+   /// When MONITOR_PCM_AUDIO is set, then DTMF_Decoder will monitor the PCM 
+   /// data, tracking the maximum and minimum values.  Then, every 4 seconds,
+   /// it will output the min/max values and then start over.  This capability
+   /// helps us identify system noise and calibrate #GOERTZEL_MAGNITUDE_THRESHOLD
+   #define MONITOR_PCM_AUDIO
+#endif

@@ -71,13 +71,15 @@ CHAR            sBuf[ 256 ];   ///< Debug buffer  @todo put a guard around this
 WCHAR           wsBuf[ 256 ];  ///< Debug buffer  @todo put a guard around this
 
 
-#define MONITOR_INTERVAL_SECONDS (4)   /**< Set to 0 to disable monitoring */
-UINT64 gFramesToMonitor = 0;           ///< set gMonitor when the current frame is > gStartOfMonitor + gFramesToMonitor
-UINT64 gStartOfMonitor = UINT64_MAX;
-BOOL   gbMonitor = false;     ///< Briefly set to 1 to output monitor data
-
-BYTE monitorCh1Max = 0;
-BYTE monitorCh1Min = 255;
+#ifdef MONITOR_PCM_AUDIO
+   #define MONITOR_INTERVAL_SECONDS (4)   /**< The monitoring interval.  Set to 0 to disable monitoring */
+   UINT64 gFramesToMonitor = 0;           ///< set gMonitor when the current frame is > gStartOfMonitor + gFramesToMonitor
+   UINT64 gStartOfMonitor = UINT64_MAX;   ///< The frame position of the start time of the monitor
+   BOOL   gbMonitor = false;              ///< Briefly set to 1 to output monitor data
+   
+   BYTE monitorCh1Max = 0;                ///< The lowest PCM value on Channel 1 during this monitoing period
+   BYTE monitorCh1Min = 255;              ///< The highest PCM value on Channel 1 during this monitoring period
+#endif
 
 BOOL isPCM = false;
 BOOL isIEEE = false;
@@ -110,7 +112,7 @@ BOOL processAudioFrame( BYTE* pData, UINT32 frame, UINT64 framePosition ) {
 
    pcmEnqueue( ch1Sample );
 
-   #ifdef _DEBUG
+   #ifdef MONITOR_PCM_AUDIO
       // Optional code I use to characterize the samples by tracking the min and max
       // levels, peridoically printing them and then resetting them.  This way, I can
       // get a feel for what silence and various volumes look like in the data.  This
@@ -188,7 +190,7 @@ void audioCapture() {
       }
 
       if ( framesAvailable > 0 ) {
-         #ifdef _DEBUG
+         #ifdef MONITOR_PCM_AUDIO
             gbMonitor = false;
             if ( gFramesToMonitor > 0 ) {
                if ( gStartOfMonitor > framePosition ) {
@@ -255,7 +257,9 @@ DWORD WINAPI audioCaptureThread( LPVOID Context ) {
    }
    OutputDebugStringA( __FUNCTION__ ":  Set MMCSS on thread." );
 
-   gFramesToMonitor = MONITOR_INTERVAL_SECONDS * gpMixFormat->nSamplesPerSec;
+   #ifdef MONITOR_PCM_AUDIO
+      gFramesToMonitor = MONITOR_INTERVAL_SECONDS * gpMixFormat->nSamplesPerSec;
+   #endif
 
    /// Audio capture loop
    /// isRunning gets set to false by WM_CLOSE
