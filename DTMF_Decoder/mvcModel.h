@@ -90,6 +90,10 @@ inline void mvcModelToggleToneDetectedStatus( size_t toneIndex, bool detectedSta
 extern bool isRunning;  
                         
 
+/// Pointer to the main window handle
+extern HWND ghMainWindow;
+
+
 /// The size of the queue in milliseconds.  This determines the number of
 /// samples the Goertzel DFT #goertzel_magnitude uses to analyze the signal.  
 ///

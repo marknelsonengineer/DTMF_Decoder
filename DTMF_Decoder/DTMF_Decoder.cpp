@@ -108,6 +108,8 @@ int APIENTRY wWinMain(
       return FALSE;
    }
 
+   ghMainWindow = hWnd;
+
    /// Initialize the model
    if ( !mvcModelInit() ) {
       OutputDebugStringA( APP_NAME ": Failed to initialize the model.  Exiting." );

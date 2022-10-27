@@ -244,6 +244,7 @@ void audioCapture() {
    } else {
       OutputDebugStringA( __FUNCTION__ ":  GetBuffer did not return S_OK.  Investigate!!" );
       isRunning = false;
+      SendMessage(ghMainWindow, WM_CLOSE, 0, 0);  /// Shutdown the app
    }
 }
 

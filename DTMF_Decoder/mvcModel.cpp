@@ -43,6 +43,9 @@ bool hasDtmfTonesChanged = false;
 bool isRunning = false;
 
 
+HWND ghMainWindow = NULL;
+
+
 BYTE* pcmQueue = NULL;
 size_t queueHead = 0;
 size_t queueSize = 0;
