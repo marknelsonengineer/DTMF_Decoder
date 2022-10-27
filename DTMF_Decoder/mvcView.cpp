@@ -115,9 +115,8 @@ BOOL mvcViewRefreshWindow() {
 
 /// Initialize all of the resources needed to draw the main window
 /// 
-/// @param hWnd Window handle
 /// @return `true` if successful.  `false` if there was a problem.
-BOOL mvcViewInitResources( HWND hWndXX ) {
+BOOL mvcViewInitResources() {
    HRESULT hr;  // HRESULT result
    BOOL    br;  // BOOL result
 

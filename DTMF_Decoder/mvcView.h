@@ -20,7 +20,7 @@
 #define HIGHLIGHT_COLOR   (0x75F0FF)   /**< A bright, light blue - courtesey of <a href="https://apps.apple.com/us/app/blue-box/id391832739">BlueBox</a> */
 #define BACKGROUND_COLOR  (0x181737)   /**< A dark blue - courtesey of <a href="https://apps.apple.com/us/app/blue-box/id391832739">BlueBox</a>          */
 
-BOOL mvcViewInitResources( HWND );  
+BOOL mvcViewInitResources();  
 BOOL mvcViewCleanupResources();
 BOOL mvcViewPaintWindow();
 BOOL mvcViewRefreshWindow();

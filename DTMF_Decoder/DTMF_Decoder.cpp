@@ -90,7 +90,7 @@ int APIENTRY wWinMain(
    }
 
    /// Create the window
-   HWND hWnd = CreateWindowW(
+   ghMainWindow = CreateWindowW(
       gszWindowClass,
       gszTitle,
       WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU,
@@ -103,12 +103,10 @@ int APIENTRY wWinMain(
       hInstance,              // hInstance
       nullptr );              // lpParam
 
-   if ( !hWnd ) {
+   if ( !ghMainWindow ) {
       OutputDebugStringA( APP_NAME ": Failed to create main window.  Exiting." );
       return FALSE;
    }
-
-   ghMainWindow = hWnd;
 
    /// Initialize the model
    if ( !mvcModelInit() ) {
@@ -117,7 +115,7 @@ int APIENTRY wWinMain(
    }
 
    /// Initialize the view
-   if( !mvcViewInitResources( hWnd ) ) {
+   if( !mvcViewInitResources() ) {
       OutputDebugStringA( APP_NAME ": Failed to initialize the view.  Exiting." );
       return FALSE;
    }
@@ -128,8 +126,8 @@ int APIENTRY wWinMain(
    }
 
    /// Initialize Win32-isms
-   ShowWindow( hWnd, nCmdShow );   // It's OK to ignore the result of this
-   if ( !UpdateWindow( hWnd ) ) {
+   ShowWindow( ghMainWindow, nCmdShow );   // It's OK to ignore the result of this
+   if ( !UpdateWindow( ghMainWindow ) ) {
       OutputDebugStringA( APP_NAME ": Failed to do the initial window update.  Exiting." );
       return FALSE;
    }
