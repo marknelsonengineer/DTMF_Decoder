@@ -3,7 +3,7 @@
 //          DTMF_Decoder - EE 469 - Fall 2022
 //
 //  A Windows Desktop C program that decodes DTMF tones
-///
+//
 /// An 8-way multi-threaded Discrete Fast Forier Transform - specifically, 
 /// the Goertzel algorithm for 8-bit PCM data.
 /// 
@@ -19,15 +19,16 @@
 
 #pragma once
 
-#include <stdint.h>
-#include <windows.h>
+#include <Windows.h>      // For BOOL, etc.
 
+/// When the result of #goertzel_magnitude `>=` this, then this means it's 
+/// detected a tone.
 #define GOERTZEL_MAGNITUDE_THRESHOLD  10.0f
 
-extern BOOL goertzel_init( int SAMPLING_RATE_IN );  /// Initialize this module
+extern BOOL goertzel_init( int SAMPLING_RATE_IN );  
 
-extern BOOL goertzel_compute_dtmf_tones(); /// Signal 8 worker threads, then 
-                                           ///wait for them to end
-extern void goertzel_end();                /// Signal all of the threads so 
-                                           /// they can end on their own terms
-void        goertzel_cleanup();            /// Cleanup handles and threads       
+extern BOOL goertzel_compute_dtmf_tones();  
+                                           
+extern BOOL goertzel_end();                
+                                           
+extern BOOL goertzel_cleanup();                  

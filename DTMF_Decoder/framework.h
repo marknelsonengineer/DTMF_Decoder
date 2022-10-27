@@ -17,13 +17,20 @@
 
 #include "targetver.h"
 
-#include <windows.h>                    // Windows Header Files
+#include <Windows.h>      // For the standard Windows definitions
+
 
 // C RunTime Header Files
 #include <stdlib.h>
 #include <malloc.h>
 #include <memory.h>
 #include <tchar.h>
+
+
+///< For getting math defines in C++ (this is a .cpp file)
+#define _USE_MATH_DEFINES  
+#include <math.h>              // For sinf() and cosf()
+
 
 
 /// Release the pointer P to a COM object by calling the IUnknown::Release
