@@ -81,6 +81,18 @@ WCHAR           wsBuf[ 256 ];  ///< Debug buffer  @todo put a guard around this
    BYTE monitorCh1Min = 255;              ///< The highest PCM value on Channel 1 during this monitoring period
 #endif
 
+
+/// The audio formats DTMF_Decoder supports
+enum audio_format_t {
+   UNKNOWN_AUDIO_FORMAT=0,  ///< An unknown audio format   
+   PCM,                     ///< 8-bit, linear PCM ranging from 0 to 255 where 0 is min, 127 is silence and 255 is max
+   IEEE_FLOAT_32            ///< 32-bit float values from -1 to +1
+};
+
+
+/// The audio format DTMF_Decoder is currently using
+audio_format_t audioFormat = UNKNOWN_AUDIO_FORMAT;
+
 BOOL isPCM = false;
 BOOL isIEEE = false;
 

@@ -18,6 +18,7 @@
 #include <crtdbg.h>       // For _malloc_dbg()
 #include "mvcModel.h"     // For yo bad self
 
+
 /// Currently does nothing, but it's good to have around
 BOOL mvcModelInit() {
    return TRUE;
