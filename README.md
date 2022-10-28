@@ -52,5 +52,8 @@ This project (left) was inspired by [Blue Box DTMF Decoder](https://apps.apple.c
 - [Doxygen](https://doxygen.nl)
 - [DOT](https://graphviz.org/download/)
 - [DIA for Windows](http://dia-installer.de/index.html.en)
+- [DebugView](https://learn.microsoft.com/en-us/sysinternals/downloads/debugview) from SysInternals
 
+## Using DTMF Decoder
+DTMF Decoder applies the [Unix philosophy](https://en.wikipedia.org/wiki/Unix_philosophy) of doing one thing very well:  Decoding DTMF strings.   Therefore, it does not provide a lot of status/popups/messages to users.   However, DTMF Decoder does send quite a bit of data and status information to [OutputDebugString](https://learn.microsoft.com/en-us/windows/win32/api/debugapi/nf-debugapi-outputdebugstringa).  Therefore, using [DebugView](https://learn.microsoft.com/en-us/sysinternals/downloads/debugview) is a good way to see what's going on inside.
 
