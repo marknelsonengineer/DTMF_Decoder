@@ -1,20 +1,24 @@
 # DTMF Decoder for Windows
 
-<img src="images/DTMF_Decoder_Windows.jpg" style="width:200px; float: left; margin: 0 10px 10px 0;" alt="DTMF Decoder Windows"/>
-
-<img src="images/DTMF_Decoder_iOS.PNG" style="width:200px; float: right; margin: 0 10px 10px 0;" alt="DTMF Decoder iOS"/>
-
-This project (left) was inspired by [Blue Box DTMF Decoder](https://apps.apple.com/us/app/blue-box/id391832739), an iOS app developed by [Sunshine Valley Systems](http://www.sunshinevalleysystems.com/BlueBox/index.html) (right)
+| DTMF Decoder                                                                                                                     |                                                                                                                                                                                                                                     | Blue Box                                                                                                                  |
+|----------------------------------------------------------------------------------------------------------------------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|---------------------------------------------------------------------------------------------------------------------------|
+| <img src="images/DTMF_Decoder_Windows.jpg" style="width:200px; float: top; margin: 0 10px 10px 0;" alt="DTMF Decoder Windows"/> | This project (left) was inspired by [Blue Box DTMF Decoder](https://apps.apple.com/us/app/blue-box/id391832739), an iOS app developed by [Sunshine Valley Systems](http://www.sunshinevalleysystems.com/BlueBox/index.html) (right) | <img src="images/DTMF_Decoder_iOS.PNG" style="width:200px; float: right; margin: 0 10px 10px 0;" alt="DTMF Decoder iOS"/> |
 
 
-## Goals
-- Write a DTMF and a tone decoder
-- Get back to my roots as a Windows C Usermode programmer
-- See what's changed in the last 25 years of programming
-- Write a Forier Transform (or something like one)
+#### Goals
+- Write a [DTMF](https://en.wikipedia.org/wiki/Dual-tone_multi-frequency_signaling) tone decoder
+- Get back to my roots as a [Windows C Usermode](https://en.wikipedia.org/wiki/Windows_API) programmer
+- See [what's changed](https://stackoverflow.com/questions/3121538/how-has-windows-api-changed-in-the-last-10-years) in the last 25 years of programming
+- Write a [Forier Transform](https://en.wikipedia.org/wiki/Fourier_transform) (or something like one)
+- (Unintended, but fun)  Due to the realtime nature of the application, I had to hand-code a [Goertzel Algorithm](https://en.wikipedia.org/wiki/Goertzel_algorithm) (a type of [Discrete Forier Transform](https://en.wikipedia.org/wiki/Discrete_Fourier_transform)) in x86-64 Assembly Language.
+
+#### Links
+The project's home page (hosted by GitHub) is [here](https://github.com/marknelsonengineer/DTMF_Decoder)
+
+The source code documentation (hosted by UH) is [here](TBD)
 
 
-## Design Decisions
+#### Design Decisions
 - **The Application Framework:**  After reviewing [An Overview of App Development Options](https://learn.microsoft.com/en-us/windows/apps/get-started/?tabs=net-maui%2Cwindows-forms) 
   I'm going with **Win32**.  Here's a brief summary of my options:
   - **WinUI 3:**  This is the current recommended platform.  That said, it has a number 
@@ -48,12 +52,26 @@ This project (left) was inspired by [Blue Box DTMF Decoder](https://apps.apple.c
   - Note:  Should I have chosen to do a console-based log, I'd have dumped to a syslog on localhost.
   - I think I'll try using [DebugOutputString](https://learn.microsoft.com/en-us/windows/win32/api/debugapi/nf-debugapi-outputdebugstringa)
 
-## Tools
-- [Doxygen](https://doxygen.nl)
+#### Toolchain
+This project is the product of a tremendous amount of R&D and would not be possible without the following world-class tools:
+
+| Tool           | Website                     |                                                Logo                                                 |
+|----------------|-----------------------------|:---------------------------------------------------------------------------------------------------:|
+| **Visual Studio Community Edition**          | https://visualstudio.microsoft.com/vs/community/       |   <img src="images/Visual_Studio_Logo.png" style="height:40px; float: center; margin: 0 0 0 0;" alt="MSVC"/>   |
+| **Doxygen**    | https://doxygen.nl          | <img src="images/logo_doxygen.png" style="height:40px; float: center; margin: 0 0 0 0;" alt="Doxygen"/> |
+| **Git**        | https://git-scm.com         | <img src="images/logo_git.png" style="height:40px; float: center; margin: 0 0 0 0;" alt="Git"/>   |
+| **GitHub**     | https://github.com          | <img src="images/logo_github.png" style="height:40px; float: center; margin: 0 0 0 0;" alt="Github"/>  |
+| **DOT**        | https://graphviz.org        | <img src="images/dot.gif" style="height:40px; float: center; margin: 0 0 0 0;" alt="Dot"/>  |
+| **DIA**        | http://dia-installer.de     | <img src="images/dia.png" style="height:40px; float: center; margin: 0 0 0 0;" alt="Dia"/>  |
+| **Sysinternals**  | https://learn.microsoft.com/en-us/sysinternals/         | <img src="images/logo_github.png" style="height:40px; float: center; margin: 0 0 0 0;" alt="GCC"/>  |
+
+
+#### Downloads
 - [DOT](https://graphviz.org/download/)
 - [DIA for Windows](http://dia-installer.de/index.html.en)
 - [DebugView](https://learn.microsoft.com/en-us/sysinternals/downloads/debugview) from SysInternals
 
-## Using DTMF Decoder
+
+#### Using DTMF Decoder
 DTMF Decoder applies the [Unix philosophy](https://en.wikipedia.org/wiki/Unix_philosophy) of doing one thing very well:  Decoding DTMF strings.   Therefore, it does not provide a lot of status/popups/messages to users.   However, DTMF Decoder does send quite a bit of data and status information to [OutputDebugString](https://learn.microsoft.com/en-us/windows/win32/api/debugapi/nf-debugapi-outputdebugstringa).  Therefore, using [DebugView](https://learn.microsoft.com/en-us/sysinternals/downloads/debugview) is a good way to see what's going on inside.
 
