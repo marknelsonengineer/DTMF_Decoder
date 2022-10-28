@@ -68,7 +68,7 @@ extern bool hasDtmfTonesChanged;
 /// Determine if the state of a DTMF tone detection has changed.  If it has,
 /// then we need to repaint the display.  See #hasDtmfTonesChanged
 inline void mvcModelToggleToneDetectedStatus( size_t toneIndex, bool detectedStatus ) {
-   // assert( toneIndex < NUMBER_OF_DTMF_TONES );  // Removed for performance
+   _ASSERTE( toneIndex < NUMBER_OF_DTMF_TONES );
 
    if ( dtmfTones[ toneIndex ].detected != detectedStatus ) {
       dtmfTones[ toneIndex ].detected = detectedStatus;
@@ -164,8 +164,8 @@ extern BOOL pcmSetQueueSize( size_t size );
 ///
 /// Delcared `inline` for performance reasons
 inline void pcmEnqueue( BYTE data ) {
-   //_ASSERTE( pcmQueue != NULL );     /// @todo Convert all assert to _ASSERTE
-   //assert( queueHead < queueSize );  // Asserts removed for performance
+   _ASSERTE( pcmQueue != NULL );
+   _ASSERTE( queueHead < queueSize );
 
    pcmQueue[ queueHead++ ] = data ;
 

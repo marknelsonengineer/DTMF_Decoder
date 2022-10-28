@@ -22,7 +22,6 @@
 #include "mvcView.h"      // For drawing the window
 #include "mvcModel.h"     // For viewing the state of the machine
 #include "DTMF_Decoder.h" // Resource.h
-#include <cassert>
 
 #pragma comment(lib, "d2d1")    // Link the Diect2D library (for drawing)
 #pragma comment(lib, "Dwrite")  // Link the DirectWrite library (for fonts and text)
@@ -262,7 +261,7 @@ BOOL mvcViewCleanupResources() {
 BOOL mvcViewPaintWindow() {
    HRESULT hr;  // HRESULT result
 
-   assert( gpRenderTarget != NULL );
+   _ASSERTE( gpRenderTarget != NULL );
 
    gpRenderTarget->BeginDraw() ;  
    // No return value

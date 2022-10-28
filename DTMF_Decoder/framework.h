@@ -18,7 +18,7 @@
 #include "targetver.h"
 
 #include <Windows.h>      // For the standard Windows definitions
-#include <crtdbg.h>       // For the _ASSERTE macro
+#include <crtdbg.h>       // For the _ASSERTE macro and _malloc_dbg
 
 // C RunTime Header Files
 #include <stdlib.h>

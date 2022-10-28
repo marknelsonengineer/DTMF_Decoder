@@ -34,7 +34,6 @@
 #include "goertzel.h"     // For goertzel_compute_dtmf_tones
 #include "mvcView.h"      // For mvcViewRefreshWindow
 
-#include <assert.h>       // For assert
 #include <avrt.h>         // For AvSetMmThreadCharacteristics
 #include <inttypes.h>     // For printf to format fixed-integers
 #include <float.h>        // For FLT_MIN and FLT_MAX
@@ -101,9 +100,9 @@ BOOL isIEEE = false;
 ///        example in the git history just before commit 563da34a)
 /// @todo Preprocess this stuff
 BOOL processAudioFrame( BYTE* pData, UINT32 frame ) {
-   assert( pData != NULL );
-   assert( isPCM || isIEEE );
-   assert( gpMixFormat != NULL );
+   _ASSERTE( pData != NULL );
+   _ASSERTE( isPCM || isIEEE );
+   _ASSERTE( gpMixFormat != NULL );
 
    BYTE ch1Sample = PCM_8_BIT_SILENCE;
 
@@ -162,7 +161,7 @@ void audioCapture() {
    DWORD  flags;
    UINT64 framePosition;
 
-   assert( gCaptureClient != NULL );
+   _ASSERTE( gCaptureClient != NULL );
    _ASSERTE( audioFormat != UNKNOWN_AUDIO_FORMAT );
 
    hr = gCaptureClient->GetBuffer( &pData, &framesAvailable, &flags, &framePosition, NULL );
@@ -398,7 +397,7 @@ BOOL audioInit() {
    }
 
    /// Get the IMMDevice
-   assert( gDevice == NULL );
+   _ASSERTE( gDevice == NULL );
 
    hr = deviceEnumerator->GetDefaultAudioEndpoint( eCapture, eMultimedia, &gDevice );
    if ( hr != S_OK || gDevice == NULL ) {
@@ -519,7 +518,7 @@ BOOL audioInit() {
       return FALSE;
    }
 
-   assert( isPCM || isIEEE );
+   _ASSERTE( isPCM || isIEEE );
 
    /// Initialize shared mode audio client
    //  Shared mode streams using event-driven buffering must set both periodicity and bufferDuration to 0.

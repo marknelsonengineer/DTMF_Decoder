@@ -14,8 +14,6 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include "framework.h"    // Standard system include files
-#include <assert.h>       // For assert()
-#include <crtdbg.h>       // For _malloc_dbg()
 #include "mvcModel.h"     // For yo bad self
 
 
@@ -52,8 +50,8 @@ size_t queueSize = 0;
 
 
 BOOL pcmSetQueueSize( size_t size ) {
-   assert( pcmQueue == NULL );
-   assert( queueSize == 0 );
+   _ASSERTE( pcmQueue == NULL );
+   _ASSERTE( queueSize == 0 );
 
    pcmQueue = (BYTE*)_malloc_dbg(size, _CLIENT_BLOCK, __FILE__, __LINE__);
    if ( pcmQueue == NULL ) {
@@ -66,8 +64,8 @@ BOOL pcmSetQueueSize( size_t size ) {
 
    ZeroMemory( pcmQueue, queueSize );
 
-   assert( pcmQueue != NULL );
-   assert( queueSize != 0 );
+   _ASSERTE( pcmQueue != NULL );
+   _ASSERTE( queueSize != 0 );
 
    return TRUE;
 }
