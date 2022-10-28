@@ -77,12 +77,12 @@ int APIENTRY wWinMain(
    wcex.cbClsExtra = 0;
    wcex.cbWndExtra = 0;
    wcex.hInstance = hInstance;
-   wcex.hIcon = LoadIcon( hInstance, MAKEINTRESOURCE( IDI_DTMFDECODER ) );
+   wcex.hIcon = LoadIcon( hInstance, MAKEINTRESOURCE( IDI_DTMF_DECODER ) );
    wcex.hCursor = LoadCursor( nullptr, IDC_ARROW );
    wcex.hbrBackground = NULL;  // To avoid flicker
    wcex.lpszMenuName = MAKEINTRESOURCEW( IDC_DTMFDECODER );
    wcex.lpszClassName = gszWindowClass;
-   wcex.hIconSm = LoadIcon( wcex.hInstance, MAKEINTRESOURCE( IDI_SMALL ) );
+   wcex.hIconSm = LoadIcon( wcex.hInstance, MAKEINTRESOURCE( IDI_DTMF_DECODER ) );
 
    if ( !RegisterClassExW( &wcex ) ) {
       OutputDebugStringA( APP_NAME ": Failed to register window class.  Exiting.");
