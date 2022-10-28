@@ -367,7 +367,7 @@ FodyWeavers.xsd
 *.DS_Store
 
 # Ignore Ghidra work Files
-/Ghidra/*
+# Ghidra/
 
 # Ignore cached images file
 Thumbs.db
