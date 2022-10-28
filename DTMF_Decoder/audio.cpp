@@ -163,6 +163,7 @@ void audioCapture() {
    UINT64 framePosition;
 
    assert( gCaptureClient != NULL );
+   _ASSERTE( audioFormat != UNKNOWN_AUDIO_FORMAT );
 
    hr = gCaptureClient->GetBuffer( &pData, &framesAvailable, &flags, &framePosition, NULL );
    if ( hr == S_OK ) {
