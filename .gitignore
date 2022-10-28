@@ -369,3 +369,6 @@ FodyWeavers.xsd
 # Ignore Ghidra work Files
 ~*.bak
 *.gbf
+
+# Ignore cached images file
+Thumbs.db
