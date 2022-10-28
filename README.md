@@ -57,13 +57,13 @@ This project is the product of a tremendous amount of R&D and would not be possi
 
 | Tool           | Website                     |                                                Logo                                                 |
 |----------------|-----------------------------|:---------------------------------------------------------------------------------------------------:|
-| **Visual Studio Community Edition**          | https://visualstudio.microsoft.com/vs/community/       |   <img src="images/Visual_Studio_Logo.png" style="height:40px; float: center; margin: 0 0 0 0;" alt="MSVC"/>   |
+| **Visual Studio Community Edition**          | https://visualstudio.microsoft.com/vs/community/       |  <img src="images/Visual_Studio_Logo.png" style="height:40px; float: center; margin: 0 0 0 0;" alt="MSVC"/>   |
 | **Doxygen**    | https://doxygen.nl          | <img src="images/logo_doxygen.png" style="height:40px; float: center; margin: 0 0 0 0;" alt="Doxygen"/> |
 | **Git**        | https://git-scm.com         | <img src="images/logo_git.png" style="height:40px; float: center; margin: 0 0 0 0;" alt="Git"/>   |
 | **GitHub**     | https://github.com          | <img src="images/logo_github.png" style="height:40px; float: center; margin: 0 0 0 0;" alt="Github"/>  |
-| **DOT**        | https://graphviz.org        | <img src="images/dot.gif" style="height:40px; float: center; margin: 0 0 0 0;" alt="Dot"/>  |
+| **DOT**        | https://graphviz.org        | <img src="images/dot.png" style="height:40px; float: center; margin: 0 0 0 0;" alt="Dot"/>  |
 | **DIA**        | http://dia-installer.de     | <img src="images/dia.png" style="height:40px; float: center; margin: 0 0 0 0;" alt="Dia"/>  |
-| **Sysinternals**  | https://learn.microsoft.com/en-us/sysinternals/         | <img src="images/logo_github.png" style="height:40px; float: center; margin: 0 0 0 0;" alt="GCC"/>  |
+| **Sysinternals**  | https://learn.microsoft.com/en-us/sysinternals/         | <img src="images/logo_github.png" style="height:40px; float: center; margin: 0 0 0 0;" alt="Sysinternals"/>  |
 
 
 #### Downloads
