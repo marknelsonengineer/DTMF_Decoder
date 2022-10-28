@@ -19,6 +19,9 @@
 /// @see https://learn.microsoft.com/en-us/windows/win32/api/mmreg/ns-mmreg-waveformatextensible
 /// @see https://learn.microsoft.com/en-us/windows/win32/api/audioclient/nn-audioclient-iaudiocaptureclient
 /// 
+/// @todo  Watch the program with Process Monitor and make sure it's not
+///        over-spinning any threads.  So far, it looks very good.
+/// 
 /// @author Mark Nelson <marknels@hawaii.edu>
 /// @date   10_Oct_2022
 ///////////////////////////////////////////////////////////////////////////////
@@ -84,7 +87,7 @@ WCHAR           wsBuf[ 256 ];  ///< Debug buffer  @todo put a guard around this
 /// The audio formats DTMF_Decoder supports
 enum audio_format_t {
    UNKNOWN_AUDIO_FORMAT=0,  ///< An unknown audio format   
-   PCM,                     ///< 8-bit, linear PCM ranging from 0 to 255 where 0 is min, 127 is silence and 255 is max
+   PCM_8,                   ///< 8-bit, linear PCM ranging from 0 to 255 where 0 is min, 127 is silence and 255 is max
    IEEE_FLOAT_32            ///< 32-bit float values from -1 to +1
 };
 
@@ -92,33 +95,37 @@ enum audio_format_t {
 /// The audio format DTMF_Decoder is currently using
 audio_format_t audioFormat = UNKNOWN_AUDIO_FORMAT;
 
-BOOL isPCM = false;
-BOOL isIEEE = false;
 
-
-/// @todo Make this generic (good for a variety of formats -- there's a good 
-///        example in the git history just before commit 563da34a)
-/// @todo Preprocess this stuff
+/// Process the audio frame, converting it into #PCM_8, adding the sample to
+/// #pcmQueue and monitoring the values (if desired)
+/// 
+/// @param pData Pointer into the audio bufer
+/// @param frame The frame number to process
+/// @return `true` if successful.  `false` if there were problems.
 BOOL processAudioFrame( BYTE* pData, UINT32 frame ) {
    _ASSERTE( pData != NULL );
-   _ASSERTE( isPCM || isIEEE );
+   _ASSERTE( audioFormat != UNKNOWN_AUDIO_FORMAT );
    _ASSERTE( gpMixFormat != NULL );
 
    BYTE ch1Sample = PCM_8_BIT_SILENCE;
 
-   if ( isIEEE && gpMixFormat->wBitsPerSample == 32 ) {  // IEEE float
-      float* fSample = (float*) (pData + ( frame * gpMixFormat->nBlockAlign ));  // This is from +1 to -1
+   switch ( audioFormat ) {
+      case IEEE_FLOAT_32: {
+            float* fSample = (float*) ( pData + ( frame * gpMixFormat->nBlockAlign ) );  // This is from +1 to -1
 
-      INT8 signedSample = (INT8) ( *fSample * (float) PCM_8_BIT_SILENCE );  // This is +127 to -127
-      if ( signedSample >= 0 ) {
-         ch1Sample = signedSample + PCM_8_BIT_SILENCE;
-      } else {
-         ch1Sample = PCM_8_BIT_SILENCE + signedSample;  // -1, -2, -3, will turn into 127, 126, 125, ...
-      }
-   } else if ( isPCM && gpMixFormat->wBitsPerSample == 8 ) {  // 8-bit PCM
-      ch1Sample = *(pData + (frame * gpMixFormat->nBlockAlign) );
-   } else {
-      // Punch out
+            INT8 signedSample = (INT8) ( *fSample * (float) PCM_8_BIT_SILENCE );  // This is +127 to -127
+            if ( signedSample >= 0 ) {
+               ch1Sample = signedSample + PCM_8_BIT_SILENCE;
+            } else {
+               ch1Sample = PCM_8_BIT_SILENCE + signedSample;  // -1, -2, -3, will turn into 127, 126, 125, ...
+            }
+            break;
+         }
+      case PCM_8:
+         ch1Sample = *( pData + ( frame * gpMixFormat->nBlockAlign ) );
+         break;
+      default:
+         _ASSERT_EXPR( FALSE, "Unknown audio format" );
    }
 
    pcmEnqueue( ch1Sample );
@@ -149,10 +156,27 @@ BOOL processAudioFrame( BYTE* pData, UINT32 frame ) {
 }
 
 
-/// @todo  Watch the program with Process Monitor and make sure it's not
-///        over-spinning a thread.
-
-/// Collect the audio frames and process them
+/// Get audio frames from the device and process them
+///
+/// On virtualized systems, the hypervisor can play Merry Hell with this...
+/// This is a realtime application.  Windows has several features to ensure
+/// that realtime applications (like audio capture) have high proitory, but
+/// the hypervisor doesn't really have visibility to that.
+/// 
+/// My observations are:  On bare-metal systems, the scheduling/performance of
+/// this loop are OK.  On virtualized systems, you may see lots of 
+/// DATA_DISCONTINUITY messages.  I assess this to be normal and outside of 
+/// what I can program around.
+/// 
+/// When we get a DATA_DISCONTINUITY message, I'm choosing to drop the buffer.
+/// I could just have easily processed it, but I'm thinking that I'll wait
+/// for the scheduler to stabalize and only process 100% good buffers.  We also
+/// throw out silent buffers.
+/// 
+/// If I did process discontinuous frames, I'd have the right frequency, but
+/// I'd introduce phasing issues which could distort our results.
+/// 
+/// It's normal for the first buffer to have DATA_DISCONTINUITY set 
 void audioCapture() {
    HRESULT hr;
 
@@ -164,6 +188,9 @@ void audioCapture() {
    _ASSERTE( gCaptureClient != NULL );
    _ASSERTE( audioFormat != UNKNOWN_AUDIO_FORMAT );
 
+   // The following block of code is the core logic of DTMF_Decoder
+
+   /// Use GetBuffer to get a bunch of frames of audio from the capture client
    hr = gCaptureClient->GetBuffer( &pData, &framesAvailable, &flags, &framePosition, NULL );
    if ( hr == S_OK ) {
       // OutputDebugStringA( __FUNCTION__ ":  I got data!" );
@@ -171,16 +198,23 @@ void audioCapture() {
       if ( flags == 0 ) {
          // Normal processing
          for ( UINT32 i = 0 ; i < framesAvailable ; i++ ) {
-            processAudioFrame( pData, i );
+            processAudioFrame( pData, i );  // Process each audio frame
          }
          
+         /// After all of the frames have been queued, compute the DFT
+         /// 
+         /// Note:  This thread will wait, signal 8 DFT threads to run, then
+         ///        will continue after the DFT threads are done
          goertzel_compute_dtmf_tones();
-          
+         
+         /// If, after computing all 8 of the DFTs, if the detected state
+         /// has changed, then refresh the main window
          if ( hasDtmfTonesChanged ) {
             mvcViewRefreshWindow();
          }
       } 
 
+      /// Carefully analyze the flags returned by GetBuffer
       if ( flags & AUDCLNT_BUFFERFLAGS_SILENT ) {
          OutputDebugStringA( __FUNCTION__ ":  Buffer flag set:  SILENT" );
          // Nothing so see here.  Move along.
@@ -188,7 +222,7 @@ void audioCapture() {
       } 
       if ( flags & AUDCLNT_BUFFERFLAGS_DATA_DISCONTINUITY ) {
          OutputDebugStringA( __FUNCTION__ ":  Buffer flag set:  DATA_DISCONTINUITY" );
-         // Throw the first packet out
+         // Throw these packets out
          flags &= !AUDCLNT_BUFFERFLAGS_DATA_DISCONTINUITY;  // Clear AUDCLNT_BUFFERFLAGS_DATA_DISCONTINUITY from flags
       } 
       if ( flags & AUDCLNT_BUFFERFLAGS_TIMESTAMP_ERROR ) {
@@ -242,13 +276,22 @@ void audioCapture() {
    } else if ( hr == AUDCLNT_E_OUT_OF_ORDER ) {
       OutputDebugStringA( __FUNCTION__ ":  GetBuffer returned out of order data.  Continue." );
    } else {
+      /// If the audio device changes (unplugged, for example) then GetBuffer
+      /// will return something unexpected and we should see it here.  If this
+      /// happens, set #isRunning to `false` and gracefully shutdown the app.
+
       OutputDebugStringA( __FUNCTION__ ":  GetBuffer did not return S_OK.  Investigate!!" );
       isRunning = false;
-      SendMessage(ghMainWindow, WM_CLOSE, 0, 0);  /// Shutdown the app
+      SendMessage(ghMainWindow, WM_CLOSE, 0, 0);  // Shutdown the app
    }
 }
 
 
+/// This thread waits for the audio device to call us back when it has some
+/// data to process.
+/// 
+/// @param Context Not used
+/// @return Return `0` if successful.  `0xFFFF `if there was a problem.
 DWORD WINAPI audioCaptureThread( LPVOID Context ) {
    OutputDebugStringA( __FUNCTION__ ":  Start capture thread" );
 
@@ -275,7 +318,7 @@ DWORD WINAPI audioCaptureThread( LPVOID Context ) {
    #endif
 
    /// Audio capture loop
-   /// isRunning gets set to false by WM_CLOSE
+   /// #isRunning gets set to false by WM_CLOSE
    
    isRunning = true;
 
@@ -298,6 +341,8 @@ DWORD WINAPI audioCaptureThread( LPVOID Context ) {
       }
    }
 
+   // Done.  Time to cleanup the thread
+
    if ( mmcssHandle != NULL ) {
       if ( !AvRevertMmThreadCharacteristics( mmcssHandle ) ) {
          OutputDebugStringA( __FUNCTION__ ":  Failed to revert MMCSS on the audio capture thread.  Continuing." );
@@ -305,7 +350,6 @@ DWORD WINAPI audioCaptureThread( LPVOID Context ) {
       mmcssHandle = NULL;
    }
 
-   /// Cleanup the thread
    CoUninitialize();
 
    OutputDebugStringA( __FUNCTION__ ":  End capture thread" );
@@ -315,6 +359,18 @@ DWORD WINAPI audioCaptureThread( LPVOID Context ) {
 
 
 /// Print the WAVEFORMATEX or WAVEFORMATEXTENSIBLE structure to OutputDebug
+/// 
+/// #### Sample Output
+/**@verbatim
+    audioPrintWaveFormat:  Using WAVE_FORMAT_EXTENSIBLE format
+    Channels=2
+    Samples per Second=44100
+    Bytes per Second=352800
+    Block (frame) alignment, in bytes=8
+    Bits per sample=32
+    Valid bits per sample=32
+    Extended wave format is IEEE Float
+@endverbatim */
 BOOL audioPrintWaveFormat( WAVEFORMATEX* pFmt ) {
    if ( pFmt->wFormatTag == WAVE_FORMAT_EXTENSIBLE ) {
       OutputDebugStringA( "   " __FUNCTION__ ":  Using WAVE_FORMAT_EXTENSIBLE format");
@@ -391,19 +447,15 @@ BOOL audioInit() {
    IMMDeviceEnumerator* deviceEnumerator = NULL;
 
    hr = CoCreateInstance( __uuidof( MMDeviceEnumerator ), NULL, CLSCTX_INPROC_SERVER, IID_PPV_ARGS( &deviceEnumerator ) );
-   if ( hr != S_OK ) {
-      OutputDebugStringA( __FUNCTION__ ":  Failed to instantiate the multimedia device enumerator via COM" );
-      return FALSE;
-   }
+   CHECK_HR( "Failed to instantiate the multimedia device enumerator via COM" );
 
    /// Get the IMMDevice
    _ASSERTE( gDevice == NULL );
 
    hr = deviceEnumerator->GetDefaultAudioEndpoint( eCapture, eMultimedia, &gDevice );
-   if ( hr != S_OK || gDevice == NULL ) {
-      OutputDebugStringA( __FUNCTION__ ":  Failed to get default audio device" );
-      return FALSE;
-   }
+   CHECK_HR( "Failed to get default audio device" );
+
+   _ASSERTE( gDevice != NULL );
 
    /// Get the ID from IMMDevice
    hr = gDevice->GetId( &glpwstrDeviceId );
@@ -498,46 +550,42 @@ BOOL audioInit() {
       return FALSE;
    }
 
-   if ( gpMixFormat->wFormatTag == WAVE_FORMAT_PCM ) {
-      isPCM = true;
-   } else if ( gpMixFormat->wFormatTag == WAVE_FORMAT_IEEE_FLOAT ) {
-      isIEEE = true;
+   /// Determine the audio format
+   audioFormat = UNKNOWN_AUDIO_FORMAT;
+
+   if ( gpMixFormat->wFormatTag == WAVE_FORMAT_PCM && gpMixFormat->wBitsPerSample == 8 ) {
+      audioFormat = PCM_8;
+   } else if ( gpMixFormat->wFormatTag == WAVE_FORMAT_IEEE_FLOAT && gpMixFormat->wBitsPerSample == 32 ) {
+      audioFormat = IEEE_FLOAT_32;
    } else if ( gpMixFormat->wFormatTag == WAVE_FORMAT_EXTENSIBLE ) {
       WAVEFORMATEXTENSIBLE* pFmtEx = (WAVEFORMATEXTENSIBLE*) gpMixFormat;
 
-      if ( pFmtEx->SubFormat == KSDATAFORMAT_SUBTYPE_PCM ) {
-         isPCM = true;
-      } else if ( pFmtEx->SubFormat == KSDATAFORMAT_SUBTYPE_IEEE_FLOAT ) {
-         isIEEE = true;
-      } else {
-         OutputDebugStringA( __FUNCTION__ ":  Unknown extended audio format" );
-         return FALSE;
+      if ( pFmtEx->SubFormat == KSDATAFORMAT_SUBTYPE_PCM && pFmtEx->Samples.wValidBitsPerSample == 8 ) {
+         audioFormat = PCM_8;
+      } else if ( pFmtEx->SubFormat == KSDATAFORMAT_SUBTYPE_IEEE_FLOAT && pFmtEx->Samples.wValidBitsPerSample == 32 ) {
+         audioFormat = IEEE_FLOAT_32;
       }
-   } else {
-      OutputDebugStringA( __FUNCTION__ ":  Unknown audio format" );
+   }
+
+   if ( audioFormat == UNKNOWN_AUDIO_FORMAT ) {
+      OutputDebugStringA( __FUNCTION__ ":  Failed to match with the audio format" );
       return FALSE;
    }
 
-   _ASSERTE( isPCM || isIEEE );
+   _ASSERTE( audioFormat != UNKNOWN_AUDIO_FORMAT );
 
    /// Initialize shared mode audio client
    //  Shared mode streams using event-driven buffering must set both periodicity and bufferDuration to 0.
    hr = glpAudioClient->Initialize( gShareMode, AUDCLNT_STREAMFLAGS_EVENTCALLBACK
-                                              | AUDCLNT_STREAMFLAGS_AUTOCONVERTPCM
-                                                                                  , 0, 0, gpMixFormat, NULL );
+                                              | AUDCLNT_STREAMFLAGS_AUTOCONVERTPCM, 0, 0, gpMixFormat, NULL );
    if ( hr != S_OK ) {
-      OutputDebugStringA( __FUNCTION__ ":  Failed to initialize the audio client" );
+      /// @todo Look at more error codes and print out higher-fidelity error messages
+      OutputDebugStringA( __FUNCTION__ ":  " );
       return FALSE;
    }
-   /// @todo Look at more error codes and print out higher-fidelity error messages
-
-   // OutputDebugStringA( __FUNCTION__ ":  The audio client has been initialized" );
 
    hr = glpAudioClient->GetBufferSize( &guBufferSize );
-   if ( hr != S_OK ) {
-      OutputDebugStringA( __FUNCTION__ ":  Failed to get buffer size" );
-      return FALSE;
-   }
+   CHECK_HR( "Failed to get buffer size" );
    sprintf_s( sBuf, sizeof( sBuf ), "%s:  The maximum capacity of the buffer is %" PRIu32" frames or %i ms", __FUNCTION__, guBufferSize, (int) (1.0 / gpMixFormat->nSamplesPerSec * 1000 * guBufferSize ) );
    OutputDebugStringA( sBuf );
    /// Right now, the buffer is ~22ms or about the perfect size to capture
@@ -545,10 +593,7 @@ BOOL audioInit() {
 
    /// Get the device period
    hr = glpAudioClient->GetDevicePeriod( &gDefaultDevicePeriod, &gMinimumDevicePeriod );
-   if ( hr != S_OK ) {
-      OutputDebugStringA( __FUNCTION__ ":  Failed to get audio client device periods" );
-      return FALSE;
-   }
+   CHECK_HR( "Failed to get audio client device periods" );
 
    sprintf_s( sBuf, sizeof( sBuf ), "%s:  Default device period=%lli ms", __FUNCTION__, gDefaultDevicePeriod/10000 );
    OutputDebugStringA( sBuf );
@@ -582,17 +627,11 @@ BOOL audioInit() {
    }
 
    hr = glpAudioClient->SetEventHandle( gAudioSamplesReadyEvent );
-   if ( hr != S_OK ) {
-      OutputDebugStringA( __FUNCTION__ ":  Failed to set audio capture ready event" );
-      return FALSE;
-   }
+   CHECK_HR( "Failed to set audio capture ready event" );
 
    /// Get the Capture Client
    hr = glpAudioClient->GetService( IID_PPV_ARGS( &gCaptureClient ) );
-   if ( hr != S_OK ) {
-      OutputDebugStringA( __FUNCTION__ ":  Failed to get capture client" );
-      return FALSE;
-   }
+   CHECK_HR( "Failed to get capture client" )
 
    /// Start the thread
    hCaptureThread = CreateThread( NULL, 0, audioCaptureThread, NULL, 0, NULL );
@@ -603,49 +642,55 @@ BOOL audioInit() {
 
    /// Start the audio processer
    hr = glpAudioClient->Start();
-   if ( hr != S_OK ) {
-      OutputDebugStringA( __FUNCTION__ ":  Failed to start capturing the audio stream" );
-      return FALSE;
-   }
+   CHECK_HR( "Failed to start capturing the audio stream" );
 
    OutputDebugStringA( __FUNCTION__ ":  The audio capture interface has been initialized" );
 
-   /// The thread of execution goes back to wWinMain, which starts the main message loop
+   /// The thread of execution goes back to #wWinMain, which starts the main 
+   /// message loop
    return TRUE;
 }
 
 
-BOOL audioStopDevice( HWND ) {
+/// Stop the audio device
+/// @return `true` if successful.  `false` if there was a problem.
+BOOL audioStopDevice() {
    HRESULT hr;
 
    if ( glpAudioClient != NULL ) {
       hr = glpAudioClient->Stop();
-      if ( hr != S_OK ) {
-         OutputDebugStringA( __FUNCTION__ ":  Stopping the audio stream returned an odd value.  Investigate!!" );
-         return FALSE;
-      }
+      CHECK_HR( "Stopping the audio stream returned an odd value.  Investigate!!" );
    }
 
    return TRUE;
 }
 
 
+/// Cleanup all things audio.  Basically unwind everything that was done in
+/// #audioInit
+/// 
+/// @return `true` if successful.  `false` if there was a problem.
 BOOL audioCleanup() {
+   BOOL    br;  // BOOL result
+   HRESULT hr;  // HRESULT result
 
    if ( hCaptureThread != NULL ) {
-      CloseHandle( hCaptureThread );
+      br = CloseHandle( hCaptureThread );
+      CHECK_BR( "Failed to close hCaptureThread" );
       hCaptureThread = NULL;
    }
 
    SAFE_RELEASE( gCaptureClient );
 
    if ( gAudioSamplesReadyEvent != NULL ) {
-      CloseHandle( gAudioSamplesReadyEvent );
+      br = CloseHandle( gAudioSamplesReadyEvent );
+      CHECK_BR( "Failed to close gAudioSamplesReadyEvent" );
       gAudioSamplesReadyEvent = NULL;
    }
 
    if ( glpAudioClient != NULL ) {
-      glpAudioClient->Reset();
+      hr = glpAudioClient->Reset();
+      CHECK_HR( "Failed to release the audio client")
       glpAudioClient = NULL;
    }
 
@@ -653,9 +698,12 @@ BOOL audioCleanup() {
 
    SAFE_RELEASE( glpAudioClient );
 
-   PropVariantClear( &gDeviceFriendlyName );
+   hr = PropVariantClear( &gDeviceFriendlyName );
+   CHECK_HR( "Failed to release gDeviceFriendlyName" );
    PropVariantClear( &gDeviceDescription );
+   CHECK_HR( "Failed to release gDeviceDescription" );
    PropVariantClear( &gDeviceInterfaceFriendlyName );
+   CHECK_HR( "Failed to release gDeviceInterfaceFriendlyName" );
 
    SAFE_RELEASE( glpPropertyStore );
 

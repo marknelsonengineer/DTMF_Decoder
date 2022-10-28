@@ -19,7 +19,7 @@
 
 
 extern BOOL audioInit();
-extern BOOL audioStopDevice( HWND );
+extern BOOL audioStopDevice();
 extern BOOL audioCleanup();
 
 

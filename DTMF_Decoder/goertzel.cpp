@@ -220,10 +220,10 @@ BOOL goertzel_end() {
    for ( int i = 0 ; i < NUMBER_OF_DTMF_TONES ; i++ ) {
       // Trigger all of the threads to run... and spin their loops
       br = SetEvent( startDFTevent[ i ] );
-      CHECK_BOOL_RESULT( "Failed to signal a startDFTevent" );
+      CHECK_BR( "Failed to signal a startDFTevent" );
 
       br = SetEvent( doneDFTevent[ i ] );
-      CHECK_BOOL_RESULT( "Failed to signal a doneDFTevent" );
+      CHECK_BR( "Failed to signal a doneDFTevent" );
    }
 
    return TRUE;
@@ -240,11 +240,11 @@ BOOL goertzel_cleanup() {
       hWorkThreads[ i ] = NULL;
 
       br = CloseHandle( startDFTevent[ i ] );
-      CHECK_BOOL_RESULT( "Failed to close startDFTevent handle" );
+      CHECK_BR( "Failed to close startDFTevent handle" );
       startDFTevent[ i ] = NULL;
 
       CloseHandle( doneDFTevent[ i ] );
-      CHECK_BOOL_RESULT( "Failed to close doneDFTevent handle" );
+      CHECK_BR( "Failed to close doneDFTevent handle" );
       doneDFTevent[ i ] = NULL;
    }
 

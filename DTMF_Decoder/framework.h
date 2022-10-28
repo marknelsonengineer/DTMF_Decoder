@@ -20,6 +20,8 @@
 #include <Windows.h>      // For the standard Windows definitions
 #include <crtdbg.h>       // For the _ASSERTE macro and _malloc_dbg
 
+#include "DTMF_Decoder.h" // For APP_NAME
+
 // C RunTime Header Files
 #include <stdlib.h>
 #include <malloc.h>
@@ -49,7 +51,7 @@
 
 /// Standardized macro for checking the result of COM HRESULT values
 /// @see https://learn.microsoft.com/en-us/windows/win32/com/using-macros-for-error-handling
-#define CHECK_RESULT( message )                     \
+#define CHECK_HR( message )                     \
    if ( FAILED( hr ) ) {                            \
       OutputDebugStringA( APP_NAME ": " message );  \
       return FALSE;                                 \
@@ -59,7 +61,7 @@
 /// Standardized macro for checking the result of GDI BOOL results.  For example,
 /// If the function succeeds, the return value is nonzero.
 /// If the function fails, the return value is zero.
-#define CHECK_BOOL_RESULT( message )                \
+#define CHECK_BR( message )                \
    if ( !br ) {                                     \
       OutputDebugStringA( APP_NAME ": " message );  \
       return FALSE;                                 \

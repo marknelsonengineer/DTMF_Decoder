@@ -103,10 +103,10 @@ BOOL mvcViewRefreshWindow() {
    BOOL    br;  // BOOL result
 
    br = InvalidateRect( ghMainWindow, NULL, FALSE );
-   CHECK_BOOL_RESULT( "Failed to invalidate rectangle" );
+   CHECK_BR( "Failed to invalidate rectangle" );
 
    br = UpdateWindow( ghMainWindow );
-   CHECK_BOOL_RESULT( "Failed to update window" );
+   CHECK_BR( "Failed to update window" );
 
    return TRUE;
 }
@@ -121,7 +121,7 @@ BOOL mvcViewInitResources() {
 
    /// Initialize Direct2D
    hr = D2D1CreateFactory( D2D1_FACTORY_TYPE_MULTI_THREADED, &gpD2DFactory );
-   CHECK_RESULT( "Failed to create Direct2D Factory" );
+   CHECK_HR( "Failed to create Direct2D Factory" );
 
    /// Initialize DirectWrite
    hr = DWriteCreateFactory(
@@ -129,7 +129,7 @@ BOOL mvcViewInitResources() {
       __uuidof( IDWriteFactory ),
       reinterpret_cast<IUnknown**>( &gpDWriteFactory )
    );
-   CHECK_RESULT( "Failed to create DirectWrite Factory" );
+   CHECK_HR( "Failed to create DirectWrite Factory" );
 
    /// Create the font for the digits
    hr = gpDWriteFactory->CreateTextFormat(
@@ -142,16 +142,16 @@ BOOL mvcViewInitResources() {
       L"en-us",                     // Local
       &gpDigitTextFormat            // Pointer to recieve the created object
    );
-   CHECK_RESULT( "Failed to create a font resource (digit text format)" );
+   CHECK_HR( "Failed to create a font resource (digit text format)" );
 
    hr = gpDigitTextFormat->SetWordWrapping( DWRITE_WORD_WRAPPING_WRAP );
-   CHECK_RESULT( "Failed to set word wrap mode (digit text format)" );
+   CHECK_HR( "Failed to set word wrap mode (digit text format)" );
 
    hr = gpDigitTextFormat->SetTextAlignment( DWRITE_TEXT_ALIGNMENT_CENTER );  // Horizontal alignment
-   CHECK_RESULT( "Failed to set text alignment (digit text format)" );
+   CHECK_HR( "Failed to set text alignment (digit text format)" );
 
    hr = gpDigitTextFormat->SetParagraphAlignment( DWRITE_PARAGRAPH_ALIGNMENT_CENTER );  // Vertical alignment
-   CHECK_RESULT( "Failed to set paragraph alighment (digit text format)" );
+   CHECK_HR( "Failed to set paragraph alighment (digit text format)" );
 
    /// Create the font for the letters
    hr = gpDWriteFactory->CreateTextFormat(
@@ -164,16 +164,16 @@ BOOL mvcViewInitResources() {
       L"en-us",                     // Local
       &gpLettersTextFormat          // Pointer to recieve the created object
    );
-   CHECK_RESULT( "Failed to create a font resource (letters text format)" );
+   CHECK_HR( "Failed to create a font resource (letters text format)" );
 
    hr = gpLettersTextFormat->SetWordWrapping( DWRITE_WORD_WRAPPING_WRAP );
-   CHECK_RESULT( "Failed to set word wrap mode (letters text format)" );
+   CHECK_HR( "Failed to set word wrap mode (letters text format)" );
  
    hr = gpLettersTextFormat->SetTextAlignment( DWRITE_TEXT_ALIGNMENT_CENTER );  // Horizontal alignment
-   CHECK_RESULT( "Failed to set text alignment (letters text format)" );
+   CHECK_HR( "Failed to set text alignment (letters text format)" );
 
    hr = gpLettersTextFormat->SetParagraphAlignment( DWRITE_PARAGRAPH_ALIGNMENT_CENTER );  // Vertical alignment
-   CHECK_RESULT( "Failed to set paragraph alighment (letters text format)" );
+   CHECK_HR( "Failed to set paragraph alighment (letters text format)" );
 
    /// Create the font for the frequency labels
    hr = gpDWriteFactory->CreateTextFormat(
@@ -186,48 +186,48 @@ BOOL mvcViewInitResources() {
       L"en-us",                     // Local
       &gpFreqTextFormat             // Pointer to recieve the created object
    );
-   CHECK_RESULT( "Failed to create a font resource (frequency text format)" );
+   CHECK_HR( "Failed to create a font resource (frequency text format)" );
 
    hr = gpFreqTextFormat->SetWordWrapping( DWRITE_WORD_WRAPPING_WRAP );
-   CHECK_RESULT( "Failed to set word wrap mode (frequency text format)" );
+   CHECK_HR( "Failed to set word wrap mode (frequency text format)" );
 
    hr = gpFreqTextFormat->SetTextAlignment( DWRITE_TEXT_ALIGNMENT_TRAILING );  // Horizontal alignment
-   CHECK_RESULT( "Failed to set text alignment (frequency text format)" );
+   CHECK_HR( "Failed to set text alignment (frequency text format)" );
    
    hr = gpFreqTextFormat->SetParagraphAlignment( DWRITE_PARAGRAPH_ALIGNMENT_CENTER );  // Vertical alignment
-   CHECK_RESULT( "Failed to set paragraph alighment (frequency text format)" );
+   CHECK_HR( "Failed to set paragraph alighment (frequency text format)" );
 
    /// Create the Direct2D render target
    RECT clientRectangle ;
    br = GetClientRect( ghMainWindow, &clientRectangle );
-   CHECK_BOOL_RESULT( "Failed to get the window size" );
+   CHECK_BR( "Failed to get the window size" );
 
    hr = gpD2DFactory->CreateHwndRenderTarget(
       D2D1::RenderTargetProperties(),
       D2D1::HwndRenderTargetProperties( ghMainWindow, D2D1::SizeU( clientRectangle.right - clientRectangle.left, clientRectangle.bottom - clientRectangle.top ) ),
       &gpRenderTarget
    );
-   CHECK_RESULT( "Failed to create Direct2D Render Target" );
+   CHECK_HR( "Failed to create Direct2D Render Target" );
 
    /// Create the colors (brushes) for the foreground, highlight and background
    hr = gpRenderTarget->CreateSolidColorBrush(
       D2D1::ColorF( D2D1::ColorF( FOREGROUND_COLOR, 1.0f ) ),
       &gpBrushForeground
    );
-   CHECK_RESULT( "Failed to create Direct2D Brush (Foreground)" );
+   CHECK_HR( "Failed to create Direct2D Brush (Foreground)" );
 
    hr = gpRenderTarget->CreateSolidColorBrush(
       D2D1::ColorF( D2D1::ColorF( HIGHLIGHT_COLOR, 1.0f ) ),
       &gpBrushHighlight
    );
-   CHECK_RESULT( "Failed to create Direct2D Brush (Highlight)" );
+   CHECK_HR( "Failed to create Direct2D Brush (Highlight)" );
 
    // This brush does not get used, so we will comment it out for now
 // hr = gpRenderTarget->CreateSolidColorBrush(
 //    D2D1::ColorF( D2D1::ColorF( BACKGROUND_COLOR, 1.0f ) ),
 //    &gpBrushBackground   
 // );
-// CHECK_RESULT( "Failed to create Direct2D Brush (Background)" );
+// CHECK_HR( "Failed to create Direct2D Brush (Background)" );
 
    return TRUE;
 }
@@ -291,7 +291,7 @@ BOOL mvcViewPaintWindow() {
    paintKey( 12 );   paintKey( 13 );   paintKey( 14 );   paintKey( 15 );
 
    hr = gpRenderTarget->EndDraw();
-   CHECK_RESULT( "Failed to end drawing operations on the render target " );
+   CHECK_HR( "Failed to end drawing operations on the render target " );
 
    hasDtmfTonesChanged = false;  /// Reset the #hasDtmfTonesChanged bit
 

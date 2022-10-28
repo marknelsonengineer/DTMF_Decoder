@@ -218,7 +218,7 @@ LRESULT CALLBACK WndProc( HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam 
                SetEvent( gAudioSamplesReadyEvent );
             }
 
-            audioStopDevice( hWnd );
+            audioStopDevice();
 
             DestroyWindow( hWnd );
 
