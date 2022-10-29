@@ -10,7 +10,7 @@
 /// @version 1.0
 ///
 /// @see https://learn.microsoft.com/en-us/cpp/c-runtime-library/reference/malloc-dbg                
-/// @see https://learn.microsoft.com/en-us/previous-versions/windows/desktop/legacy/aa366920(v=vs.85)
+/// @see https://learn.microsoft.com/en-us/previous-versions/windows/desktop/legacy/aa366877(v=vs.85)
 /// @see https://learn.microsoft.com/en-us/cpp/c-runtime-library/reference/free-dbg                  
 /// @see https://learn.microsoft.com/en-us/cpp/c-runtime-library/reference/crtcheckmemory            
 ///
@@ -71,7 +71,7 @@ BOOL pcmSetQueueSize( size_t size ) {
    queueSize = size;
    queueHead = 0;
 
-   ZeroMemory( pcmQueue, queueSize );
+   SecureZeroMemory( pcmQueue, queueSize );
 
    _ASSERTE( pcmQueue != NULL );
    _ASSERTE( queueSize != 0 );

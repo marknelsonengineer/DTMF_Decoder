@@ -14,7 +14,7 @@
 ///
 /// @see https://learn.microsoft.com/en-us/windows/win32/api/combaseapi/nf-combaseapi-coinitializeex
 /// @see https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-loadstringw
-/// @see https://learn.microsoft.com/en-us/previous-versions/windows/desktop/legacy/aa366920(v=vs.85)
+/// @see https://learn.microsoft.com/en-us/previous-versions/windows/desktop/legacy/aa366877(v=vs.85)
 /// @see https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-registerclassexw
 /// @see https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindoww
 /// @see https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-showwindow
@@ -85,6 +85,8 @@ int APIENTRY wWinMain(
    BOOL    br;  // BOOL result
    HRESULT hr;  // HRESULT result
 
+   _ASSERTE( hInstance != NULL );
+
    ghInst = hInstance; /// Store the instance handle in a global variable
 
    /// Initialize COM (needs to be called once per each thread)
@@ -92,13 +94,13 @@ int APIENTRY wWinMain(
    CHECK_HR( "Failed to initialize COM" )
 
    /// Initialize global strings
-   LoadStringW( hInstance, IDS_APP_TITLE, gszTitle, MAX_LOADSTRING );
+   LoadStringW( hInstance, IDS_APP_TITLE,   gszTitle,       MAX_LOADSTRING );
    LoadStringW( hInstance, IDC_DTMFDECODER, gszWindowClass, MAX_LOADSTRING );
 
 
    /// Register the Windows Class
    WNDCLASSEXW wcex;
-   ZeroMemory( &wcex, sizeof( wcex ) );
+   SecureZeroMemory( &wcex, sizeof( wcex ) );
 
    wcex.cbSize = sizeof( WNDCLASSEX );
    wcex.style = CS_HREDRAW | CS_VREDRAW;
@@ -172,7 +174,7 @@ int APIENTRY wWinMain(
 
    /// Main message loop
    MSG msg;
-   ZeroMemory( &msg, sizeof( msg ) );
+   SecureZeroMemory( &msg, sizeof( msg ) );
 
 
    while ( GetMessage( &msg, nullptr, 0, 0 ) ) {

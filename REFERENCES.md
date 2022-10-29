@@ -102,12 +102,12 @@ research to write DTMF_Decoder.
 
 
 ### CRT & Memory management
-| API               | Link                                                                                         |
-|-------------------|----------------------------------------------------------------------------------------------|
-| `_malloc_dbg`     | https://learn.microsoft.com/en-us/cpp/c-runtime-library/reference/malloc-dbg                 |
-| `ZeroMemory`      | https://learn.microsoft.com/en-us/previous-versions/windows/desktop/legacy/aa366920(v=vs.85) |
-| `_free_dbg`       | https://learn.microsoft.com/en-us/cpp/c-runtime-library/reference/free-dbg                   |
-| `_CrtCheckMemory` | https://learn.microsoft.com/en-us/cpp/c-runtime-library/reference/crtcheckmemory             |
+| API                | Link                                                                                         |
+|--------------------|----------------------------------------------------------------------------------------------|
+| `_malloc_dbg`      | https://learn.microsoft.com/en-us/cpp/c-runtime-library/reference/malloc-dbg                 |
+| `SecureZeroMemory` | https://learn.microsoft.com/en-us/previous-versions/windows/desktop/legacy/aa366877(v=vs.85) |
+| `_free_dbg`        | https://learn.microsoft.com/en-us/cpp/c-runtime-library/reference/free-dbg                   |
+| `_CrtCheckMemory`  | https://learn.microsoft.com/en-us/cpp/c-runtime-library/reference/crtcheckmemory             |
 
 
 ### Threads & synchronization
