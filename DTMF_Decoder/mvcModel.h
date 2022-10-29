@@ -157,13 +157,13 @@ extern "C" size_t queueSize;
 ///
 /// Uses `_malloc_dbg`
 /// @see https://learn.microsoft.com/en-us/cpp/c-runtime-library/reference/malloc-dbg?view=msvc-170
-extern BOOL pcmSetQueueSize( size_t size );
+extern BOOL pcmSetQueueSize( _In_ size_t size );
 
 
 /// Enqueue a byte of PCM data to `pcmQueue`
 ///
 /// Delcared `inline` for performance reasons
-inline void pcmEnqueue( BYTE data ) {
+inline void pcmEnqueue( _In_ BYTE data ) {
    _ASSERTE( pcmQueue != NULL );
    _ASSERTE( queueHead < queueSize );
 

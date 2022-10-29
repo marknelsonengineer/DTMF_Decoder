@@ -110,9 +110,9 @@ keypad_t keypad[ 16 ] = {
 
 
 // Forward declarations of private functions in this file
-BOOL paintKey( size_t index );
-BOOL paintRowFreq( size_t index );
-BOOL paintColFreq( size_t index );
+BOOL paintKey( _In_ size_t index );
+BOOL paintRowFreq( _In_ size_t index );
+BOOL paintColFreq( _In_ size_t index );
 
 
 /// Repaint the main window (keypad) -- probably because the state
@@ -121,6 +121,8 @@ BOOL paintColFreq( size_t index );
 /// @return `true` if successful.  `false` if there was a problem.
 BOOL mvcViewRefreshWindow() {
    BOOL    br;  // BOOL result
+
+   _ASSERTE( ghMainWindow != NULL );
 
    br = InvalidateRect( ghMainWindow, NULL, FALSE );
    CHECK_BR( "Failed to invalidate rectangle" );
@@ -139,19 +141,26 @@ BOOL mvcViewInitResources() {
    HRESULT hr;  // HRESULT result
    BOOL    br;  // BOOL result
 
+   _ASSERTE( ghMainWindow != NULL );
+
    /// Initialize Direct2D
+   _ASSERTE( gpD2DFactory == NULL );
    hr = D2D1CreateFactory( D2D1_FACTORY_TYPE_MULTI_THREADED, &gpD2DFactory );
    CHECK_HR( "Failed to create Direct2D Factory" );
+   _ASSERTE( gpD2DFactory != NULL );
 
    /// Initialize DirectWrite
+   _ASSERTE( gpDWriteFactory == NULL );
    hr = DWriteCreateFactory(
       DWRITE_FACTORY_TYPE_SHARED,
       __uuidof( IDWriteFactory ),
       reinterpret_cast<IUnknown**>( &gpDWriteFactory )
    );
    CHECK_HR( "Failed to create DirectWrite Factory" );
+   _ASSERTE( gpDWriteFactory != NULL );
 
    /// Create the font for the digits
+   _ASSERTE( gpDigitTextFormat == NULL );
    hr = gpDWriteFactory->CreateTextFormat(
       L"Segoe UI",                  // Font family name
       NULL,                         // Font collection(NULL sets it to the system font collection)
@@ -163,6 +172,7 @@ BOOL mvcViewInitResources() {
       &gpDigitTextFormat            // Pointer to recieve the created object
    );
    CHECK_HR( "Failed to create a font resource (digit text format)" );
+   _ASSERTE( gpDigitTextFormat != NULL );
 
    hr = gpDigitTextFormat->SetWordWrapping( DWRITE_WORD_WRAPPING_WRAP );
    CHECK_HR( "Failed to set word wrap mode (digit text format)" );
@@ -174,6 +184,7 @@ BOOL mvcViewInitResources() {
    CHECK_HR( "Failed to set paragraph alighment (digit text format)" );
 
    /// Create the font for the letters
+   _ASSERTE( gpLettersTextFormat == NULL );
    hr = gpDWriteFactory->CreateTextFormat(
       L"Segoe UI",                  // Font family name
       NULL,                         // Font collection(NULL sets it to the system font collection)
@@ -185,6 +196,7 @@ BOOL mvcViewInitResources() {
       &gpLettersTextFormat          // Pointer to recieve the created object
    );
    CHECK_HR( "Failed to create a font resource (letters text format)" );
+   _ASSERTE( gpLettersTextFormat != NULL );
 
    hr = gpLettersTextFormat->SetWordWrapping( DWRITE_WORD_WRAPPING_WRAP );
    CHECK_HR( "Failed to set word wrap mode (letters text format)" );
@@ -196,6 +208,7 @@ BOOL mvcViewInitResources() {
    CHECK_HR( "Failed to set paragraph alighment (letters text format)" );
 
    /// Create the font for the frequency labels
+   _ASSERTE( gpFreqTextFormat == NULL );
    hr = gpDWriteFactory->CreateTextFormat(
       L"Segoe UI",                  // Font family name
       NULL,                         // Font collection(NULL sets it to the system font collection)
@@ -207,6 +220,7 @@ BOOL mvcViewInitResources() {
       &gpFreqTextFormat             // Pointer to recieve the created object
    );
    CHECK_HR( "Failed to create a font resource (frequency text format)" );
+   _ASSERTE( gpFreqTextFormat != NULL );
 
    hr = gpFreqTextFormat->SetWordWrapping( DWRITE_WORD_WRAPPING_WRAP );
    CHECK_HR( "Failed to set word wrap mode (frequency text format)" );
@@ -222,32 +236,40 @@ BOOL mvcViewInitResources() {
    br = GetClientRect( ghMainWindow, &clientRectangle );
    CHECK_BR( "Failed to get the window size" );
 
+   _ASSERTE( gpRenderTarget == NULL );
    hr = gpD2DFactory->CreateHwndRenderTarget(
       D2D1::RenderTargetProperties(),
       D2D1::HwndRenderTargetProperties( ghMainWindow, D2D1::SizeU( clientRectangle.right - clientRectangle.left, clientRectangle.bottom - clientRectangle.top ) ),
       &gpRenderTarget
    );
    CHECK_HR( "Failed to create Direct2D Render Target" );
+   _ASSERTE( gpRenderTarget != NULL );
 
    /// Create the colors (brushes) for the foreground, highlight and background
+   _ASSERTE( gpBrushForeground == NULL );
    hr = gpRenderTarget->CreateSolidColorBrush(
       D2D1::ColorF( D2D1::ColorF( FOREGROUND_COLOR, 1.0f ) ),
       &gpBrushForeground
    );
    CHECK_HR( "Failed to create Direct2D Brush (Foreground)" );
+   _ASSERTE( gpBrushForeground != NULL );
 
+   _ASSERTE( gpBrushHighlight == NULL );
    hr = gpRenderTarget->CreateSolidColorBrush(
       D2D1::ColorF( D2D1::ColorF( HIGHLIGHT_COLOR, 1.0f ) ),
       &gpBrushHighlight
    );
    CHECK_HR( "Failed to create Direct2D Brush (Highlight)" );
+   _ASSERTE( gpBrushHighlight != NULL );
 
    // This brush does not get used, so we will comment it out for now
+// _ASSERTE( gpBrushBackground == NULL );
 // hr = gpRenderTarget->CreateSolidColorBrush(
 //    D2D1::ColorF( D2D1::ColorF( BACKGROUND_COLOR, 1.0f ) ),
 //    &gpBrushBackground
 // );
 // CHECK_HR( "Failed to create Direct2D Brush (Background)" );
+// _ASSERTE( gpBrushBackground != NULL );
 
    return TRUE;
 }
@@ -326,7 +348,13 @@ BOOL mvcViewPaintWindow() {
 ///
 /// @param index Indicates the row to paint
 /// @return `true` if successful.  `false` if there were problems.
-BOOL paintRowFreq( size_t index ) {
+BOOL paintRowFreq( _In_ size_t index ) {
+   _ASSERTE( gpRenderTarget      != NULL );
+   _ASSERTE( gpBrushHighlight    != NULL );
+   _ASSERTE( gpBrushForeground   != NULL );
+   _ASSERTE( gpLettersTextFormat != NULL );
+   _ASSERTE( gpFreqTextFormat    != NULL );
+
    keypad_t* pKey = &keypad[ (4 * index) + index ];  // The diaganol DTMF digits 1, 5, 9 and D
    size_t iFreq = pKey->row;
 
@@ -389,7 +417,13 @@ BOOL paintRowFreq( size_t index ) {
 ///
 /// @param index Indicates the column to paint
 /// @return `true` if successful.  `false` if there were problems.
-BOOL paintColFreq( size_t index ) {
+BOOL paintColFreq( _In_ size_t index ) {
+   _ASSERTE( gpRenderTarget      != NULL );
+   _ASSERTE( gpBrushHighlight    != NULL );
+   _ASSERTE( gpBrushForeground   != NULL );
+   _ASSERTE( gpLettersTextFormat != NULL );
+   _ASSERTE( gpFreqTextFormat    != NULL );
+
    keypad_t* pKey = &keypad[ ( 4 * index ) + index ];  // The diaganol DTMF digits 1, 5, 9 and D
    size_t iFreq = pKey->column;
 
@@ -453,7 +487,13 @@ BOOL paintColFreq( size_t index ) {
 ///
 /// @param index Indicates the key to paint
 /// @return `true` if successful.  `false` if there were problems.
-BOOL paintKey( size_t index ) {
+BOOL paintKey( _In_ size_t index ) {
+   _ASSERTE( gpRenderTarget      != NULL );
+   _ASSERTE( gpBrushHighlight    != NULL );
+   _ASSERTE( gpBrushForeground   != NULL );
+   _ASSERTE( gpDigitTextFormat   != NULL );
+   _ASSERTE( gpLettersTextFormat != NULL );
+
    ID2D1SolidColorBrush* pBrush;
 
    if ( dtmfTones[ keypad[ index ].row ].detected == TRUE && dtmfTones[ keypad[ index ].column ].detected == TRUE ) {

@@ -72,7 +72,13 @@ extern "C" float gfScaleFactor = 0;  ///< Set in goertzel_init() and used in goe
 /// @param index       The index into the DTMF tones array
 /// @param toneStruct  A pointer to #dtmfTones (so it doesn't have to
 ///                    re-compute the index each time
-void goertzel_magnitude( UINT8 index, dtmfTones_t* toneStruct ) {
+void goertzel_magnitude( 
+   _In_     UINT8        index,                
+   _Inout_  dtmfTones_t* toneStruct ) {
+
+   _ASSERTE( queueHead != NULL );
+   _ASSERTE( queueSize > 0 );
+
    float real, imag;
 
    float q1 = 0;
@@ -98,17 +104,25 @@ void goertzel_magnitude( UINT8 index, dtmfTones_t* toneStruct ) {
 
 
 /// Runs one of the 8 DFT worker threads
+/// 
+/// @see https://learn.microsoft.com/en-us/previous-versions/windows/desktop/legacy/ms686736(v=vs.85)
 ///
-/// @param Context Holds the index of which tone this thread is responsibile
-///                for values are `0` through `7`.  This is critical for
-///                thread safety.
+/// @param pContext Holds the index of which tone this thread is responsibile
+///                 for values are `0` through `7`.  This is critical for
+///                 thread safety.
 ///
 /// @return `true` if successful.  `false` if there was a problem.
-DWORD WINAPI goertzelWorkThread( LPVOID Context ) {
-   CHAR sBuf[ 256 ];  // Debug buffer   /// @todo put a guard around this
+DWORD WINAPI goertzelWorkThread( _In_ LPVOID pContext ) {
+   _ASSERTE( pContext != NULL );
 
-   int iIndex = *(int*) Context;  // This comes to us as an int from dtmfTones_t
-   size_t index = iIndex;         // But we use it as an index into an array, so convert to size_t
+   CHAR sBuf[ 256 ];  // Debug buffer   /// @todo Put a guard around this
+
+   int iIndex = *(int*) pContext;  // This comes to us as an int from dtmfTones_t
+   size_t index = iIndex;          // But we use it as an index into an array, so convert to size_t
+
+   _ASSERTE( iIndex < NUMBER_OF_DTMF_TONES );
+   _ASSERTE( startDFTevent[ index ] != NULL );
+   _ASSERTE( doneDFTevent[ index ]  != NULL );
 
    sprintf_s( sBuf, sizeof( sBuf ), __FUNCTION__ ":  Start Goertzel DFT thread index=%zu", index );
    OutputDebugStringA( sBuf );
@@ -180,10 +194,13 @@ DWORD WINAPI goertzelWorkThread( LPVOID Context ) {
 
 /// Initialize values needed by the Goertzel DFT
 ///
-/// @param  intSamplingRateParm  Samples per second
+/// @param  iSampleRate  Samples per second
 /// @return `true` if successful.  `false` if there was a problem.
-BOOL goertzel_init( int intSamplingRateParm ) {
-   float floatSamplingRate = (float) intSamplingRateParm;
+BOOL goertzel_init( _In_ int iSampleRate ) {
+   _ASSERTE( iSampleRate > 0 );
+   _ASSERTE( queueSize > 0 );
+
+   float floatSamplingRate = (float) iSampleRate;
 
    float floatnumSamples = (float) queueSize;
 
@@ -275,14 +292,21 @@ BOOL goertzel_cleanup() {
 ///
 /// @return `true` if successful.  `false` if there was a problem.
 BOOL goertzel_compute_dtmf_tones() {
+   BOOL    br;            // BOOL result
+   DWORD   dwWaitResult;  // Result from WaitForMultipleObjects
 
    for ( UINT8 i = 0 ; i < NUMBER_OF_DTMF_TONES ; i++ ) {
       /// Start each of the worker threads
-      SetEvent( startDFTevent[i] );
+      br = SetEvent( startDFTevent[i] );
+      CHECK_BR( "Failed to start a DFT worker thread" );
    }
 
    /// Wait for all of the worker threads to signal their doneDFTevent
-   WaitForMultipleObjects( NUMBER_OF_DTMF_TONES, doneDFTevent, TRUE, INFINITE );
+   dwWaitResult = WaitForMultipleObjects( NUMBER_OF_DTMF_TONES, doneDFTevent, TRUE, INFINITE );
+
+   /// For performance reasons, I'm asserting the result of the `WaitForMultipleObjects`.
+   /// I don't want to compute this in the Release version for each audio buffer run.
+   _ASSERTE( dwWaitResult >= WAIT_OBJECT_0 && dwWaitResult <= WAIT_OBJECT_0 + NUMBER_OF_DTMF_TONES - 1 );
 
    return TRUE;
 }

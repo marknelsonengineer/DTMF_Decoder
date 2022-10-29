@@ -84,6 +84,7 @@ int APIENTRY wWinMain(
 
    BOOL    br;  // BOOL result
    HRESULT hr;  // HRESULT result
+   INT     ir;  // INT result
 
    _ASSERTE( hInstance != NULL );
 
@@ -94,9 +95,11 @@ int APIENTRY wWinMain(
    CHECK_HR( "Failed to initialize COM" )
 
    /// Initialize global strings
-   LoadStringW( hInstance, IDS_APP_TITLE,   gszTitle,       MAX_LOADSTRING );
-   LoadStringW( hInstance, IDC_DTMFDECODER, gszWindowClass, MAX_LOADSTRING );
+   ir = LoadStringW( hInstance, IDS_APP_TITLE,   gszTitle,       MAX_LOADSTRING );
+   CHECK_IR( "Failed to retrive app title" );
 
+   ir = LoadStringW( hInstance, IDC_DTMFDECODER, gszWindowClass, MAX_LOADSTRING );
+   CHECK_IR( "Failed to retrieve window class name" );
 
    /// Register the Windows Class
    WNDCLASSEXW wcex;
@@ -140,23 +143,18 @@ int APIENTRY wWinMain(
    }
 
    /// Initialize the model
-   if ( !mvcModelInit() ) {
-      OutputDebugStringA( APP_NAME ": Failed to initialize the model.  Exiting." );
-      return FALSE;
-   }
+   br = mvcModelInit();
+   CHECK_BR( "Failed to initialize the model.  Exiting." );
 
    /// Initialize the view
-   if( !mvcViewInitResources() ) {
-      OutputDebugStringA( APP_NAME ": Failed to initialize the view.  Exiting." );
-      return FALSE;
-   }
+   br = mvcViewInitResources();
+   CHECK_BR( "Failed to initialize the view.  Exiting." );
 
-   if ( !audioInit() ) {
-      OutputDebugStringA( APP_NAME ": Failed to initialize the audio system.  Exiting." );
-      return FALSE;
-   }
+   /// Initialize the audio capture device & thread
+   br = audioInit();
+   CHECK_BR( "Failed to initialize the audio system.  Exiting." );
 
-   /// Initialize Win32-isms
+   /// Initialize Win32 message loop
    ShowWindow( ghMainWindow, nCmdShow );   // It's OK to ignore the result of this
    if ( !UpdateWindow( ghMainWindow ) ) {
       OutputDebugStringA( APP_NAME ": Failed to do the initial window update.  Exiting." );
@@ -285,6 +283,7 @@ LRESULT CALLBACK WndProc( HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam 
 /// Message handler for the About dialog box
 ///
 /// @see https://learn.microsoft.com/en-us/windows/win32/api/winuser/nc-winuser-wndproc
+/// 
 INT_PTR CALLBACK About( HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam ) {
    BOOL br;  // BOOL result
 

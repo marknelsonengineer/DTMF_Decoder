@@ -108,8 +108,8 @@ WCHAR           wsBuf[ 256 ];  ///< Debug buffer  @todo Put a guard around this
 
 #ifdef MONITOR_PCM_AUDIO
    #define MONITOR_INTERVAL_SECONDS (4)   /**< The monitoring interval.  Set to 0 to disable monitoring */
-   UINT64 gFramesToMonitor = 0;           ///< set #gbMonitor when the current frame is > #gStartOfMonitor + #gFramesToMonitor
-   UINT64 gStartOfMonitor = UINT64_MAX;   ///< The frame position of the start time of the monitor
+   UINT64 gFramesToMonitor = 0;           ///< set #gbMonitor when the current frameIndex is > #gStartOfMonitor + #gFramesToMonitor
+   UINT64 gStartOfMonitor = UINT64_MAX;   ///< The frameIndex position of the start time of the monitor
    BOOL   gbMonitor = false;              ///< Briefly set to 1 to output monitored data
 
    BYTE monitorCh1Max = 0;                ///< The lowest PCM value on Channel 1 during this monitoing period
@@ -129,13 +129,16 @@ enum audio_format_t {
 audio_format_t audioFormat = UNKNOWN_AUDIO_FORMAT;
 
 
-/// Process the audio frame, converting it into #PCM_8, adding the sample to
+/// Process the audio frameIndex, converting it into #PCM_8, adding the sample to
 /// #pcmQueue and monitoring the values (if desired)
 ///
-/// @param pData Pointer into the audio bufer
-/// @param frame The frame number to process
+/// @param pData      Pointer to the head of the audio bufer
+/// @param frameIndex The frameIndex number to process
 /// @return `true` if successful.  `false` if there were problems.
-BOOL processAudioFrame( BYTE* pData, UINT32 frame ) {
+BOOL processAudioFrame( 
+   _In_     BYTE*    pData, 
+   _In_     UINT32   frameIndex ) {
+
    _ASSERTE( pData != NULL );
    _ASSERTE( audioFormat != UNKNOWN_AUDIO_FORMAT );
    _ASSERTE( gpMixFormat != NULL );
@@ -144,7 +147,7 @@ BOOL processAudioFrame( BYTE* pData, UINT32 frame ) {
 
    switch ( audioFormat ) {
       case IEEE_FLOAT_32: {
-            float* fSample = (float*) ( pData + ( frame * gpMixFormat->nBlockAlign ) );  // This is from +1 to -1
+            float* fSample = (float*) ( pData + ( frameIndex * gpMixFormat->nBlockAlign ) );  // This is from +1 to -1
 
             INT8 signedSample = (INT8) ( *fSample * (float) PCM_8_BIT_SILENCE );  // This is +127 to -127
             if ( signedSample >= 0 ) {
@@ -155,7 +158,7 @@ BOOL processAudioFrame( BYTE* pData, UINT32 frame ) {
             break;
          }
       case PCM_8:
-         ch1Sample = *( pData + ( frame * gpMixFormat->nBlockAlign ) );
+         ch1Sample = *( pData + ( frameIndex * gpMixFormat->nBlockAlign ) );
          break;
       default:
          _ASSERT_EXPR( FALSE, "Unknown audio format" );
@@ -211,12 +214,14 @@ BOOL processAudioFrame( BYTE* pData, UINT32 frame ) {
 ///
 /// It's normal for the first buffer to have DATA_DISCONTINUITY set
 void audioCapture() {
-   HRESULT hr;
+   HRESULT hr;  // HRESULT result
+   BOOL    br;  // BOOL result
 
-   BYTE*  pData;
-   UINT32 framesAvailable;
-   DWORD  flags;
-   UINT64 framePosition;
+
+   BYTE*   pData;
+   UINT32  framesAvailable;
+   DWORD   flags;
+   UINT64  framePosition;
 
    _ASSERTE( gCaptureClient != NULL );
    _ASSERTE( audioFormat != UNKNOWN_AUDIO_FORMAT );
@@ -227,23 +232,37 @@ void audioCapture() {
    hr = gCaptureClient->GetBuffer( &pData, &framesAvailable, &flags, &framePosition, NULL );
    if ( hr == S_OK ) {
       // OutputDebugStringA( __FUNCTION__ ":  I got data!" );
+      _ASSERTE( pData != NULL );
 
       if ( flags == 0 ) {
          // Normal processing
          for ( UINT32 i = 0 ; i < framesAvailable ; i++ ) {
-            processAudioFrame( pData, i );  // Process each audio frame
+            processAudioFrame( pData, i );  // Process each audio frameIndex
          }
+
+         /// Make sure #pcmQueue is healthy
+         _ASSERTE( _CrtCheckMemory() );
 
          /// After all of the frames have been queued, compute the DFT
          ///
          /// Note:  This thread will wait, signal 8 DFT threads to run, then
          ///        will continue after the DFT threads are done
-         goertzel_compute_dtmf_tones();
+         br = goertzel_compute_dtmf_tones();
+         if ( !br ) {
+            OutputDebugStringA( __FUNCTION__ ":  Failed to compute the DTMF tones.  Investigate!!" );
+            isRunning = false;
+            SendMessage( ghMainWindow, WM_CLOSE, 0, 0 );  // Shutdown the app
+         }
 
          /// If, after computing all 8 of the DFTs, if the detected state
          /// has changed, then refresh the main window
          if ( hasDtmfTonesChanged ) {
-            mvcViewRefreshWindow();
+            br = mvcViewRefreshWindow();
+            if ( !br ) {
+               OutputDebugStringA( __FUNCTION__ ":  Failed to refresh the main window.  Investigate!!" );
+               isRunning = false;
+               SendMessage( ghMainWindow, WM_CLOSE, 0, 0 );  // Shutdown the app
+            }
          }
       }
 
@@ -301,6 +320,7 @@ void audioCapture() {
          if ( hr != S_OK ) {
             OutputDebugStringA( __FUNCTION__ ":  ReleaseBuffer didn't return S_OK.  Investigate!!" );
             isRunning = false;
+            SendMessage( ghMainWindow, WM_CLOSE, 0, 0 );  // Shutdown the app
          }
       }
 
@@ -322,14 +342,16 @@ void audioCapture() {
 
 /// This thread waits for the audio device to call us back when it has some
 /// data to process.
+/// 
+/// @see https://learn.microsoft.com/en-us/previous-versions/windows/desktop/legacy/ms686736(v=vs.85)
 ///
 /// @param Context Not used
 /// @return Return `0` if successful.  `0xFFFF `if there was a problem.
 DWORD WINAPI audioCaptureThread( LPVOID Context ) {
    OutputDebugStringA( __FUNCTION__ ":  Start capture thread" );
 
-   HRESULT hr;
-   HANDLE mmcssHandle = NULL;
+   HRESULT hr;                  // HRESULT result
+   HANDLE  mmcssHandle = NULL;
 
    /// Initialize COM for the thread
    hr = CoInitializeEx( NULL, COINIT_MULTITHREADED );
@@ -366,10 +388,12 @@ DWORD WINAPI audioCaptureThread( LPVOID Context ) {
       } else if ( dwWaitResult == WAIT_FAILED ) {
          OutputDebugStringA( __FUNCTION__ ":  The wait was failed.  Exiting" );
          isRunning = false;
+         SendMessage( ghMainWindow, WM_CLOSE, 0, 0 );  // Shutdown the app
          break;  // While loop
       } else {
          OutputDebugStringA( __FUNCTION__ ":  The wait was ended for some other reason.  Exiting.  Investigate!" );
          isRunning = false;
+         SendMessage( ghMainWindow, WM_CLOSE, 0, 0 );  // Shutdown the app
          break;  // While loop
       }
    }
@@ -399,12 +423,14 @@ DWORD WINAPI audioCaptureThread( LPVOID Context ) {
     Channels=2
     Samples per Second=44100
     Bytes per Second=352800
-    Block (frame) alignment, in bytes=8
+    Block (frameIndex) alignment, in bytes=8
     Bits per sample=32
     Valid bits per sample=32
     Extended wave format is IEEE Float
 @endverbatim */
-BOOL audioPrintWaveFormat( WAVEFORMATEX* pFmt ) {
+BOOL audioPrintWaveFormat( _In_ WAVEFORMATEX* pFmt ) {
+   _ASSERTE( pFmt != NULL );
+
    if ( pFmt->wFormatTag == WAVE_FORMAT_EXTENSIBLE ) {
       OutputDebugStringA( "   " __FUNCTION__ ":  Using WAVE_FORMAT_EXTENSIBLE format");
       WAVEFORMATEXTENSIBLE* pFmtEx = (WAVEFORMATEXTENSIBLE*) pFmt;
@@ -469,12 +495,15 @@ BOOL audioPrintWaveFormat( WAVEFORMATEX* pFmt ) {
 ///
 /// @return `true` if successful.  `false` if there was a problem.
 BOOL audioInit() {
-   HRESULT hr;  // Result handle used by just about all Windows API calls
+   HRESULT hr;  // HRESULT result
+   BOOL    br;  // BOOL result
 
    if ( gShareMode == AUDCLNT_SHAREMODE_EXCLUSIVE ) {
       OutputDebugStringA( __FUNCTION__ ":  Exclusive mode not supported right now" );
       return FALSE;
    }
+
+   _ASSERTE( gShareMode == AUDCLNT_SHAREMODE_SHARED );
 
    /// Get IMMDeviceEnumerator from COM (CoCreateInstance)
    IMMDeviceEnumerator* deviceEnumerator = NULL;
@@ -558,12 +587,16 @@ BOOL audioInit() {
       return FALSE;
    }
 
+   _ASSERTE( glpAudioClient != NULL );
+
    /// Get the default audio format that the audio driver wants to use
    hr = glpAudioClient->GetMixFormat( &gpMixFormat );
    if ( hr != S_OK || gpMixFormat == NULL ) {
       OutputDebugStringA( __FUNCTION__ ":  Failed to retrieve mix format" );
       return FALSE;
    }
+
+   _ASSERTE( gpMixFormat != NULL );
 
    OutputDebugStringA( __FUNCTION__ ":  The mix format follows" );
    audioPrintWaveFormat( gpMixFormat );
@@ -636,20 +669,18 @@ BOOL audioInit() {
 
 
    /// Initialize the DTMF buffer
-   if ( pcmSetQueueSize( gpMixFormat->nSamplesPerSec / 1000 * SIZE_OF_QUEUE_IN_MS ) != TRUE ) {
-      OutputDebugStringA( __FUNCTION__ ":  Failed to allocate PCM queue" );
-      return FALSE;
-   }
+   br = pcmSetQueueSize( gpMixFormat->nSamplesPerSec / 1000 * SIZE_OF_QUEUE_IN_MS );
+   CHECK_BR( "Failed to allocate PCM queue" );
 
    sprintf_s( sBuf, sizeof( sBuf ), "%s:  Queue size=%zu bytes or %d ms", __FUNCTION__, queueSize, SIZE_OF_QUEUE_IN_MS );
    OutputDebugStringA( sBuf );
 
-   /// Initialize the Goertzel module
+   /// After everything is initialized, set #isRunning to `true`
    isRunning = true;
-   if ( goertzel_init( gpMixFormat->nSamplesPerSec ) != TRUE ) {
-      OutputDebugStringA( __FUNCTION__ ":  Failed to initialioze Goertzel Function" );
-      return FALSE;
-   }
+
+   /// Initialize the Goertzel module (and associated threads)
+   br = goertzel_init( gpMixFormat->nSamplesPerSec );
+   CHECK_BR( "Failed to initialioze Goertzel module (and associated threads)" );
 
 
    /// Create the callback events
@@ -688,7 +719,7 @@ BOOL audioInit() {
 /// Stop the audio device
 /// @return `true` if successful.  `false` if there was a problem.
 BOOL audioStopDevice() {
-   HRESULT hr;
+   HRESULT hr;  // HRESULT result
 
    if ( glpAudioClient != NULL ) {
       hr = glpAudioClient->Stop();

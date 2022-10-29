@@ -58,9 +58,11 @@ size_t queueSize = 0;
 /// @endcond
 
 
-BOOL pcmSetQueueSize( size_t size ) {
+BOOL pcmSetQueueSize( _In_ size_t size ) {
+
    _ASSERTE( pcmQueue == NULL );
    _ASSERTE( queueSize == 0 );
+   _ASSERTE( size != 0 );
 
    pcmQueue = (BYTE*)_malloc_dbg(size, _CLIENT_BLOCK, __FILE__, __LINE__);
    if ( pcmQueue == NULL ) {

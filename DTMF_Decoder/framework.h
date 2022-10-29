@@ -118,6 +118,16 @@
    }
 
 
+/// Standardized macro for checking the result of INT results.  For example,
+/// If the function succeeds, the return value is nonzero.
+/// If the function fails, the return value is zero.
+#define CHECK_IR( message )                         \
+   if ( !ir ) {                                     \
+      OutputDebugStringA( APP_NAME ": " message );  \
+      return FALSE;                                 \
+   }
+
+
 #ifdef _DEBUG
    /// When MONITOR_PCM_AUDIO is set, then DTMF_Decoder will monitor PCM
    /// data, tracking the maximum and minimum values.  Then, every 4 seconds,
