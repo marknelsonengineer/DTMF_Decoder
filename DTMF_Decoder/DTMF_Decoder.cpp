@@ -9,6 +9,33 @@
 /// @file    DTMF_Decoder.cpp
 /// @version 1.0
 ///
+/// @see https://learn.microsoft.com/en-us/windows/win32/learnwin32/winmain--the-application-entry-point
+/// @see https://learn.microsoft.com/en-us/windows/win32/api/winuser/nc-winuser-wndproc
+///
+/// @see https://learn.microsoft.com/en-us/windows/win32/api/combaseapi/nf-combaseapi-coinitializeex
+/// @see https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-loadstringw
+/// @see https://learn.microsoft.com/en-us/previous-versions/windows/desktop/legacy/aa366920(v=vs.85)
+/// @see https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-registerclassexw
+/// @see https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindoww
+/// @see https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-showwindow
+/// @see https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-updatewindow
+/// @see https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-loadacceleratorsa
+/// @see https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-getmessage
+/// @see https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-translateacceleratora
+/// @see https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-translatemessage
+/// @see https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-dispatchmessage
+/// @see https://learn.microsoft.com/en-us/windows/win32/api/combaseapi/nf-combaseapi-couninitialize
+/// @see https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-dialogboxa
+/// @see https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-makeintresourcea
+/// @see https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-destroywindow
+/// @see https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-defwindowproca
+/// @see https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-beginpaint
+/// @see https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-endpaint
+/// @see https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-sendmessage
+/// @see https://learn.microsoft.com/en-us/windows/win32/api/synchapi/nf-synchapi-setevent
+/// @see https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-postquitmessage
+/// @see https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-enddialog
+///
 /// @author Mark Nelson <marknels@hawaii.edu>
 /// @date   10_Oct_2022
 ///////////////////////////////////////////////////////////////////////////////

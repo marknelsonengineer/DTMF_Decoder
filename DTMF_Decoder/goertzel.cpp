@@ -13,6 +13,20 @@
 /// @see https://github.com/Harvie/Programs/blob/master/c/goertzel/goertzel.c
 /// @see https://en.wikipedia.org/wiki/Goertzel_algorithm
 ///
+/// @see https://learn.microsoft.com/en-us/cpp/c-runtime-library/math-constants?view=msvc-170
+/// @see https://learn.microsoft.com/en-us/cpp/preprocessor/message?view=msvc-170
+/// @see https://learn.microsoft.com/en-us/windows/win32/api/avrt/nf-avrt-avsetmmthreadcharacteristicsa
+/// @see https://learn.microsoft.com/en-us/windows/win32/api/synchapi/nf-synchapi-waitforsingleobject
+/// @see https://learn.microsoft.com/en-us/windows/win32/api/synchapi/nf-synchapi-setevent
+/// @see https://learn.microsoft.com/en-us/windows/win32/api/avrt/nf-avrt-avrevertmmthreadcharacteristics
+/// @see https://learn.microsoft.com/en-us/windows/win32/api/synchapi/nf-synchapi-createeventa
+/// @see https://learn.microsoft.com/en-us/windows/win32/api/handleapi/nf-handleapi-closehandle
+/// @see https://learn.microsoft.com/en-us/windows/win32/api/synchapi/nf-synchapi-waitformultipleobjects
+///
+/// @see https://en.cppreference.com/w/c/numeric/math/sqrt
+/// @see https://en.cppreference.com/w/c/numeric/math/sin
+/// @see https://en.cppreference.com/w/c/numeric/math/cos
+///
 /// @author Mark Nelson <marknels@hawaii.edu>
 /// @date   10_Oct_2022
 ///////////////////////////////////////////////////////////////////////////////
