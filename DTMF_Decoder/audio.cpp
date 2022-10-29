@@ -580,7 +580,7 @@ BOOL audioInit() {
                                               | AUDCLNT_STREAMFLAGS_AUTOCONVERTPCM, 0, 0, gpMixFormat, NULL );
    if ( hr != S_OK ) {
       /// @todo Look at more error codes and print out higher-fidelity error messages
-      OutputDebugStringA( __FUNCTION__ ":  " );
+      OutputDebugStringA( __FUNCTION__ ":  Failed to initialize the audio client" );
       return FALSE;
    }
 

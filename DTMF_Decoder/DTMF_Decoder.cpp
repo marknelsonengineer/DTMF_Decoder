@@ -53,14 +53,14 @@ int APIENTRY wWinMain(
 
    OutputDebugStringA( APP_NAME ": Starting" );
 
+   BOOL    br;  // BOOL result
+   HRESULT hr;  // HRESULT result
+
    ghInst = hInstance; /// Store the instance handle in a global variable
 
    /// Initialize COM (needs to be called once per each thread)
-   HRESULT hr = CoInitializeEx( NULL, COINIT_APARTMENTTHREADED );
-   if ( hr != S_OK ) {
-      OutputDebugStringA( __FUNCTION__ ":  Failed to initialize COM" );
-      return FALSE;
-   }
+   hr = CoInitializeEx( NULL, COINIT_APARTMENTTHREADED );
+   CHECK_HR( "Failed to initialize COM" )
 
    /// Initialize global strings
    LoadStringW( hInstance, IDS_APP_TITLE, gszTitle, MAX_LOADSTRING );
@@ -154,7 +154,8 @@ int APIENTRY wWinMain(
    }
 
    /// Cleanup all resources
-   audioCleanup();
+   br = audioCleanup();
+   CHECK_BR( "There was a problem cleaning up the audio resources.  Ending program." )
 
    CoUninitialize();  /// Unwind COM
 
@@ -169,6 +170,8 @@ int APIENTRY wWinMain(
 /// @see https://learn.microsoft.com/en-us/windows/win32/api/winuser/nc-winuser-wndproc
 /// 
 LRESULT CALLBACK WndProc( HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam ) {
+   BOOL br;  // BOOL result
+
    switch ( message ) {
       case WM_COMMAND:  /// WM_COMMAND - Process the application menu
          {
@@ -179,7 +182,8 @@ LRESULT CALLBACK WndProc( HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam 
                   DialogBox( ghInst, MAKEINTRESOURCE( IDD_ABOUTBOX ), hWnd, About );
                   break;
                case IDM_EXIT:
-                  DestroyWindow( hWnd );
+                  br = DestroyWindow( hWnd );
+                  WARN_BR( "Failed to destroy window.  Investigate!!" );
 
                   break;
                default:
@@ -193,9 +197,11 @@ LRESULT CALLBACK WndProc( HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam 
             HDC hdc = BeginPaint( hWnd, &ps );
 
             // Add any drawing code that uses hdc here...
-            mvcViewPaintWindow() ;
+            br = mvcViewPaintWindow();
+            WARN_BR( "Failed to paint window.  Investigate!!" );
 
-            EndPaint( hWnd, &ps );
+            br = EndPaint( hWnd, &ps );
+            WARN_BR( "Failed to end paint.  Investigate!!" );
          }
          break;
       case WM_KEYDOWN:  /// WM_KEYDOWN - Exit if ESC is pressed
@@ -212,22 +218,28 @@ LRESULT CALLBACK WndProc( HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam 
       case WM_CLOSE:    /// WM_CLOSE - Start the process of closing the application
          {
             isRunning = false;
-            goertzel_end();
+            br = goertzel_end();
+            WARN_BR( "Failed to end the Goertzel DFT threads" );
 
             if ( gAudioSamplesReadyEvent != NULL ) {
-               SetEvent( gAudioSamplesReadyEvent );
+               br = SetEvent( gAudioSamplesReadyEvent );
+               WARN_BR( "Failed to signal gAudioSamplesReadyEvent" );
             }
 
-            audioStopDevice();
+            br = audioStopDevice();
+            WARN_BR( "Failed to stop the audio device" );
 
-            DestroyWindow( hWnd );
+            br = DestroyWindow( hWnd );
+            WARN_BR( "Failed to destroy window" );
 
             break;
          }
       case WM_DESTROY:  /// WM_DESTROY - Post a quit message and return
-         mvcViewCleanupResources();
+         br = mvcViewCleanupResources();
+         WARN_BR( "Failed to cleanup view resources" );
 
-         goertzel_cleanup();
+         br = goertzel_cleanup();
+         WARN_BR( "Failed to cleanup Goertzel DFT" );
 
          PostQuitMessage( 0 );
 
@@ -245,13 +257,16 @@ LRESULT CALLBACK WndProc( HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam 
 /// 
 /// @todo Issue #3:  The About dialog box is not displaying
 INT_PTR CALLBACK About( HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam ) {
+   BOOL br;  // BOOL result
+
    switch ( message ) {
       case WM_INITDIALOG:
          return (INT_PTR) TRUE;
 
       case WM_COMMAND:
          if ( LOWORD( wParam ) == IDOK || LOWORD( wParam ) == IDCANCEL ) {
-            EndDialog( hDlg, LOWORD( wParam ) );
+            br = EndDialog( hDlg, LOWORD( wParam ) );
+            WARN_BR( "Failed to end dialog in About" );
             return (INT_PTR) TRUE;
          }
          break;
