@@ -3,13 +3,13 @@
 //          DTMF_Decoder - EE 469 - Fall 2022
 //
 //  A Windows Desktop C program that decodes DTMF tones
-// 
-/// The implementation of the GDI and Direct2D paint commands as the view 
+//
+/// The implementation of the GDI and Direct2D paint commands as the view
 /// component of this model-view-controller application.
 ///
 /// @file mvcView.cpp
 /// @version 1.0
-/// 
+///
 /// @see http://www.catch22.net/tuts/win32/flicker-free-drawing
 ///
 /// @author Mark Nelson <marknels@hawaii.edu>
@@ -98,7 +98,7 @@ BOOL paintColFreq( size_t index );
 
 /// Repaint the main window (keypad) -- probably because the state
 /// of one of the buttons has changed
-/// 
+///
 /// @return `true` if successful.  `false` if there was a problem.
 BOOL mvcViewRefreshWindow() {
    BOOL    br;  // BOOL result
@@ -114,7 +114,7 @@ BOOL mvcViewRefreshWindow() {
 
 
 /// Initialize all of the resources needed to draw the main window
-/// 
+///
 /// @return `true` if successful.  `false` if there was a problem.
 BOOL mvcViewInitResources() {
    HRESULT hr;  // HRESULT result
@@ -139,7 +139,7 @@ BOOL mvcViewInitResources() {
       DWRITE_FONT_WEIGHT_MEDIUM,    // Weight
       DWRITE_FONT_STYLE_NORMAL,     // Style
       DWRITE_FONT_STRETCH_NORMAL,   // Stretch
-      36.0f,                        // Size	
+      36.0f,                        // Size
       L"en-us",                     // Local
       &gpDigitTextFormat            // Pointer to recieve the created object
    );
@@ -161,7 +161,7 @@ BOOL mvcViewInitResources() {
       DWRITE_FONT_WEIGHT_REGULAR,   // Weight
       DWRITE_FONT_STYLE_NORMAL,     // Style
       DWRITE_FONT_STRETCH_NORMAL,   // Stretch
-      16.0f,                        // Size	
+      16.0f,                        // Size
       L"en-us",                     // Local
       &gpLettersTextFormat          // Pointer to recieve the created object
    );
@@ -169,7 +169,7 @@ BOOL mvcViewInitResources() {
 
    hr = gpLettersTextFormat->SetWordWrapping( DWRITE_WORD_WRAPPING_WRAP );
    CHECK_HR( "Failed to set word wrap mode (letters text format)" );
- 
+
    hr = gpLettersTextFormat->SetTextAlignment( DWRITE_TEXT_ALIGNMENT_CENTER );  // Horizontal alignment
    CHECK_HR( "Failed to set text alignment (letters text format)" );
 
@@ -183,7 +183,7 @@ BOOL mvcViewInitResources() {
       DWRITE_FONT_WEIGHT_REGULAR,   // Weight
       DWRITE_FONT_STYLE_NORMAL,     // Style
       DWRITE_FONT_STRETCH_NORMAL,   // Stretch
-      24.0f,                        // Size	
+      24.0f,                        // Size
       L"en-us",                     // Local
       &gpFreqTextFormat             // Pointer to recieve the created object
    );
@@ -194,7 +194,7 @@ BOOL mvcViewInitResources() {
 
    hr = gpFreqTextFormat->SetTextAlignment( DWRITE_TEXT_ALIGNMENT_TRAILING );  // Horizontal alignment
    CHECK_HR( "Failed to set text alignment (frequency text format)" );
-   
+
    hr = gpFreqTextFormat->SetParagraphAlignment( DWRITE_PARAGRAPH_ALIGNMENT_CENTER );  // Vertical alignment
    CHECK_HR( "Failed to set paragraph alighment (frequency text format)" );
 
@@ -226,7 +226,7 @@ BOOL mvcViewInitResources() {
    // This brush does not get used, so we will comment it out for now
 // hr = gpRenderTarget->CreateSolidColorBrush(
 //    D2D1::ColorF( D2D1::ColorF( BACKGROUND_COLOR, 1.0f ) ),
-//    &gpBrushBackground   
+//    &gpBrushBackground
 // );
 // CHECK_HR( "Failed to create Direct2D Brush (Background)" );
 
@@ -252,8 +252,8 @@ BOOL mvcViewCleanupResources() {
 
 
 
-/// Paint the main window containing the DTMF keypad 
-/// 
+/// Paint the main window containing the DTMF keypad
+///
 /// @todo Modify this code so that only the specific keys and lables that
 ///       have changed get redrawn.  This gets rid of flicker.  Issue #8
 /// @see  http://www.catch22.net/tuts/win32/flicker-free-drawing#
@@ -264,7 +264,7 @@ BOOL mvcViewPaintWindow() {
 
    _ASSERTE( gpRenderTarget != NULL );
 
-   gpRenderTarget->BeginDraw() ;  
+   gpRenderTarget->BeginDraw() ;
    // No return value
 
    /// Clear to the background color.
@@ -272,12 +272,12 @@ BOOL mvcViewPaintWindow() {
    gpRenderTarget->Clear( D2D1::ColorF( BACKGROUND_COLOR, 1.0f ) );
    // No return value
 
-   /// Draw the main window, generally top-down.  I'm unrolling the loops for a 
+   /// Draw the main window, generally top-down.  I'm unrolling the loops for a
    /// little bit of an optimization
    paintColFreq( 0 );   paintColFreq( 1 );   paintColFreq( 2 );   paintColFreq( 3 );
 
    /// Paint each of the row lables and digits
-   /// 
+   ///
    /// @internal For now, and mostly for the sake of efficiency, we are not checking
    ///           the results of these drawing functions.  None of the methods these
    ///           functions call/use return any error messages, so (right now) they
@@ -301,10 +301,10 @@ BOOL mvcViewPaintWindow() {
 
 
 /// Paint a frequency label before each row
-/// 
+///
 /// If a DTMF tone is detected for this frequency, then paint it using the
 /// highlighted font.  Otherwise, use the normal foreground font.
-/// 
+///
 /// @param index Indicates the row to paint
 /// @return `true` if successful.  `false` if there were problems.
 BOOL paintRowFreq( size_t index ) {
@@ -328,7 +328,7 @@ BOOL paintRowFreq( size_t index ) {
    // No return value (for error checking)
 
    // Get text length
-   UINT32 cTextLength = (UINT32) wcslen( dtmfTones[ iFreq ].label );	  
+   UINT32 cTextLength = (UINT32) wcslen( dtmfTones[ iFreq ].label );
 
    gpRenderTarget->DrawText(
       dtmfTones[ iFreq ].label, // Text to render
@@ -364,10 +364,10 @@ BOOL paintRowFreq( size_t index ) {
 
 
 /// Paint a frequency label above each column
-/// 
+///
 /// If a DTMF tone is detected for this frequency, then paint it using the
 /// highlighted font.  Otherwise, use the normal foreground font.
-/// 
+///
 /// @param index Indicates the column to paint
 /// @return `true` if successful.  `false` if there were problems.
 BOOL paintColFreq( size_t index ) {
@@ -391,7 +391,7 @@ BOOL paintColFreq( size_t index ) {
    // No return value (for error checking)
 
    // Get text length
-   UINT32 cTextLength = (UINT32) wcslen( dtmfTones[ iFreq ].label );	
+   UINT32 cTextLength = (UINT32) wcslen( dtmfTones[ iFreq ].label );
 
    gpRenderTarget->DrawText(
       dtmfTones[ iFreq ].label, // Text to render
@@ -428,8 +428,8 @@ BOOL paintColFreq( size_t index ) {
 
 /// The detailed work to paint each key on the keypad... painting the rectangle,
 /// digit and letters above the digit.
-/// 
-/// If a DTMF tone is detected for this combination of frequencies, then paint 
+///
+/// If a DTMF tone is detected for this combination of frequencies, then paint
 /// it using the highlighted font.  Otherwise, use the normal foreground font.
 ///
 /// @param index Indicates the key to paint
@@ -462,7 +462,7 @@ BOOL paintKey( size_t index ) {
    // No return value (for error checking)
 
    // Get text length
-   UINT32 cTextLength = (UINT32) wcslen( keypad[index].digit);	  
+   UINT32 cTextLength = (UINT32) wcslen( keypad[index].digit);
 
    gpRenderTarget->DrawText(
       keypad[index].digit, // Text to render

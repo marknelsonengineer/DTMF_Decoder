@@ -6,13 +6,13 @@
 ;///
 ;/// A hand-coded, optimized Goertzel DFT that's intended to do all of its
 ;/// calculations in the CPU/registers.
-;/// 
+;///
 ;/// @file goertzel.asm
 ;/// @version 1.0
 ;///
 ;/// @see https://github.com/Harvie/Programs/blob/master/c/goertzel/goertzel.c
 ;/// @see https://en.wikipedia.org/wiki/Goertzel_algorithm
-;/// 
+;///
 ;/// @author Mark Nelson <marknels@hawaii.edu>
 ;/// @date   25_Oct_2022
 ;///////////////////////////////////////////////////////////////////////////////
@@ -29,7 +29,7 @@ option casemap:none    ; Make symbols case sensitive
 
 ; Note:  One optimization (for the sale of simplicity) is that we are
 ;        analyzing the queue from position 0 to queueSize -- not from
-;        the head of the queue.  This gets us down to 1 counter and 
+;        the head of the queue.  This gets us down to 1 counter and
 ;        makes the program easier to read without affecting its accuracy
 ;
 ; CL = The UINT8 index (param 1)
@@ -44,7 +44,7 @@ option casemap:none    ; Make symbols case sensitive
 ; XMM3 = coeff
 ; XMM4 = Scratch (PCM byte)
 ; XMM5 = Scratch
-; 
+;
 public goertzel_magnitude_64
 goertzel_magnitude_64 PROC
 
@@ -69,8 +69,8 @@ forLoop:
 	MOVSS    XMM2, XMM1               ; q2 = q1
 	VADDSS   XMM0, XMM0, XMM4         ; q0 += the PCM byte
 	MOVSS    XMM1, XMM0               ; q1 = q0
-								     
-	; Done inside the for() loop     
+
+	; Done inside the for() loop
 	INC R8                            ; i++
 	JMP forLoop
 

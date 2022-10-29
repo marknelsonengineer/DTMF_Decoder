@@ -4,15 +4,15 @@
 //
 //  A Windows Desktop C program that decodes DTMF tones
 //
-/// An 8-way multi-threaded Discrete Fast Forier Transform - specifically, 
+/// An 8-way multi-threaded Discrete Fast Forier Transform - specifically,
 /// the Goertzel algorithm for 8-bit PCM data.
-/// 
+///
 /// @file goertzel.cpp
 /// @version 1.0
 ///
 /// @see https://github.com/Harvie/Programs/blob/master/c/goertzel/goertzel.c
 /// @see https://en.wikipedia.org/wiki/Goertzel_algorithm
-/// 
+///
 /// @author Mark Nelson <marknels@hawaii.edu>
 /// @date   10_Oct_2022
 ///////////////////////////////////////////////////////////////////////////////
@@ -22,7 +22,7 @@
 #include <stdio.h>        // For sprintf_s()
 
 ///< For getting math defines in C++ (this is a .cpp file)
-#define _USE_MATH_DEFINES  
+#define _USE_MATH_DEFINES
 #include <math.h>              // For sinf() and cosf()
 
 #include "DTMF_Decoder.h" // For APP_NAME
@@ -48,10 +48,10 @@ extern "C" float gfScaleFactor = 0;  ///< Set in goertzel_init() and used in goe
 
 
 /// Compute the Goertzel magnitude of 8-bit PCM data
-/// 
-/// This 1-pass loop over #pcmQueue has been optimized for performance as it is 
+///
+/// This 1-pass loop over #pcmQueue has been optimized for performance as it is
 /// processing audio data in realtime.
-/// 
+///
 /// The original version of this algorithm came from:
 /// @see https://github.com/Harvie/Programs/blob/master/c/goertzel/goertzel.c
 ///
@@ -84,18 +84,18 @@ void goertzel_magnitude( UINT8 index, dtmfTones_t* toneStruct ) {
 
 
 /// Runs one of the 8 DFT worker threads
-/// 
+///
 /// @param Context Holds the index of which tone this thread is responsibile
 ///                for values are `0` through `7`.  This is critical for
 ///                thread safety.
-/// 
+///
 /// @return `true` if successful.  `false` if there was a problem.
 DWORD WINAPI goertzelWorkThread( LPVOID Context ) {
    CHAR sBuf[ 256 ];  // Debug buffer   /// @todo put a guard around this
 
-   int iIndex = *(int*) Context;  // This comes to us as an int from dtmfTones_t 
+   int iIndex = *(int*) Context;  // This comes to us as an int from dtmfTones_t
    size_t index = iIndex;         // But we use it as an index into an array, so convert to size_t
-   
+
    sprintf_s( sBuf, sizeof( sBuf ), __FUNCTION__ ":  Start Goertzel DFT thread index=%zu", index );
    OutputDebugStringA( sBuf );
 
@@ -103,9 +103,9 @@ DWORD WINAPI goertzelWorkThread( LPVOID Context ) {
 
    /// Set the multimedia class scheduler service, which will set the CPU
    /// priority for this thread
-   /// 
+   ///
    /// Note:  Uses the exported &mmcssTaskIndex that was originally set in audio.cpp
-   /// 
+   ///
    /// @see https://learn.microsoft.com/en-us/windows/win32/api/avrt/nf-avrt-avsetmmthreadcharacteristicsa
    mmcssHandle = AvSetMmThreadCharacteristics( L"Capture", &mmcssTaskIndex );
    if ( mmcssHandle == NULL ) {
@@ -123,7 +123,7 @@ DWORD WINAPI goertzelWorkThread( LPVOID Context ) {
          if ( isRunning ) {
             #ifdef _WIN64
                goertzel_magnitude_64( (UINT8) index, &dtmfTones[index] );
-            #else 
+            #else
               goertzel_magnitude( index, &dtmfTones[index] );
             #endif
 
@@ -165,7 +165,7 @@ DWORD WINAPI goertzelWorkThread( LPVOID Context ) {
 
 
 /// Initialize values needed by the Goertzel DFT
-/// 
+///
 /// @param  intSamplingRateParm  Samples per second
 /// @return `true` if successful.  `false` if there was a problem.
 BOOL goertzel_init( int intSamplingRateParm ) {
@@ -184,7 +184,7 @@ BOOL goertzel_init( int intSamplingRateParm ) {
       dtmfTones[ i ].cosine = cosf( omega );
       dtmfTones[ i ].coeff  = 2.0f * dtmfTones[ i ].cosine;
    }
- 
+
    /// Create the events for synchronizing the threads
    for ( int i = 0 ; i < NUMBER_OF_DTMF_TONES ; i++ ) {
       startDFTevent[ i ] = CreateEventA( NULL, FALSE, FALSE, NULL );
@@ -212,9 +212,9 @@ BOOL goertzel_init( int intSamplingRateParm ) {
 
 
 /// Signal all of the threads so they can end on their own terms
-/// 
+///
 /// @see https://learn.microsoft.com/en-us/windows/win32/api/synchapi/nf-synchapi-setevent
-/// 
+///
 /// @return `true` if successful.  `false` if there was a problem.
 BOOL goertzel_end() {
    isRunning = false;  // Just to be sure
@@ -235,7 +235,7 @@ BOOL goertzel_end() {
 
 
 /// Cleanup Goertzel event handles and threads
-/// 
+///
 /// @return `true` if successful.  `false` if there was a problem.
 BOOL goertzel_cleanup() {
    BOOL br;  // BOOL result
@@ -258,7 +258,7 @@ BOOL goertzel_cleanup() {
 
 /// Signal the 8 Goertzel worker threads, then wait for them to finish their
 /// analysis
-/// 
+///
 /// @return `true` if successful.  `false` if there was a problem.
 BOOL goertzel_compute_dtmf_tones() {
 

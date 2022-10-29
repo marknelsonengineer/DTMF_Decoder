@@ -5,11 +5,11 @@
 //  A Windows Desktop C program that decodes DTMF tones
 //
 /// The model holds the state between the various modules
-/// 
+///
 /// @file mvcModel.h
 /// @version 1.0
-/// 
-/// @todo Consider having the display have an indicator light that shows the 
+///
+/// @todo Consider having the display have an indicator light that shows the
 ///       threads are running
 ///
 ///
@@ -30,14 +30,14 @@
 extern BOOL mvcModelInit();
 
 
-/// Hold display information (#detected & #label) as well as 
-/// pre-computed information for the Goertzel Magnitude calculation for each 
+/// Hold display information (#detected & #label) as well as
+/// pre-computed information for the Goertzel Magnitude calculation for each
 /// individual DTMF tone
-/// 
+///
 /// #sine, #cosine, #coeff are computed and set by #goertzel_init
-/// 
+///
 /// #goertzelMagnitude is set in #goertzel_magnitude
-/// 
+///
 /// #detected is set in #goertzelWorkThread
 typedef struct {
    int   index;              ///< The index of the tone in the dtmfTones array
@@ -51,16 +51,16 @@ typedef struct {
 } dtmfTones_t;
 
 
-/// An array holding display information (#dtmfTones_t.detected & 
+/// An array holding display information (#dtmfTones_t.detected &
 /// #dtmfTones_t.label) as well as pre-computed information
 /// for the Goertzel Magnitude calculation for each individual DTMF tone
 extern dtmfTones_t dtmfTones[ NUMBER_OF_DTMF_TONES ];
 
 
-/// Temporarily set to `true` when the Goertzel DFT detects that any DTMF tone 
+/// Temporarily set to `true` when the Goertzel DFT detects that any DTMF tone
 /// has changed.
-/// 
-/// `false` if there are no recent changes (so there's no need to repaint the 
+///
+/// `false` if there are no recent changes (so there's no need to repaint the
 /// screen).
 extern bool hasDtmfTonesChanged;
 
@@ -77,27 +77,27 @@ inline void mvcModelToggleToneDetectedStatus( size_t toneIndex, bool detectedSta
 }
 
 
-/// When `true`, #audioCaptureThread and #goertzelWorkThread event blocking 
+/// When `true`, #audioCaptureThread and #goertzelWorkThread event blocking
 /// loops will continue to run.
 ///
 /// Set to `false` when it's time to shutdown the program.  Then, these threads
-/// will see that #isRunning is `false`, drop out of their `while()` loops and 
+/// will see that #isRunning is `false`, drop out of their `while()` loops and
 /// the threads will terminate naturally, cleaning up their resources.
 ///
 /// @internal This is a very important variable as it's what keeps the loops
 ///           running.
-/// 
-extern bool isRunning;  
-                        
+///
+extern bool isRunning;
+
 
 /// Pointer to the main window handle
 extern HWND ghMainWindow;
 
 
 /// The size of the queue in milliseconds.  This determines the number of
-/// samples the Goertzel DFT #goertzel_magnitude uses to analyze the signal.  
+/// samples the Goertzel DFT #goertzel_magnitude uses to analyze the signal.
 ///
-/// Generally, the larger the queue, the slower (but more accurate) the 
+/// Generally, the larger the queue, the slower (but more accurate) the
 /// detection is.
 ///
 /// The standard is 65ms
@@ -105,19 +105,19 @@ extern HWND ghMainWindow;
 #define SIZE_OF_QUEUE_IN_MS (65)
 
 
-/// Pointer to the #pcmQueue.  The queue is allocated by #pcmSetQueueSize. 
+/// Pointer to the #pcmQueue.  The queue is allocated by #pcmSetQueueSize.
 /// Released by #pcmReleaseQueue.  It is populated in #processAudioFrame
 /// by #pcmEnqueue.  #goertzel_magnitude needs direct access to this to analyze
 /// the audio stream.
-/// 
-/// This is thread safe because all of the threads read from the same, 
+///
+/// This is thread safe because all of the threads read from the same,
 /// unchanging queue.
-/// 
+///
 /// @internal #pcmQueue would normally be protected by an API, but because
-///           of the realtime nature of this application, performance is 
+///           of the realtime nature of this application, performance is
 ///           critical.  Therefore, we are allowing other modules direct access
 ///           to this data structure.
-/// 
+///
 /// @internal This is declared as `extern "C"` as it is accessed by an
 ///           Assembluy Language module.  `extern "C"` disables C++'s name
 ///           mangling and allows access from Assembly.
@@ -127,10 +127,10 @@ extern "C" BYTE*  pcmQueue;
 /// Points to a relative offset within #pcmQueue of the next available byte for
 /// writing.  `0` is the first available byte in the queue.  This value should
 /// never be `>=` #queueSize.
-/// 
-/// This is thread safe because all of the threads read from the same, 
+///
+/// This is thread safe because all of the threads read from the same,
 /// unchanging queue.
-/// 
+///
 /// @internal This is declared as `extern "C"` as it is accessed by an
 ///           Assembluy Language module.  `extern "C"` disables C++'s name
 ///           mangling and allows access from Assembly.
@@ -139,14 +139,14 @@ extern "C" size_t queueHead;
 
 /// Represents the maximum size of #pcmQueue.  This is set in #pcmSetQueueSize
 /// called by #audioInit after we know the sampling rate (`gpMixFormat->nSamplesPerSec`).
-/// 
+///
 /// Size in bytes of DTMF DFT #pcmQueue `= gpMixFormat->nSamplesPerSec / 1000 * SIZE_OF_QUEUE_IN_MS`
 ///
 /// The queue is sized to hold 8-bit PCM data (one byte per sample)
-/// 
-/// This is thread safe because all of the threads read from the same, 
+///
+/// This is thread safe because all of the threads read from the same,
 /// unchanging queue.
-/// 
+///
 /// @internal This is declared as `extern "C"` as it is accessed by an
 ///           Assembluy Language module.  `extern "C"` disables C++'s name
 ///           mangling and allows access from Assembly.
@@ -157,7 +157,7 @@ extern "C" size_t queueSize;
 ///
 /// Uses `_malloc_dbg`
 /// @see https://learn.microsoft.com/en-us/cpp/c-runtime-library/reference/malloc-dbg?view=msvc-170
-extern BOOL pcmSetQueueSize( size_t size );  
+extern BOOL pcmSetQueueSize( size_t size );
 
 
 /// Enqueue a byte of PCM data to `pcmQueue`
@@ -178,7 +178,7 @@ inline void pcmEnqueue( BYTE data ) {
 
 
 /// Release the memory allocated to #pcmQueue
-extern void pcmReleaseQueue();         
+extern void pcmReleaseQueue();
 
 
 /// Common handle for audio task prioritization
@@ -188,6 +188,6 @@ extern DWORD mmcssTaskIndex;
 
 
 /// This event is signaled when the audio driver has some data to send.
-/// 
+///
 /// @see https://learn.microsoft.com/en-us/windows/win32/api/audioclient/nf-audioclient-iaudioclient-seteventhandle
 extern HANDLE gAudioSamplesReadyEvent;

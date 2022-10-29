@@ -8,8 +8,8 @@
 ### Goals
 - Write a [DTMF](https://en.wikipedia.org/wiki/Dual-tone_multi-frequency_signaling) tone decoder
 - Get back to my roots as a [Windows C Usermode](https://en.wikipedia.org/wiki/Windows_API) programmer
-- See [what's changed](https://stackoverflow.com/questions/3121538/how-has-windows-api-changed-in-the-last-10-years) 
-  in the last 25 years of Windows Win32 programming (since I wrote paint from Charles Petzold's book [Programming Windows](https://www.amazon.com/Programming-Windows%C2%AE-Fifth-Developer-Reference/dp/157231995X)) 
+- See [what's changed](https://stackoverflow.com/questions/3121538/how-has-windows-api-changed-in-the-last-10-years)
+  in the last 25 years of Windows Win32 programming (since I wrote paint from Charles Petzold's book [Programming Windows](https://www.amazon.com/Programming-Windows%C2%AE-Fifth-Developer-Reference/dp/157231995X))
 - Write a [Forier Transform](https://en.wikipedia.org/wiki/Fourier_transform) (or something like one)
 
 ### Links
@@ -19,19 +19,19 @@ The source code documentation (hosted by UH) is [here](TBD)
 
 
 ### Design Decisions
-- **The Application Framework:**  After reviewing [An Overview of App Development Options](https://learn.microsoft.com/en-us/windows/apps/get-started/?tabs=net-maui%2Cwindows-forms) 
+- **The Application Framework:**  After reviewing [An Overview of App Development Options](https://learn.microsoft.com/en-us/windows/apps/get-started/?tabs=net-maui%2Cwindows-forms)
   I'm going with **Win32**.  Here's a brief summary of my options:
-  - **WinUI 3:**  This is the current recommended platform.  That said, it has a number 
+  - **WinUI 3:**  This is the current recommended platform.  That said, it has a number
     of deficiencies:
     - It's cross-platform and I don't need cross-platform support.  I'm not writing this for
-      HoloLens, Xbox, Team, blah, blah.  
+      HoloLens, Xbox, Team, blah, blah.
     - It rides on top of Win32 and I'd like to stay as close to the machine as possible.
-    - I don't trust that it's a solid foundation i.e. [Silverlight](https://www.neowin.net/news/former-microsoft-pm-silverlight-is-dead/) 
+    - I don't trust that it's a solid foundation i.e. [Silverlight](https://www.neowin.net/news/former-microsoft-pm-silverlight-is-dead/)
       and one WinUI 3 reviewer [wrote](https://mariusbancila.ro/blog/2022/04/08/unwrapping-winui3-for-cpp/):
-    > WinUI 3 is trumpeted as the next big thing in Windows development.  ... I personally don't see 
+    > WinUI 3 is trumpeted as the next big thing in Windows development.  ... I personally don't see
       this as the modern native library C++ Windows develoeprs have been wishing for the past
-      12-15 years.  ... The API is cumberson at best.  The generated code is not optimal.  
-      I think that time has shown that WinRT and UWP were a mistake.  WinUI, instead of 
+      12-15 years.  ... The API is cumberson at best.  The generated code is not optimal.
+      I think that time has shown that WinRT and UWP were a mistake.  WinUI, instead of
       starting from scratch, sweeps the dirt under the carpet.  I think it's another mistake
       and time will tell whether I'm write or wrong.
   - **MFC:**  I like the Microsoft Foundation Class, but I think it works best when
@@ -39,16 +39,16 @@ The source code documentation (hosted by UH) is [here](TBD)
     in C and not C++
   - **WPF, Forms and UWP:** Same argument as the two above.
 
-- **The Graphics Framework:**  I started down the GDI path, but good `old Stack Overflow pointed me 
-  towards **Direct2D**. 
+- **The Graphics Framework:**  I started down the GDI path, but good `old Stack Overflow pointed me
+  towards **Direct2D**.
   - **GDI:**  It's depricated.  Also, I want to explore APIs that were written for GPUs.
   - **GDI+:**  I want to write this in C
-  - I'm looking at [this](https://learn.microsoft.com/en-us/windows/win32/direct2d/getting-started-with-direct2d) 
+  - I'm looking at [this](https://learn.microsoft.com/en-us/windows/win32/direct2d/getting-started-with-direct2d)
     and [this](https://bobobobo.wordpress.com/2008/01/31/how-to-create-a-basic-window-in-c/) for a starting point
 
 - **Logging:** I've been programming for a long time and grown accustomed to being
   able to write debug messages to the console.  I'm going to push myself a bit:  No console logging this time.
-  Instead, I'm going to rely more on the debugger than I ever have before.  
+  Instead, I'm going to rely more on the debugger than I ever have before.
   - Note:  Should I have chosen to do a console-based log, I'd have dumped to a syslog on localhost.
   - I think I'll try using [DebugOutputString](https://learn.microsoft.com/en-us/windows/win32/api/debugapi/nf-debugapi-outputdebugstringa)
 
@@ -62,7 +62,7 @@ The source code documentation (hosted by UH) is [here](TBD)
   For this project, I'm going with _ASSERTE.  There are more options and this is an exploritory project.
 
   Note:  I compared the Debug and Release configurations of both of these techniques
-  with Ghidra.  I was pleasantly suprised to see that both completely disappear in the 
+  with Ghidra.  I was pleasantly suprised to see that both completely disappear in the
   Release versions.  In a Debug configuration, they have diferent implementations.
 
 ### Toolchain

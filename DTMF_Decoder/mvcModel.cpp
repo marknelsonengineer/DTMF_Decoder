@@ -5,7 +5,7 @@
 //  A Windows Desktop C program that decodes DTMF tones
 //
 /// The model holds the state between the various modules
-/// 
+///
 /// @file mvcModel.cpp
 /// @version 1.0
 ///
@@ -27,12 +27,12 @@ BOOL mvcModelInit() {
 
 dtmfTones_t dtmfTones[ NUMBER_OF_DTMF_TONES ] = {
    { 0,  697.0, false, L"697" },
-   { 1,  770.0, false, L"770" },  
+   { 1,  770.0, false, L"770" },
    { 2,  852.0, false, L"852" },
    { 3,  941.0, false, L"941" },
    { 4, 1209.0, false, L"1209" },
-   { 5, 1336.0, false, L"1336" }, 
-   { 6, 1477.0, false, L"1477" }, 
+   { 5, 1336.0, false, L"1336" },
+   { 6, 1477.0, false, L"1477" },
    { 7, 1633.0, false, L"1633" }
 };
 
@@ -86,4 +86,4 @@ void pcmReleaseQueue() {
 
 
 DWORD   mmcssTaskIndex          = 0;
-HANDLE  gAudioSamplesReadyEvent = NULL; 
+HANDLE  gAudioSamplesReadyEvent = NULL;

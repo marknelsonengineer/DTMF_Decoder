@@ -27,9 +27,9 @@
 /// Defines the size of the wide-string buffer used to get strings from the
 /// resource file.  If MAX_LOADSTRING is 100, then it can hold at most 49
 /// characters.
-/// 
+///
 /// @internal The value of 128 is chosen for byte-alignment purposes
-#define MAX_LOADSTRING    (128) 
+#define MAX_LOADSTRING    (128)
 
 
 // Global Variables
@@ -46,8 +46,8 @@ INT_PTR CALLBACK About( HWND, UINT, WPARAM, LPARAM );
 /// Program entrypoint
 ///
 /// @see https://learn.microsoft.com/en-us/windows/win32/learnwin32/winmain--the-application-entry-point
-/// 
-int APIENTRY wWinMain( 
+///
+int APIENTRY wWinMain(
    _In_     HINSTANCE hInstance,
    _In_opt_ HINSTANCE hPrevInstance,
    _In_     LPWSTR    lpCmdLine,
@@ -170,7 +170,7 @@ int APIENTRY wWinMain(
 /// Message handler for the main window
 ///
 /// @see https://learn.microsoft.com/en-us/windows/win32/api/winuser/nc-winuser-wndproc
-/// 
+///
 LRESULT CALLBACK WndProc( HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam ) {
    BOOL br;  // BOOL result
 

@@ -5,9 +5,9 @@
 //  A Windows Desktop C program that decodes DTMF tones
 //
 /// Identifies the minimum version of the Windows OS that can run this application
-/// 
+///
 /// @see https://learn.microsoft.com/en-us/windows/win32/winprog/using-the-windows-headers
-/// 
+///
 /// @file targetver.h
 /// @version 1.0
 ///

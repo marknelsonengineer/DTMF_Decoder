@@ -5,7 +5,7 @@
 //  A Windows Desktop C program that decodes DTMF tones
 //
 /// Windows Audio Driver code
-/// 
+///
 /// @file audio.h
 /// @version 1.0
 ///

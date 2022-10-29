@@ -5,7 +5,7 @@
 //  A Windows Desktop C program that decodes DTMF tones
 //
 /// Windows Audio Driver code
-/// 
+///
 /// @file audio.cpp
 /// @version 1.0
 ///
@@ -18,10 +18,10 @@
 /// @see https://learn.microsoft.com/en-us/windows/win32/api/mmeapi/ns-mmeapi-waveformatex
 /// @see https://learn.microsoft.com/en-us/windows/win32/api/mmreg/ns-mmreg-waveformatextensible
 /// @see https://learn.microsoft.com/en-us/windows/win32/api/audioclient/nn-audioclient-iaudiocaptureclient
-/// 
+///
 /// @todo Watch the program with Process Monitor and make sure it's not
 ///       over-spinning any threads.  So far, it looks very good.
-/// 
+///
 /// @author Mark Nelson <marknels@hawaii.edu>
 /// @date   10_Oct_2022
 ///////////////////////////////////////////////////////////////////////////////
@@ -44,9 +44,9 @@
 
 /// The share mode for the audio capture device.  It can be either
 /// `SHARED` or `EXCLUSIVE`.  Because this was developed in a VM, I suspect
-/// that VMWare won't allow exclusive access.  Therefore, all this program 
+/// that VMWare won't allow exclusive access.  Therefore, all this program
 /// supports (for now) is `SHARED`
-/// 
+///
 /// @todo Consider supporting `EXCLUSIVE` audio device access someday (Issue #14)
 AUDCLNT_SHAREMODE gShareMode = AUDCLNT_SHAREMODE_SHARED;
 
@@ -76,7 +76,7 @@ WCHAR           wsBuf[ 256 ];  ///< Debug buffer  @todo Put a guard around this
    UINT64 gFramesToMonitor = 0;           ///< set #gbMonitor when the current frame is > #gStartOfMonitor + #gFramesToMonitor
    UINT64 gStartOfMonitor = UINT64_MAX;   ///< The frame position of the start time of the monitor
    BOOL   gbMonitor = false;              ///< Briefly set to 1 to output monitored data
-   
+
    BYTE monitorCh1Max = 0;                ///< The lowest PCM value on Channel 1 during this monitoing period
    BYTE monitorCh1Min = 255;              ///< The highest PCM value on Channel 1 during this monitoring period
 #endif
@@ -84,7 +84,7 @@ WCHAR           wsBuf[ 256 ];  ///< Debug buffer  @todo Put a guard around this
 
 /// The audio formats DTMF_Decoder supports
 enum audio_format_t {
-   UNKNOWN_AUDIO_FORMAT=0,  ///< An unknown audio format   
+   UNKNOWN_AUDIO_FORMAT=0,  ///< An unknown audio format
    PCM_8,                   ///< 8-bit, linear PCM ranging from 0 to 255 where 0 is min, 127 is silence and 255 is max
    IEEE_FLOAT_32            ///< 32-bit float values from -1 to +1
 };
@@ -96,7 +96,7 @@ audio_format_t audioFormat = UNKNOWN_AUDIO_FORMAT;
 
 /// Process the audio frame, converting it into #PCM_8, adding the sample to
 /// #pcmQueue and monitoring the values (if desired)
-/// 
+///
 /// @param pData Pointer into the audio bufer
 /// @param frame The frame number to process
 /// @return `true` if successful.  `false` if there were problems.
@@ -160,21 +160,21 @@ BOOL processAudioFrame( BYTE* pData, UINT32 frame ) {
 /// This is a realtime application.  Windows has several features to ensure
 /// that realtime applications (like audio capture) have high proitory, but
 /// the hypervisor doesn't really have visibility to that.
-/// 
+///
 /// My observations are:  On bare-metal systems, the scheduling/performance of
-/// this loop are OK.  On virtualized systems, you may see lots of 
-/// DATA_DISCONTINUITY messages.  I assess this to be normal and outside of 
+/// this loop are OK.  On virtualized systems, you may see lots of
+/// DATA_DISCONTINUITY messages.  I assess this to be normal and outside of
 /// what I can program around.
-/// 
+///
 /// When we get a DATA_DISCONTINUITY message, I'm choosing to drop the buffer.
 /// I could just have easily processed it, but I'm thinking that I'll wait
 /// for the scheduler to stabalize and only process 100% good buffers.  We also
 /// throw out silent buffers.
-/// 
+///
 /// If I did process discontinuous frames, I'd have the right frequency, but
 /// I'd introduce phasing issues which could distort our results.
-/// 
-/// It's normal for the first buffer to have DATA_DISCONTINUITY set 
+///
+/// It's normal for the first buffer to have DATA_DISCONTINUITY set
 void audioCapture() {
    HRESULT hr;
 
@@ -198,31 +198,31 @@ void audioCapture() {
          for ( UINT32 i = 0 ; i < framesAvailable ; i++ ) {
             processAudioFrame( pData, i );  // Process each audio frame
          }
-         
+
          /// After all of the frames have been queued, compute the DFT
-         /// 
+         ///
          /// Note:  This thread will wait, signal 8 DFT threads to run, then
          ///        will continue after the DFT threads are done
          goertzel_compute_dtmf_tones();
-         
+
          /// If, after computing all 8 of the DFTs, if the detected state
          /// has changed, then refresh the main window
          if ( hasDtmfTonesChanged ) {
             mvcViewRefreshWindow();
          }
-      } 
+      }
 
       /// Carefully analyze the flags returned by GetBuffer
       if ( flags & AUDCLNT_BUFFERFLAGS_SILENT ) {
          OutputDebugStringA( __FUNCTION__ ":  Buffer flag set:  SILENT" );
          // Nothing so see here.  Move along.
          flags &= !AUDCLNT_BUFFERFLAGS_SILENT;  // Clear AUDCLNT_BUFFERFLAGS_SILENT from flags
-      } 
+      }
       if ( flags & AUDCLNT_BUFFERFLAGS_DATA_DISCONTINUITY ) {
          OutputDebugStringA( __FUNCTION__ ":  Buffer flag set:  DATA_DISCONTINUITY" );
          // Throw these packets out
          flags &= !AUDCLNT_BUFFERFLAGS_DATA_DISCONTINUITY;  // Clear AUDCLNT_BUFFERFLAGS_DATA_DISCONTINUITY from flags
-      } 
+      }
       if ( flags & AUDCLNT_BUFFERFLAGS_TIMESTAMP_ERROR ) {
          OutputDebugStringA( __FUNCTION__ ":  Buffer flag set:  TIMESTAMP_ERROR" );
          // Throw this packet out as well
@@ -240,21 +240,21 @@ void audioCapture() {
                if ( gStartOfMonitor > framePosition ) {
                   gStartOfMonitor = framePosition;
                }
-          
+
                if ( gStartOfMonitor + gFramesToMonitor < framePosition ) {
                   gbMonitor = true;
                   gStartOfMonitor = framePosition;
                }
-          
+
             }
-          
+
             if ( gbMonitor ) {  // Monitor data on this pass
                OutputDebugStringA( __FUNCTION__ ":  Monitoring loop" );
                sprintf_s( sBuf, sizeof( sBuf ), "Frames available=%" PRIu32 "    frame position=%" PRIu64, framesAvailable, framePosition );
                OutputDebugStringA( sBuf );
-          
+
                memset( sBuf, 0, 1 );
-          
+
                for ( int i = 0 ; i < NUMBER_OF_DTMF_TONES ; i++ ) {
                   sprintf_s( sBuf+strlen(sBuf), sizeof(sBuf), "  %4.0fHz=%4.2f", dtmfTones[i].frequency, dtmfTones[i].goertzelMagnitude);
                }
@@ -287,7 +287,7 @@ void audioCapture() {
 
 /// This thread waits for the audio device to call us back when it has some
 /// data to process.
-/// 
+///
 /// @param Context Not used
 /// @return Return `0` if successful.  `0xFFFF `if there was a problem.
 DWORD WINAPI audioCaptureThread( LPVOID Context ) {
@@ -317,7 +317,7 @@ DWORD WINAPI audioCaptureThread( LPVOID Context ) {
 
    /// Audio capture loop
    /// #isRunning gets set to false by WM_CLOSE
-   
+
    isRunning = true;
 
    while ( isRunning ) {
@@ -357,7 +357,7 @@ DWORD WINAPI audioCaptureThread( LPVOID Context ) {
 
 
 /// Print the WAVEFORMATEX or WAVEFORMATEXTENSIBLE structure to OutputDebug
-/// 
+///
 /// #### Sample Output
 /**@verbatim
     audioPrintWaveFormat:  Using WAVE_FORMAT_EXTENSIBLE format
@@ -431,7 +431,7 @@ BOOL audioPrintWaveFormat( WAVEFORMATEX* pFmt ) {
 
 
 /// Initialize the audio capture device and start the capture thread
-/// 
+///
 /// @return `true` if successful.  `false` if there was a problem.
 BOOL audioInit() {
    HRESULT hr;  // Result handle used by just about all Windows API calls
@@ -644,7 +644,7 @@ BOOL audioInit() {
 
    OutputDebugStringA( __FUNCTION__ ":  The audio capture interface has been initialized" );
 
-   /// The thread of execution goes back to #wWinMain, which starts the main 
+   /// The thread of execution goes back to #wWinMain, which starts the main
    /// message loop
    return TRUE;
 }
@@ -666,7 +666,7 @@ BOOL audioStopDevice() {
 
 /// Cleanup all things audio.  Basically unwind everything that was done in
 /// #audioInit
-/// 
+///
 /// @return `true` if successful.  `false` if there was a problem.
 BOOL audioCleanup() {
    BOOL    br;  // BOOL result
