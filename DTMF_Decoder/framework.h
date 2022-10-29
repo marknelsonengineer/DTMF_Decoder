@@ -17,22 +17,61 @@
 
 #include "targetver.h"
 
+/// @cond Doxygen_Suppress
+
+// Disable large parts of the Windows API that we do not need
+#define WIN32_LEAN_AND_MEAN  
+#define WIN32_EXTRA_LEAN     
+
+// Disable specific Windows APIs that we do not need
+#define NOGDICAPMASKS        
+// #define NOVIRTUALKEYCODES  ///< We are looking for VK_ESCAPE
+// #define NOWINMESSAGES      ///< We need the message loop API
+// #define NOWINSTYLES        ///< We use some windows styles
+#define NOSYSMETRICS      
+#define NOMENUS           
+#define NOICONS           
+#define NOKEYSTATES       
+#define NOSYSCOMMANDS     
+#define NORASTEROPS       
+#define NOSHOWWINDOW      
+#define OEMRESOURCE       
+#define NOATOM            
+#define NOCLIPBOARD         
+#define NOCOLOR             
+// #define NOCTLMGR           /// Need the dialog box API  
+#define NODRAWTEXT           
+// #define NOGDI              /// We use parts of the GDI API  
+#define NOKERNEL          
+// #define NOUSER             /// Need the usual USERMODE API
+#define NONLS             
+#define NOMB              
+#define NOMEMMGR          
+#define NOMETAFILE        
+#define NOMINMAX          
+// #define NOMSG              /// Need the messaging API   
+#define NOOPENFILE        
+#define NOSCROLL          
+#define NOSERVICE         
+#define NOSOUND               /// We are NOT USING the native sound API   
+#define NOTEXTMETRIC      
+#define NOWH              
+#define NOWINOFFSETS      
+#define NOCOMM            
+#define NOKANJI           
+#define NOHELP            
+#define NOPROFILER        
+#define NODEFERWINDOWPOS  
+#define NOMCX        
+#define NOIME
+
+/// @endcond
+
+
 #include <Windows.h>      // For the standard Windows definitions
 #include <crtdbg.h>       // For the _ASSERTE macro and _malloc_dbg
 
 #include "DTMF_Decoder.h" // For APP_NAME
-
-// C RunTime Header Files
-#include <stdlib.h>
-#include <malloc.h>
-#include <memory.h>
-#include <tchar.h>
-
-
-///< For getting math defines in C++ (this is a .cpp file)
-#define _USE_MATH_DEFINES  
-#include <math.h>              // For sinf() and cosf()
-
 
 
 /// Release the pointer P to a COM object by calling the IUnknown::Release

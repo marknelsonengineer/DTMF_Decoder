@@ -19,12 +19,13 @@
 #include "framework.h"    // Standard system include files
 #include <d2d1.h>         // For Direct2D (drawing)
 #include <dwrite.h>       // For DirectWrite (fonts and text)
-#include "mvcView.h"      // For drawing the window
+
+#include "mvcView.h"      // For yo bad self
 #include "mvcModel.h"     // For viewing the state of the machine
-#include "DTMF_Decoder.h" // Resource.h
 
 #pragma comment(lib, "d2d1")    // Link the Diect2D library (for drawing)
 #pragma comment(lib, "Dwrite")  // Link the DirectWrite library (for fonts and text)
+
 
 // Global Variables (private to this source file)
 ID2D1Factory*          gpD2DFactory        = NULL;  ///< The Direct2D Factory
@@ -254,7 +255,7 @@ BOOL mvcViewCleanupResources() {
 /// Paint the main window containing the DTMF keypad 
 /// 
 /// @todo Modify this code so that only the specific keys and lables that
-///       have changed get redrawn.  This gets rid of flicker.   
+///       have changed get redrawn.  This gets rid of flicker.  Issue #8
 /// @see  http://www.catch22.net/tuts/win32/flicker-free-drawing#
 ///
 /// @return `true` if successful.  `false` if there were problems.

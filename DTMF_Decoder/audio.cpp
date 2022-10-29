@@ -19,8 +19,8 @@
 /// @see https://learn.microsoft.com/en-us/windows/win32/api/mmreg/ns-mmreg-waveformatextensible
 /// @see https://learn.microsoft.com/en-us/windows/win32/api/audioclient/nn-audioclient-iaudiocaptureclient
 /// 
-/// @todo  Watch the program with Process Monitor and make sure it's not
-///        over-spinning any threads.  So far, it looks very good.
+/// @todo Watch the program with Process Monitor and make sure it's not
+///       over-spinning any threads.  So far, it looks very good.
 /// 
 /// @author Mark Nelson <marknels@hawaii.edu>
 /// @date   10_Oct_2022
@@ -28,18 +28,16 @@
 
 #include "framework.h"    // Standard system include files
 #include <mmdeviceapi.h>  // For the audio API
+#include <AudioClient.h>  // For the audio API
 #include <Functiondiscoverykeys_devpkey.h>  // For some audio GUIDs
 #include <strsafe.h>      // For sprintf_s
-#include <AudioClient.h>  // For the audio API
+#include <avrt.h>         // For AvSetMmThreadCharacteristics
+#include <inttypes.h>     // For printf to format fixed-integers
 
 #include "audio.h"        // For yo bad self
 #include "mvcModel.h"     // For the model
 #include "goertzel.h"     // For goertzel_compute_dtmf_tones
 #include "mvcView.h"      // For mvcViewRefreshWindow
-
-#include <avrt.h>         // For AvSetMmThreadCharacteristics
-#include <inttypes.h>     // For printf to format fixed-integers
-#include <float.h>        // For FLT_MIN and FLT_MAX
 
 #pragma comment(lib, "avrt")  // Link the MMCSS library
 
@@ -49,7 +47,7 @@
 /// that VMWare won't allow exclusive access.  Therefore, all this program 
 /// supports (for now) is `SHARED`
 /// 
-/// @todo Consider supporting `EXCLUSIVE` audio device access someday
+/// @todo Consider supporting `EXCLUSIVE` audio device access someday (Issue #14)
 AUDCLNT_SHAREMODE gShareMode = AUDCLNT_SHAREMODE_SHARED;
 
 
@@ -69,8 +67,8 @@ UINT32          guBufferSize    = 0;     ///< The maximum capacity of the endpoi
 HANDLE          hCaptureThread  = NULL;  ///< The audio capture thread
 IAudioCaptureClient* gCaptureClient = NULL; ///< The audio capture client
 
-CHAR            sBuf[ 256 ];   ///< Debug buffer  @todo put a guard around this
-WCHAR           wsBuf[ 256 ];  ///< Debug buffer  @todo put a guard around this
+CHAR            sBuf[ 256 ];   ///< Debug buffer  @todo Put a guard around this
+WCHAR           wsBuf[ 256 ];  ///< Debug buffer  @todo Put a guard around this
 
 
 #ifdef MONITOR_PCM_AUDIO

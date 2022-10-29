@@ -9,7 +9,7 @@
 /// @file mvcModel.h
 /// @version 1.0
 /// 
-/// @todo Consider having the display have an indicator light that the 
+/// @todo Consider having the display have an indicator light that shows the 
 ///       threads are running
 ///
 ///

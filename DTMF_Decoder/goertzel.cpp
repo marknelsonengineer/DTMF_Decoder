@@ -18,11 +18,15 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include "framework.h"    // Standard system include files
-#include "DTMF_Decoder.h" // For APP_NAME
-#include "mvcModel.h"     // For pcmQueue and friends
-#include "audio.h"        // For getSamplesPerSecond()
 #include <avrt.h>         // For AvSetMmThreadCharacteristics()
 #include <stdio.h>        // For sprintf_s()
+
+///< For getting math defines in C++ (this is a .cpp file)
+#define _USE_MATH_DEFINES  
+#include <math.h>              // For sinf() and cosf()
+
+#include "DTMF_Decoder.h" // For APP_NAME
+#include "mvcModel.h"     // For pcmQueue and friends
 #include "goertzel.h"     // For yo bad self
 
 

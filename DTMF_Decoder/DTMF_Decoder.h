@@ -13,7 +13,6 @@
 
 #pragma once
 
-#include "resource.h"
 
 /// The name of the application
 #define APP_NAME "DTMF Decoder"

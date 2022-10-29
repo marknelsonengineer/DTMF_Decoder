@@ -16,6 +16,9 @@
 
 #pragma once
 
+#include <Windows.h>      // For BOOL, etc.
+
+
 #define FOREGROUND_COLOR  (0x63B5FE)   /**< A light blue - courtesey of <a href="https://apps.apple.com/us/app/blue-box/id391832739">BlueBox</a>         */
 #define HIGHLIGHT_COLOR   (0x75F0FF)   /**< A bright, light blue - courtesey of <a href="https://apps.apple.com/us/app/blue-box/id391832739">BlueBox</a> */
 #define BACKGROUND_COLOR  (0x181737)   /**< A dark blue - courtesey of <a href="https://apps.apple.com/us/app/blue-box/id391832739">BlueBox</a>          */

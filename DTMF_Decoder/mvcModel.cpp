@@ -14,6 +14,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include "framework.h"    // Standard system include files
+#include <malloc.h>       // For malloc and free
+
 #include "mvcModel.h"     // For yo bad self
 
 
@@ -44,9 +46,11 @@ bool isRunning = false;
 HWND ghMainWindow = NULL;
 
 
+/// @cond Doxygen_Suppress
 BYTE* pcmQueue = NULL;
 size_t queueHead = 0;
 size_t queueSize = 0;
+/// @endcond
 
 
 BOOL pcmSetQueueSize( size_t size ) {

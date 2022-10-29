@@ -21,6 +21,7 @@
 
 #include <Windows.h>      // For BOOL, etc.
 
+
 /// When the result of #goertzel_magnitude `>=` this, then this means it's 
 /// detected a tone.
 #define GOERTZEL_MAGNITUDE_THRESHOLD  10.0f

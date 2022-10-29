@@ -14,12 +14,14 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include "framework.h"    // Standard system include files
-#include "mvcView.h"      // For drawing the window
-#include "mvcModel.h"     // Holds the persistent model for the application
-#include "audio.h"        // For capturing audio
 #include <combaseapi.h>   // For initializing COM
-#include "DTMF_Decoder.h" // Resource.h
+
+#include "DTMF_Decoder.h" // For APP_NAME
+#include "mvcModel.h"     // Holds the persistent model for the application
+#include "mvcView.h"      // For drawing the window
+#include "audio.h"        // For capturing audio
 #include "goertzel.h"     // For goertzel_end()
+#include "resource.h"     // For the resource definitions
 
 
 /// Defines the size of the wide-string buffer used to get strings from the
@@ -254,8 +256,6 @@ LRESULT CALLBACK WndProc( HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam 
 /// Message handler for the About dialog box
 ///
 /// @see https://learn.microsoft.com/en-us/windows/win32/api/winuser/nc-winuser-wndproc
-/// 
-/// @todo Issue #3:  The About dialog box is not displaying
 INT_PTR CALLBACK About( HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam ) {
    BOOL br;  // BOOL result
 
