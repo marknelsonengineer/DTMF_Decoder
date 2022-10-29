@@ -83,37 +83,36 @@
 /// supports (for now) is `SHARED`
 ///
 /// @todo Consider supporting `EXCLUSIVE` audio device access someday (Issue #14)
-AUDCLNT_SHAREMODE gShareMode = AUDCLNT_SHAREMODE_SHARED;
+static AUDCLNT_SHAREMODE sShareMode = AUDCLNT_SHAREMODE_SHARED;
 
+static IMMDevice*      spDevice             = NULL; ///< COM object for a multimedia device
+static LPWSTR          spwstrDeviceId       = NULL; ///< Device endpoint ID string `{0.0.1.00000000}.{722038ce-3a4e-4de0-8e7d-bd3fa6865a89}`
+static DWORD           sdwState             =    0; ///< The current device state `ACTIVE`, `DISABLED`, `NOT PRESENT` or `UNPLUGGED`
+static IPropertyStore* spPropertyStore      = NULL; ///< A multimedia device's property store
+static PROPVARIANT     sDeviceInterfaceFriendlyName; ///< Container for the friendly name of the audio adapter for the device:  `High Definition Audio Device`
+static PROPVARIANT     sDeviceDescription;          ///< Container for the device's description:  `Microphone`
+static PROPVARIANT     sDeviceFriendlyName;         ///< Container for friendly name of the device:  `Microphone (High Definition Audio Device)`
+static WAVEFORMATEX*   spMixFormat          = NULL; ///< The internal audio format used by the device
+static WAVEFORMATEX*   spAudioFormatUsed    = NULL; ///< The acutal format we will used by this app
+static IAudioClient*   spAudioClient        = NULL; ///< COM object for the audio client
+static REFERENCE_TIME  sDefaultDevicePeriod =   -1; ///< Expressed in 100ns units (dev machine = 101,587 = 10.1587ms)
+static REFERENCE_TIME  sMinimumDevicePeriod =   -1; ///< Expressed in 100ns units (dev machine = 29,025  = 2.9025ms
+static UINT32          suBufferSize         =    0; ///< The maximum capacity of the endpoint buffer in frames = 182 frames
+static HANDLE          shCaptureThread      = NULL; ///< The audio capture thread
+static IAudioCaptureClient* spCaptureClient = NULL; ///< The audio capture client
 
-IMMDevice*      gDevice         = NULL;  ///< COM object for a multimedia device
-LPWSTR          glpwstrDeviceId = NULL;  ///< Device endpoint ID string `{0.0.1.00000000}.{722038ce-3a4e-4de0-8e7d-bd3fa6865a89}`
-DWORD           glpdwState      =    0;  ///< The current device state `ACTIVE`, `DISABLED`, `NOT PRESENT` or `UNPLUGGED`
-IPropertyStore* glpPropertyStore = NULL; ///< A multimedia device's property store
-PROPVARIANT     gDeviceInterfaceFriendlyName;  ///< Container for the friendly name of the audio adapter for the device:  `High Definition Audio Device`
-PROPVARIANT     gDeviceDescription;      ///< Container for the device's description:  `Microphone`
-PROPVARIANT     gDeviceFriendlyName;     ///< Container for friendly name of the device:  `Microphone (High Definition Audio Device)`
-WAVEFORMATEX*   gpMixFormat     = NULL;  ///< The internal audio format used by the device
-WAVEFORMATEX*   gpAudioFormatUsed = NULL;///< The acutal format we will used by this app
-IAudioClient*   glpAudioClient  = NULL;  ///< COM object for the audio client
-REFERENCE_TIME  gDefaultDevicePeriod = -1; ///< Expressed in 100ns units (dev machine = 101,587 = 10.1587ms)
-REFERENCE_TIME  gMinimumDevicePeriod = -1; ///< Expressed in 100ns units (dev machine = 29,025  = 2.9025ms
-UINT32          guBufferSize    = 0;     ///< The maximum capacity of the endpoint buffer in frames = 182 frames
-HANDLE          hCaptureThread  = NULL;  ///< The audio capture thread
-IAudioCaptureClient* gCaptureClient = NULL; ///< The audio capture client
-
-CHAR            sBuf[ 256 ];   ///< Debug buffer  @todo Put a guard around this
-WCHAR           wsBuf[ 256 ];  ///< Debug buffer  @todo Put a guard around this
+static CHAR            sBuf[ 256 ];   ///< Debug buffer  @todo Put a guard around this
+static WCHAR           wsBuf[ 256 ];  ///< Debug buffer  @todo Put a guard around this
 
 
 #ifdef MONITOR_PCM_AUDIO
    #define MONITOR_INTERVAL_SECONDS (4)   /**< The monitoring interval.  Set to 0 to disable monitoring */
-   UINT64 gFramesToMonitor = 0;           ///< set #gbMonitor when the current frameIndex is > #gStartOfMonitor + #gFramesToMonitor
-   UINT64 gStartOfMonitor = UINT64_MAX;   ///< The frameIndex position of the start time of the monitor
-   BOOL   gbMonitor = false;              ///< Briefly set to 1 to output monitored data
+   static UINT64 suFramesToMonitor = 0;          ///< set #sbMonitor when the current frameIndex is > #suStartOfMonitor + #suFramesToMonitor
+   static UINT64 suStartOfMonitor  = UINT64_MAX; ///< The frameIndex position of the start time of the monitor
+   static BOOL   sbMonitor         = false;      ///< Briefly set to 1 to output monitored data
 
-   BYTE monitorCh1Max = 0;                ///< The lowest PCM value on Channel 1 during this monitoing period
-   BYTE monitorCh1Min = 255;              ///< The highest PCM value on Channel 1 during this monitoring period
+   static BYTE   suMonitorCh1Max   = 0;          ///< The lowest PCM value on Channel 1 during this monitoing period
+   static BYTE   suMonitorCh1Min   = 255;        ///< The highest PCM value on Channel 1 during this monitoring period
 #endif
 
 
@@ -126,11 +125,11 @@ enum audio_format_t {
 
 
 /// The audio format DTMF_Decoder is currently using
-audio_format_t audioFormat = UNKNOWN_AUDIO_FORMAT;
+static audio_format_t sAudioFormat = UNKNOWN_AUDIO_FORMAT;
 
 
 /// Process the audio frameIndex, converting it into #PCM_8, adding the sample to
-/// #pcmQueue and monitoring the values (if desired)
+/// #gPcmQueue and monitoring the values (if desired)
 ///
 /// @param pData      Pointer to the head of the audio bufer
 /// @param frameIndex The frameIndex number to process
@@ -140,14 +139,14 @@ BOOL processAudioFrame(
    _In_     UINT32   frameIndex ) {
 
    _ASSERTE( pData != NULL );
-   _ASSERTE( audioFormat != UNKNOWN_AUDIO_FORMAT );
-   _ASSERTE( gpMixFormat != NULL );
+   _ASSERTE( sAudioFormat != UNKNOWN_AUDIO_FORMAT );
+   _ASSERTE( spMixFormat != NULL );
 
    BYTE ch1Sample = PCM_8_BIT_SILENCE;
 
-   switch ( audioFormat ) {
+   switch ( sAudioFormat ) {
       case IEEE_FLOAT_32: {
-            float* fSample = (float*) ( pData + ( frameIndex * gpMixFormat->nBlockAlign ) );  // This is from +1 to -1
+            float* fSample = (float*) ( pData + ( frameIndex * spMixFormat->nBlockAlign ) );  // This is from +1 to -1
 
             INT8 signedSample = (INT8) ( *fSample * (float) PCM_8_BIT_SILENCE );  // This is +127 to -127
             if ( signedSample >= 0 ) {
@@ -158,7 +157,7 @@ BOOL processAudioFrame(
             break;
          }
       case PCM_8:
-         ch1Sample = *( pData + ( frameIndex * gpMixFormat->nBlockAlign ) );
+         ch1Sample = *( pData + ( frameIndex * spMixFormat->nBlockAlign ) );
          break;
       default:
          _ASSERT_EXPR( FALSE, "Unknown audio format" );
@@ -172,18 +171,18 @@ BOOL processAudioFrame(
       // get a feel for what silence and various volumes look like in the data.  This
       // is an easy way to validate that the data I'm getting is real sound collected by
       // the microphone.
-      if ( gFramesToMonitor > 0 ) {
-         if ( ch1Sample > monitorCh1Max ) monitorCh1Max = ch1Sample;
-         if ( ch1Sample < monitorCh1Min ) monitorCh1Min = ch1Sample;
+      if ( suFramesToMonitor > 0 ) {
+         if ( ch1Sample > suMonitorCh1Max ) suMonitorCh1Max = ch1Sample;
+         if ( ch1Sample < suMonitorCh1Min ) suMonitorCh1Min = ch1Sample;
 
-         if ( gbMonitor ) {
-            sprintf_s( sBuf, sizeof( sBuf ), "Channel 1:  Min: %" PRIu8 "   Max: %" PRIu8, monitorCh1Min, monitorCh1Max );
+         if ( sbMonitor ) {
+            sprintf_s( sBuf, sizeof( sBuf ), "Channel 1:  Min: %" PRIu8 "   Max: %" PRIu8, suMonitorCh1Min, suMonitorCh1Max );
             OutputDebugStringA( sBuf );
 
-            monitorCh1Max = 0;
-            monitorCh1Min = 255;
+            suMonitorCh1Max = 0;
+            suMonitorCh1Min = 255;
 
-            gbMonitor = false;
+            sbMonitor = false;
          }
       }
    #endif
@@ -223,13 +222,13 @@ void audioCapture() {
    DWORD   flags;
    UINT64  framePosition;
 
-   _ASSERTE( gCaptureClient != NULL );
-   _ASSERTE( audioFormat != UNKNOWN_AUDIO_FORMAT );
+   _ASSERTE( spCaptureClient != NULL );
+   _ASSERTE( sAudioFormat != UNKNOWN_AUDIO_FORMAT );
 
    // The following block of code is the core logic of DTMF_Decoder
 
    /// Use GetBuffer to get a bunch of frames of audio from the capture client
-   hr = gCaptureClient->GetBuffer( &pData, &framesAvailable, &flags, &framePosition, NULL );
+   hr = spCaptureClient->GetBuffer( &pData, &framesAvailable, &flags, &framePosition, NULL );
    if ( hr == S_OK ) {
       // OutputDebugStringA( __FUNCTION__ ":  I got data!" );
       _ASSERTE( pData != NULL );
@@ -240,7 +239,7 @@ void audioCapture() {
             processAudioFrame( pData, i );  // Process each audio frameIndex
          }
 
-         /// Make sure #pcmQueue is healthy
+         /// Make sure #gPcmQueue is healthy
          _ASSERTE( _CrtCheckMemory() );
 
          /// After all of the frames have been queued, compute the DFT
@@ -250,17 +249,17 @@ void audioCapture() {
          br = goertzel_compute_dtmf_tones();
          if ( !br ) {
             OutputDebugStringA( __FUNCTION__ ":  Failed to compute the DTMF tones.  Investigate!!" );
-            isRunning = false;
+            gbIsRunning = false;
             SendMessage( ghMainWindow, WM_CLOSE, 0, 0 );  // Shutdown the app
          }
 
          /// If, after computing all 8 of the DFTs, if the detected state
          /// has changed, then refresh the main window
-         if ( hasDtmfTonesChanged ) {
+         if ( gbHasDtmfTonesChanged ) {
             br = mvcViewRefreshWindow();
             if ( !br ) {
                OutputDebugStringA( __FUNCTION__ ":  Failed to refresh the main window.  Investigate!!" );
-               isRunning = false;
+               gbIsRunning = false;
                SendMessage( ghMainWindow, WM_CLOSE, 0, 0 );  // Shutdown the app
             }
          }
@@ -289,20 +288,20 @@ void audioCapture() {
 
       if ( framesAvailable > 0 ) {
          #ifdef MONITOR_PCM_AUDIO
-            gbMonitor = false;
-            if ( gFramesToMonitor > 0 ) {
-               if ( gStartOfMonitor > framePosition ) {
-                  gStartOfMonitor = framePosition;
+            sbMonitor = false;
+            if ( suFramesToMonitor > 0 ) {
+               if ( suStartOfMonitor > framePosition ) {
+                  suStartOfMonitor = framePosition;
                }
 
-               if ( gStartOfMonitor + gFramesToMonitor < framePosition ) {
-                  gbMonitor = true;
-                  gStartOfMonitor = framePosition;
+               if ( suStartOfMonitor + suFramesToMonitor < framePosition ) {
+                  sbMonitor = true;
+                  suStartOfMonitor = framePosition;
                }
 
             }
 
-            if ( gbMonitor ) {  // Monitor data on this pass
+            if ( sbMonitor ) {  // Monitor data on this pass
                OutputDebugStringA( __FUNCTION__ ":  Monitoring loop" );
                sprintf_s( sBuf, sizeof( sBuf ), "Frames available=%" PRIu32 "    frame position=%" PRIu64, framesAvailable, framePosition );
                OutputDebugStringA( sBuf );
@@ -310,16 +309,16 @@ void audioCapture() {
                memset( sBuf, 0, 1 );
 
                for ( int i = 0 ; i < NUMBER_OF_DTMF_TONES ; i++ ) {
-                  sprintf_s( sBuf+strlen(sBuf), sizeof(sBuf), "  %4.0fHz=%4.2f", dtmfTones[i].frequency, dtmfTones[i].goertzelMagnitude);
+                  sprintf_s( sBuf+strlen(sBuf), sizeof(sBuf), "  %4.0fHz=%4.2f", gDtmfTones[i].frequency, gDtmfTones[i].goertzelMagnitude);
                }
                OutputDebugStringA( sBuf );
             }
          #endif
 
-         hr = gCaptureClient->ReleaseBuffer( framesAvailable );
+         hr = spCaptureClient->ReleaseBuffer( framesAvailable );
          if ( hr != S_OK ) {
             OutputDebugStringA( __FUNCTION__ ":  ReleaseBuffer didn't return S_OK.  Investigate!!" );
-            isRunning = false;
+            gbIsRunning = false;
             SendMessage( ghMainWindow, WM_CLOSE, 0, 0 );  // Shutdown the app
          }
       }
@@ -331,10 +330,10 @@ void audioCapture() {
    } else {
       /// If the audio device changes (unplugged, for example) then GetBuffer
       /// will return something unexpected and we should see it here.  If this
-      /// happens, set #isRunning to `false` and gracefully shutdown the app.
+      /// happens, set #gbIsRunning to `false` and gracefully shutdown the app.
 
       OutputDebugStringA( __FUNCTION__ ":  GetBuffer did not return S_OK.  Investigate!!" );
-      isRunning = false;
+      gbIsRunning = false;
       SendMessage(ghMainWindow, WM_CLOSE, 0, 0);  // Shutdown the app
    }
 }
@@ -362,37 +361,37 @@ DWORD WINAPI audioCaptureThread( LPVOID Context ) {
 
    /// Set the multimedia class scheduler service, which will set the CPU
    /// priority for this thread
-   mmcssHandle = AvSetMmThreadCharacteristics( L"Capture", &mmcssTaskIndex );
+   mmcssHandle = AvSetMmThreadCharacteristics( L"Capture", &gdwMmcssTaskIndex );
    if ( mmcssHandle == NULL ) {
       OutputDebugStringA( __FUNCTION__ ":  Failed to set MMCSS on the audio capture thread.  Continuing." );
    }
    OutputDebugStringA( __FUNCTION__ ":  Set MMCSS on thread." );
 
    #ifdef MONITOR_PCM_AUDIO
-      gFramesToMonitor = MONITOR_INTERVAL_SECONDS * gpMixFormat->nSamplesPerSec;
+      suFramesToMonitor = MONITOR_INTERVAL_SECONDS * spMixFormat->nSamplesPerSec;
    #endif
 
    /// Audio capture loop
-   /// #isRunning gets set to false by WM_CLOSE
+   /// #gbIsRunning gets set to false by WM_CLOSE
 
-   isRunning = true;
+   gbIsRunning = true;
 
-   while ( isRunning ) {
+   while ( gbIsRunning ) {
       DWORD dwWaitResult;
 
-      dwWaitResult = WaitForSingleObject( gAudioSamplesReadyEvent, INFINITE );
+      dwWaitResult = WaitForSingleObject( ghAudioSamplesReadyEvent, INFINITE );
       if ( dwWaitResult == WAIT_OBJECT_0 ) {
-         if ( isRunning ) {
+         if ( gbIsRunning ) {
             audioCapture();
          }
       } else if ( dwWaitResult == WAIT_FAILED ) {
          OutputDebugStringA( __FUNCTION__ ":  The wait was failed.  Exiting" );
-         isRunning = false;
+         gbIsRunning = false;
          SendMessage( ghMainWindow, WM_CLOSE, 0, 0 );  // Shutdown the app
          break;  // While loop
       } else {
          OutputDebugStringA( __FUNCTION__ ":  The wait was ended for some other reason.  Exiting.  Investigate!" );
-         isRunning = false;
+         gbIsRunning = false;
          SendMessage( ghMainWindow, WM_CLOSE, 0, 0 );  // Shutdown the app
          break;  // While loop
       }
@@ -498,12 +497,12 @@ BOOL audioInit() {
    HRESULT hr;  // HRESULT result
    BOOL    br;  // BOOL result
 
-   if ( gShareMode == AUDCLNT_SHAREMODE_EXCLUSIVE ) {
+   if ( sShareMode == AUDCLNT_SHAREMODE_EXCLUSIVE ) {
       OutputDebugStringA( __FUNCTION__ ":  Exclusive mode not supported right now" );
       return FALSE;
    }
 
-   _ASSERTE( gShareMode == AUDCLNT_SHAREMODE_SHARED );
+   _ASSERTE( sShareMode == AUDCLNT_SHAREMODE_SHARED );
 
    /// Get IMMDeviceEnumerator from COM (CoCreateInstance)
    IMMDeviceEnumerator* deviceEnumerator = NULL;
@@ -512,104 +511,104 @@ BOOL audioInit() {
    CHECK_HR( "Failed to instantiate the multimedia device enumerator via COM" );
 
    /// Get the IMMDevice
-   _ASSERTE( gDevice == NULL );
+   _ASSERTE( spDevice == NULL );
 
-   hr = deviceEnumerator->GetDefaultAudioEndpoint( eCapture, eMultimedia, &gDevice );
+   hr = deviceEnumerator->GetDefaultAudioEndpoint( eCapture, eMultimedia, &spDevice );
    CHECK_HR( "Failed to get default audio device" );
 
-   _ASSERTE( gDevice != NULL );
+   _ASSERTE( spDevice != NULL );
 
    /// Get the ID from IMMDevice
-   hr = gDevice->GetId( &glpwstrDeviceId );
-   if ( hr != S_OK || glpwstrDeviceId == NULL ) {
+   hr = spDevice->GetId( &spwstrDeviceId );
+   if ( hr != S_OK || spwstrDeviceId == NULL ) {
       OutputDebugStringA( __FUNCTION__ ":  Failed to get the device's ID string" );
       return FALSE;
    }
 
-   swprintf_s( wsBuf, sizeof( wsBuf ), __FUNCTIONW__ L":  Device ID=%s", glpwstrDeviceId );
+   swprintf_s( wsBuf, sizeof( wsBuf ), __FUNCTIONW__ L":  Device ID=%s", spwstrDeviceId );
    OutputDebugStringW( wsBuf );
 
    /// Get the State from IMMDevice
-   hr = gDevice->GetState( &glpdwState );
-   if ( hr != S_OK || glpdwState == NULL ) {
+   hr = spDevice->GetState( &sdwState );
+   if ( hr != S_OK || sdwState == NULL ) {
       OutputDebugStringA( __FUNCTION__ ":  Failed to get the device's state" );
       return FALSE;
    }
 
-   if ( glpdwState != DEVICE_STATE_ACTIVE ) {
+   if ( sdwState != DEVICE_STATE_ACTIVE ) {
       OutputDebugStringA( __FUNCTION__ ":  The audio device state is not active" );
       return FALSE;
    }
 
    /// Get the Property Store from IMMDevice
-   hr = gDevice->OpenPropertyStore( STGM_READ, &glpPropertyStore );
-   if ( hr != S_OK || glpPropertyStore == NULL ) {
+   hr = spDevice->OpenPropertyStore( STGM_READ, &spPropertyStore );
+   if ( hr != S_OK || spPropertyStore == NULL ) {
       OutputDebugStringA( __FUNCTION__ ":  Failed to open device property store" );
       return FALSE;
    }
 
    /// Get the device's properties from the property store
-   PropVariantInit( &gDeviceInterfaceFriendlyName );     /// Get the friendly name of the audio adapter for the device
-   PropVariantInit( &gDeviceDescription );               /// Get the device's description
-   PropVariantInit( &gDeviceFriendlyName );              /// Get the friendly name of the device
+   PropVariantInit( &sDeviceInterfaceFriendlyName );     /// Get the friendly name of the audio adapter for the device
+   PropVariantInit( &sDeviceDescription );               /// Get the device's description
+   PropVariantInit( &sDeviceFriendlyName );              /// Get the friendly name of the device
 
-   hr = glpPropertyStore->GetValue( PKEY_DeviceInterface_FriendlyName, &gDeviceInterfaceFriendlyName );
+   hr = spPropertyStore->GetValue( PKEY_DeviceInterface_FriendlyName, &sDeviceInterfaceFriendlyName );
    if ( hr != S_OK ) {
       OutputDebugStringA( __FUNCTION__ ":  Failed to retrieve the friendly name of the audio adapter for the device.  Continuing." );
-      gDeviceInterfaceFriendlyName.pcVal = NULL;
+      sDeviceInterfaceFriendlyName.pcVal = NULL;
    } else {
-      swprintf_s( wsBuf, sizeof( wsBuf ), __FUNCTIONW__ L":  Device audio adapter friendly name=%s", gDeviceInterfaceFriendlyName.pwszVal );
+      swprintf_s( wsBuf, sizeof( wsBuf ), __FUNCTIONW__ L":  Device audio adapter friendly name=%s", sDeviceInterfaceFriendlyName.pwszVal );
       OutputDebugStringW( wsBuf );
    }
 
-   hr = glpPropertyStore->GetValue( PKEY_Device_DeviceDesc, &gDeviceDescription );
+   hr = spPropertyStore->GetValue( PKEY_Device_DeviceDesc, &sDeviceDescription );
    if ( hr != S_OK ) {
       OutputDebugStringA( __FUNCTION__ ":  Failed to retrieve the device's description.  Continuing." );
-      gDeviceDescription.pcVal = NULL;
+      sDeviceDescription.pcVal = NULL;
    } else {
-      swprintf_s( wsBuf, sizeof( wsBuf ), __FUNCTIONW__ L":  Device description=%s", gDeviceDescription.pwszVal );
+      swprintf_s( wsBuf, sizeof( wsBuf ), __FUNCTIONW__ L":  Device description=%s", sDeviceDescription.pwszVal );
       OutputDebugStringW( wsBuf );
    }
 
-   hr = glpPropertyStore->GetValue( PKEY_Device_FriendlyName, &gDeviceFriendlyName );
+   hr = spPropertyStore->GetValue( PKEY_Device_FriendlyName, &sDeviceFriendlyName );
    if ( hr != S_OK ) {
       OutputDebugStringA( __FUNCTION__ ":  Failed to retrieve the friendly name of the device.  Continuing." );
-      gDeviceFriendlyName.pcVal = NULL;
+      sDeviceFriendlyName.pcVal = NULL;
    } else {
-      swprintf_s( wsBuf, sizeof( wsBuf ), __FUNCTIONW__ L":  Device friendly name=%s", gDeviceFriendlyName.pwszVal );
+      swprintf_s( wsBuf, sizeof( wsBuf ), __FUNCTIONW__ L":  Device friendly name=%s", sDeviceFriendlyName.pwszVal );
       OutputDebugStringW( wsBuf );
    }
 
    /// Use Activate on IMMDevice to create an IAudioClient
-   hr = gDevice->Activate( __uuidof( IAudioClient ), CLSCTX_ALL, NULL, (void**) &glpAudioClient );
-   if ( hr != S_OK || glpAudioClient == NULL ) {
+   hr = spDevice->Activate( __uuidof( IAudioClient ), CLSCTX_ALL, NULL, (void**) &spAudioClient );
+   if ( hr != S_OK || spAudioClient == NULL ) {
       OutputDebugStringA( __FUNCTION__ ":  Failed to create an audio client" );
       return FALSE;
    }
 
-   _ASSERTE( glpAudioClient != NULL );
+   _ASSERTE( spAudioClient != NULL );
 
    /// Get the default audio format that the audio driver wants to use
-   hr = glpAudioClient->GetMixFormat( &gpMixFormat );
-   if ( hr != S_OK || gpMixFormat == NULL ) {
+   hr = spAudioClient->GetMixFormat( &spMixFormat );
+   if ( hr != S_OK || spMixFormat == NULL ) {
       OutputDebugStringA( __FUNCTION__ ":  Failed to retrieve mix format" );
       return FALSE;
    }
 
-   _ASSERTE( gpMixFormat != NULL );
+   _ASSERTE( spMixFormat != NULL );
 
    OutputDebugStringA( __FUNCTION__ ":  The mix format follows" );
-   audioPrintWaveFormat( gpMixFormat );
+   audioPrintWaveFormat( spMixFormat );
 
-   hr = glpAudioClient->IsFormatSupported( gShareMode, gpMixFormat, &gpAudioFormatUsed );
+   hr = spAudioClient->IsFormatSupported( sShareMode, spMixFormat, &spAudioFormatUsed );
    if ( hr == S_OK ) {
       OutputDebugStringA( __FUNCTION__ ":  The requested format is supported");
    } else if ( hr == AUDCLNT_E_UNSUPPORTED_FORMAT ) {
       OutputDebugStringA( __FUNCTION__ ":  The requested format is is not supported" );
       return FALSE;
-   } else if( hr == S_FALSE && gpAudioFormatUsed != NULL) {
+   } else if( hr == S_FALSE && spAudioFormatUsed != NULL) {
       OutputDebugStringA( __FUNCTION__ ":  The requested format is not available, but this format is..." );
-      audioPrintWaveFormat( gpAudioFormatUsed );
+      audioPrintWaveFormat( spAudioFormatUsed );
       return FALSE;
    } else {
       OutputDebugStringA( __FUNCTION__ ":  Failed to validate the requested format" );
@@ -617,95 +616,95 @@ BOOL audioInit() {
    }
 
    /// Determine the audio format
-   audioFormat = UNKNOWN_AUDIO_FORMAT;
+   sAudioFormat = UNKNOWN_AUDIO_FORMAT;
 
-   if ( gpMixFormat->wFormatTag == WAVE_FORMAT_PCM && gpMixFormat->wBitsPerSample == 8 ) {
-      audioFormat = PCM_8;
-   } else if ( gpMixFormat->wFormatTag == WAVE_FORMAT_IEEE_FLOAT && gpMixFormat->wBitsPerSample == 32 ) {
-      audioFormat = IEEE_FLOAT_32;
-   } else if ( gpMixFormat->wFormatTag == WAVE_FORMAT_EXTENSIBLE ) {
-      WAVEFORMATEXTENSIBLE* pFmtEx = (WAVEFORMATEXTENSIBLE*) gpMixFormat;
+   if ( spMixFormat->wFormatTag == WAVE_FORMAT_PCM && spMixFormat->wBitsPerSample == 8 ) {
+      sAudioFormat = PCM_8;
+   } else if ( spMixFormat->wFormatTag == WAVE_FORMAT_IEEE_FLOAT && spMixFormat->wBitsPerSample == 32 ) {
+      sAudioFormat = IEEE_FLOAT_32;
+   } else if ( spMixFormat->wFormatTag == WAVE_FORMAT_EXTENSIBLE ) {
+      WAVEFORMATEXTENSIBLE* pFmtEx = (WAVEFORMATEXTENSIBLE*) spMixFormat;
 
       if ( pFmtEx->SubFormat == KSDATAFORMAT_SUBTYPE_PCM && pFmtEx->Samples.wValidBitsPerSample == 8 ) {
-         audioFormat = PCM_8;
+         sAudioFormat = PCM_8;
       } else if ( pFmtEx->SubFormat == KSDATAFORMAT_SUBTYPE_IEEE_FLOAT && pFmtEx->Samples.wValidBitsPerSample == 32 ) {
-         audioFormat = IEEE_FLOAT_32;
+         sAudioFormat = IEEE_FLOAT_32;
       }
    }
 
-   if ( audioFormat == UNKNOWN_AUDIO_FORMAT ) {
+   if ( sAudioFormat == UNKNOWN_AUDIO_FORMAT ) {
       OutputDebugStringA( __FUNCTION__ ":  Failed to match with the audio format" );
       return FALSE;
    }
 
-   _ASSERTE( audioFormat != UNKNOWN_AUDIO_FORMAT );
+   _ASSERTE( sAudioFormat != UNKNOWN_AUDIO_FORMAT );
 
    /// Initialize shared mode audio client
    //  Shared mode streams using event-driven buffering must set both periodicity and bufferDuration to 0.
-   hr = glpAudioClient->Initialize( gShareMode, AUDCLNT_STREAMFLAGS_EVENTCALLBACK
-                                              | AUDCLNT_STREAMFLAGS_AUTOCONVERTPCM, 0, 0, gpMixFormat, NULL );
+   hr = spAudioClient->Initialize( sShareMode, AUDCLNT_STREAMFLAGS_EVENTCALLBACK
+                                              | AUDCLNT_STREAMFLAGS_AUTOCONVERTPCM, 0, 0, spMixFormat, NULL );
    if ( hr != S_OK ) {
       /// @todo Look at more error codes and print out higher-fidelity error messages
       OutputDebugStringA( __FUNCTION__ ":  Failed to initialize the audio client" );
       return FALSE;
    }
 
-   hr = glpAudioClient->GetBufferSize( &guBufferSize );
+   hr = spAudioClient->GetBufferSize( &suBufferSize );
    CHECK_HR( "Failed to get buffer size" );
-   sprintf_s( sBuf, sizeof( sBuf ), "%s:  The maximum capacity of the buffer is %" PRIu32" frames or %i ms", __FUNCTION__, guBufferSize, (int) (1.0 / gpMixFormat->nSamplesPerSec * 1000 * guBufferSize ) );
+   sprintf_s( sBuf, sizeof( sBuf ), "%s:  The maximum capacity of the buffer is %" PRIu32" frames or %i ms", __FUNCTION__, suBufferSize, (int) (1.0 / spMixFormat->nSamplesPerSec * 1000 * suBufferSize ) );
    OutputDebugStringA( sBuf );
    /// Right now, the buffer is ~22ms or about the perfect size to capture
    /// VoIP voice, which is 20ms.
 
    /// Get the device period
-   hr = glpAudioClient->GetDevicePeriod( &gDefaultDevicePeriod, &gMinimumDevicePeriod );
+   hr = spAudioClient->GetDevicePeriod( &sDefaultDevicePeriod, &sMinimumDevicePeriod );
    CHECK_HR( "Failed to get audio client device periods" );
 
-   sprintf_s( sBuf, sizeof( sBuf ), "%s:  Default device period=%lli ms", __FUNCTION__, gDefaultDevicePeriod/10000 );
+   sprintf_s( sBuf, sizeof( sBuf ), "%s:  Default device period=%lli ms", __FUNCTION__, sDefaultDevicePeriod/10000 );
    OutputDebugStringA( sBuf );
 
-   sprintf_s( sBuf, sizeof( sBuf ), "%s:  Minimum device period=%lli ms", __FUNCTION__, gMinimumDevicePeriod/10000 );
+   sprintf_s( sBuf, sizeof( sBuf ), "%s:  Minimum device period=%lli ms", __FUNCTION__, sMinimumDevicePeriod/10000 );
    OutputDebugStringA( sBuf );
 
 
    /// Initialize the DTMF buffer
-   br = pcmSetQueueSize( gpMixFormat->nSamplesPerSec / 1000 * SIZE_OF_QUEUE_IN_MS );
+   br = pcmSetQueueSize( spMixFormat->nSamplesPerSec / 1000 * SIZE_OF_QUEUE_IN_MS );
    CHECK_BR( "Failed to allocate PCM queue" );
 
-   sprintf_s( sBuf, sizeof( sBuf ), "%s:  Queue size=%zu bytes or %d ms", __FUNCTION__, queueSize, SIZE_OF_QUEUE_IN_MS );
+   sprintf_s( sBuf, sizeof( sBuf ), "%s:  Queue size=%zu bytes or %d ms", __FUNCTION__, gstQueueSize, SIZE_OF_QUEUE_IN_MS );
    OutputDebugStringA( sBuf );
 
-   /// After everything is initialized, set #isRunning to `true`
-   isRunning = true;
+   /// After everything is initialized, set #gbIsRunning to `true`
+   gbIsRunning = true;
 
    /// Initialize the Goertzel module (and associated threads)
-   br = goertzel_init( gpMixFormat->nSamplesPerSec );
+   br = goertzel_init( spMixFormat->nSamplesPerSec );
    CHECK_BR( "Failed to initialioze Goertzel module (and associated threads)" );
 
 
    /// Create the callback events
-   gAudioSamplesReadyEvent = CreateEventEx( NULL, NULL, 0, EVENT_MODIFY_STATE | SYNCHRONIZE );
-   if ( gAudioSamplesReadyEvent == NULL ) {
+   ghAudioSamplesReadyEvent = CreateEventEx( NULL, NULL, 0, EVENT_MODIFY_STATE | SYNCHRONIZE );
+   if ( ghAudioSamplesReadyEvent == NULL ) {
       OutputDebugStringA( __FUNCTION__ ":  Failed to create audio samples ready event" );
       return FALSE;
    }
 
-   hr = glpAudioClient->SetEventHandle( gAudioSamplesReadyEvent );
+   hr = spAudioClient->SetEventHandle( ghAudioSamplesReadyEvent );
    CHECK_HR( "Failed to set audio capture ready event" );
 
    /// Get the Capture Client
-   hr = glpAudioClient->GetService( IID_PPV_ARGS( &gCaptureClient ) );
+   hr = spAudioClient->GetService( IID_PPV_ARGS( &spCaptureClient ) );
    CHECK_HR( "Failed to get capture client" )
 
    /// Start the thread
-   hCaptureThread = CreateThread( NULL, 0, audioCaptureThread, NULL, 0, NULL );
-   if ( hCaptureThread == NULL ) {
+   shCaptureThread = CreateThread( NULL, 0, audioCaptureThread, NULL, 0, NULL );
+   if ( shCaptureThread == NULL ) {
       OutputDebugStringA( __FUNCTION__ ":  Failed to create the capture thread" );
       return FALSE;
    }
 
    /// Start the audio processer
-   hr = glpAudioClient->Start();
+   hr = spAudioClient->Start();
    CHECK_HR( "Failed to start capturing the audio stream" );
 
    OutputDebugStringA( __FUNCTION__ ":  The audio capture interface has been initialized" );
@@ -721,8 +720,8 @@ BOOL audioInit() {
 BOOL audioStopDevice() {
    HRESULT hr;  // HRESULT result
 
-   if ( glpAudioClient != NULL ) {
-      hr = glpAudioClient->Stop();
+   if ( spAudioClient != NULL ) {
+      hr = spAudioClient->Stop();
       CHECK_HR( "Stopping the audio stream returned an odd value.  Investigate!!" );
    }
 
@@ -738,55 +737,55 @@ BOOL audioCleanup() {
    BOOL    br;  // BOOL result
    HRESULT hr;  // HRESULT result
 
-   if ( hCaptureThread != NULL ) {
-      br = CloseHandle( hCaptureThread );
+   if ( shCaptureThread != NULL ) {
+      br = CloseHandle( shCaptureThread );
       CHECK_BR( "Failed to close hCaptureThread" );
-      hCaptureThread = NULL;
+      shCaptureThread = NULL;
    }
 
-   SAFE_RELEASE( gCaptureClient );
+   SAFE_RELEASE( spCaptureClient );
 
-   if ( gAudioSamplesReadyEvent != NULL ) {
-      br = CloseHandle( gAudioSamplesReadyEvent );
+   if ( ghAudioSamplesReadyEvent != NULL ) {
+      br = CloseHandle( ghAudioSamplesReadyEvent );
       CHECK_BR( "Failed to close gAudioSamplesReadyEvent" );
-      gAudioSamplesReadyEvent = NULL;
+      ghAudioSamplesReadyEvent = NULL;
    }
 
-   if ( glpAudioClient != NULL ) {
-      hr = glpAudioClient->Reset();
+   if ( spAudioClient != NULL ) {
+      hr = spAudioClient->Reset();
       CHECK_HR( "Failed to release the audio client")
-      glpAudioClient = NULL;
+      spAudioClient = NULL;
    }
 
    pcmReleaseQueue();
 
-   SAFE_RELEASE( glpAudioClient );
+   SAFE_RELEASE( spAudioClient );
 
-   hr = PropVariantClear( &gDeviceFriendlyName );
+   hr = PropVariantClear( &sDeviceFriendlyName );
    CHECK_HR( "Failed to release gDeviceFriendlyName" );
-   hr = PropVariantClear( &gDeviceDescription );
+   hr = PropVariantClear( &sDeviceDescription );
    CHECK_HR( "Failed to release gDeviceDescription" );
-   hr = PropVariantClear( &gDeviceInterfaceFriendlyName );
+   hr = PropVariantClear( &sDeviceInterfaceFriendlyName );
    CHECK_HR( "Failed to release gDeviceInterfaceFriendlyName" );
 
-   SAFE_RELEASE( glpPropertyStore );
+   SAFE_RELEASE( spPropertyStore );
 
-   if ( gpMixFormat != NULL ) {
-      CoTaskMemFree( gpMixFormat );
-      gpMixFormat = NULL;
+   if ( spMixFormat != NULL ) {
+      CoTaskMemFree( spMixFormat );
+      spMixFormat = NULL;
    }
 
-   if ( gpAudioFormatUsed != NULL ) {
-      CoTaskMemFree( gpAudioFormatUsed );
-      gpAudioFormatUsed = NULL;
+   if ( spAudioFormatUsed != NULL ) {
+      CoTaskMemFree( spAudioFormatUsed );
+      spAudioFormatUsed = NULL;
    }
 
-   if ( glpwstrDeviceId != NULL ) {
-      CoTaskMemFree( glpwstrDeviceId );
-      glpwstrDeviceId = NULL;
+   if ( spwstrDeviceId != NULL ) {
+      CoTaskMemFree( spwstrDeviceId );
+      spwstrDeviceId = NULL;
    }
 
-   SAFE_RELEASE( gDevice );
+   SAFE_RELEASE( spDevice );
 
    return TRUE;
 }

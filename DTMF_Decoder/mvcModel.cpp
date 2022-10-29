@@ -30,7 +30,7 @@ BOOL mvcModelInit() {
 }
 
 
-dtmfTones_t dtmfTones[ NUMBER_OF_DTMF_TONES ] = {
+dtmfTones_t gDtmfTones[ NUMBER_OF_DTMF_TONES ] = {
    { 0,  697.0, false, L"697" },
    { 1,  770.0, false, L"770" },
    { 2,  852.0, false, L"852" },
@@ -42,55 +42,55 @@ dtmfTones_t dtmfTones[ NUMBER_OF_DTMF_TONES ] = {
 };
 
 
-bool hasDtmfTonesChanged = false;
+bool gbHasDtmfTonesChanged = false;
 
 
-bool isRunning = false;
+bool gbIsRunning = false;
 
 
 HWND ghMainWindow = NULL;
 
 
 /// @cond Doxygen_Suppress
-BYTE* pcmQueue = NULL;
-size_t queueHead = 0;
-size_t queueSize = 0;
+BYTE*  gPcmQueue = NULL;
+size_t gstQueueHead = 0;
+size_t gstQueueSize = 0;
 /// @endcond
 
 
 BOOL pcmSetQueueSize( _In_ size_t size ) {
 
-   _ASSERTE( pcmQueue == NULL );
-   _ASSERTE( queueSize == 0 );
+   _ASSERTE( gPcmQueue == NULL );
+   _ASSERTE( gstQueueSize == 0 );
    _ASSERTE( size != 0 );
 
-   pcmQueue = (BYTE*)_malloc_dbg(size, _CLIENT_BLOCK, __FILE__, __LINE__);
-   if ( pcmQueue == NULL ) {
+   gPcmQueue = (BYTE*)_malloc_dbg(size, _CLIENT_BLOCK, __FILE__, __LINE__);
+   if ( gPcmQueue == NULL ) {
       OutputDebugStringA( __FUNCTION__ ":  Failed to allocate memory for PCM queue" );
       return FALSE;
    }
 
-   queueSize = size;
-   queueHead = 0;
+   gstQueueSize = size;
+   gstQueueHead = 0;
 
-   SecureZeroMemory( pcmQueue, queueSize );
+   SecureZeroMemory( gPcmQueue, gstQueueSize );
 
-   _ASSERTE( pcmQueue != NULL );
-   _ASSERTE( queueSize != 0 );
+   _ASSERTE( gPcmQueue != NULL );
+   _ASSERTE( gstQueueSize != 0 );
 
    return TRUE;
 }
 
 
 void pcmReleaseQueue() {
-   if ( pcmQueue == NULL )
+   if ( gPcmQueue == NULL )
       return;
 
    _ASSERTE( _CrtCheckMemory() );  // Check memory and see if there's a problem
 
-   _free_dbg( pcmQueue, _CLIENT_BLOCK );
+   _free_dbg( gPcmQueue, _CLIENT_BLOCK );
 }
 
 
-DWORD   mmcssTaskIndex          = 0;
-HANDLE  gAudioSamplesReadyEvent = NULL;
+DWORD   gdwMmcssTaskIndex          = 0;
+HANDLE  ghAudioSamplesReadyEvent = NULL;

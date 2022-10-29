@@ -40,7 +40,7 @@ extern BOOL mvcModelInit();
 ///
 /// #detected is set in #goertzelWorkThread
 typedef struct {
-   int   index;              ///< The index of the tone in the dtmfTones array
+   int   index;              ///< The index of the tone in the gDtmfTones array
    float frequency;          ///< The DTMF tone's frequency
    bool  detected;           ///< `true` if a tone is found, `false` if it's not
    WCHAR label[ 16 ];        ///< A Wide-char label for the tone
@@ -54,7 +54,7 @@ typedef struct {
 /// An array holding display information (#dtmfTones_t.detected &
 /// #dtmfTones_t.label) as well as pre-computed information
 /// for the Goertzel Magnitude calculation for each individual DTMF tone
-extern dtmfTones_t dtmfTones[ NUMBER_OF_DTMF_TONES ];
+extern dtmfTones_t gDtmfTones[ NUMBER_OF_DTMF_TONES ];
 
 
 /// Temporarily set to `true` when the Goertzel DFT detects that any DTMF tone
@@ -62,17 +62,17 @@ extern dtmfTones_t dtmfTones[ NUMBER_OF_DTMF_TONES ];
 ///
 /// `false` if there are no recent changes (so there's no need to repaint the
 /// screen).
-extern bool hasDtmfTonesChanged;
+extern bool gbHasDtmfTonesChanged;
 
 
 /// Determine if the state of a DTMF tone detection has changed.  If it has,
-/// then we need to repaint the display.  See #hasDtmfTonesChanged
+/// then we need to repaint the display.  See #gHasDtmfTonesChanged
 inline void mvcModelToggleToneDetectedStatus( size_t toneIndex, bool detectedStatus ) {
    _ASSERTE( toneIndex < NUMBER_OF_DTMF_TONES );
 
-   if ( dtmfTones[ toneIndex ].detected != detectedStatus ) {
-      dtmfTones[ toneIndex ].detected = detectedStatus;
-      hasDtmfTonesChanged = true;
+   if ( gDtmfTones[ toneIndex ].detected != detectedStatus ) {
+      gDtmfTones[ toneIndex ].detected = detectedStatus;
+      gbHasDtmfTonesChanged = true;
    }
 }
 
@@ -87,7 +87,7 @@ inline void mvcModelToggleToneDetectedStatus( size_t toneIndex, bool detectedSta
 /// @internal This is a very important variable as it's what keeps the loops
 ///           running.
 ///
-extern bool isRunning;
+extern bool gbIsRunning;
 
 
 /// Pointer to the main window handle
@@ -105,7 +105,7 @@ extern HWND ghMainWindow;
 #define SIZE_OF_QUEUE_IN_MS (65)
 
 
-/// Pointer to the #pcmQueue.  The queue is allocated by #pcmSetQueueSize.
+/// Pointer to the #gPcmQueue.  The queue is allocated by #pcmSetQueueSize.
 /// Released by #pcmReleaseQueue.  It is populated in #processAudioFrame
 /// by #pcmEnqueue.  #goertzel_magnitude needs direct access to this to analyze
 /// the audio stream.
@@ -113,7 +113,7 @@ extern HWND ghMainWindow;
 /// This is thread safe because all of the threads read from the same,
 /// unchanging queue.
 ///
-/// @internal #pcmQueue would normally be protected by an API, but because
+/// @internal #gPcmQueue would normally be protected by an API, but because
 ///           of the realtime nature of this application, performance is
 ///           critical.  Therefore, we are allowing other modules direct access
 ///           to this data structure.
@@ -121,12 +121,12 @@ extern HWND ghMainWindow;
 /// @internal This is declared as `extern "C"` as it is accessed by an
 ///           Assembluy Language module.  `extern "C"` disables C++'s name
 ///           mangling and allows access from Assembly.
-extern "C" BYTE*  pcmQueue;
+extern "C" BYTE*  gPcmQueue;
 
 
-/// Points to a relative offset within #pcmQueue of the next available byte for
+/// Points to a relative offset within #gPcmQueue of the next available byte for
 /// writing.  `0` is the first available byte in the queue.  This value should
-/// never be `>=` #queueSize.
+/// never be `>=` #gstQueueSize.
 ///
 /// This is thread safe because all of the threads read from the same,
 /// unchanging queue.
@@ -134,13 +134,13 @@ extern "C" BYTE*  pcmQueue;
 /// @internal This is declared as `extern "C"` as it is accessed by an
 ///           Assembluy Language module.  `extern "C"` disables C++'s name
 ///           mangling and allows access from Assembly.
-extern "C" size_t queueHead;
+extern "C" size_t gstQueueHead;
 
 
-/// Represents the maximum size of #pcmQueue.  This is set in #pcmSetQueueSize
+/// Represents the maximum size of #gPcmQueue.  This is set in #pcmSetQueueSize
 /// called by #audioInit after we know the sampling rate (`gpMixFormat->nSamplesPerSec`).
 ///
-/// Size in bytes of DTMF DFT #pcmQueue `= gpMixFormat->nSamplesPerSec / 1000 * SIZE_OF_QUEUE_IN_MS`
+/// Size in bytes of DTMF DFT #gPcmQueue `= gpMixFormat->nSamplesPerSec / 1000 * SIZE_OF_QUEUE_IN_MS`
 ///
 /// The queue is sized to hold 8-bit PCM data (one byte per sample)
 ///
@@ -150,44 +150,44 @@ extern "C" size_t queueHead;
 /// @internal This is declared as `extern "C"` as it is accessed by an
 ///           Assembluy Language module.  `extern "C"` disables C++'s name
 ///           mangling and allows access from Assembly.
-extern "C" size_t queueSize;
+extern "C" size_t gstQueueSize;
 
 
-/// Set the size of #pcmQueue, allocate and zero the space for it.
+/// Set the size of #gPcmQueue, allocate and zero the space for it.
 ///
 /// Uses `_malloc_dbg`
 /// @see https://learn.microsoft.com/en-us/cpp/c-runtime-library/reference/malloc-dbg?view=msvc-170
 extern BOOL pcmSetQueueSize( _In_ size_t size );
 
 
-/// Enqueue a byte of PCM data to `pcmQueue`
+/// Enqueue a byte of PCM data to `gPcmQueue`
 ///
 /// Delcared `inline` for performance reasons
 inline void pcmEnqueue( _In_ BYTE data ) {
-   _ASSERTE( pcmQueue != NULL );
-   _ASSERTE( queueHead < queueSize );
+   _ASSERTE( gPcmQueue != NULL );
+   _ASSERTE( gstQueueHead < gstQueueSize );
 
-   pcmQueue[ queueHead++ ] = data ;
+   gPcmQueue[ gstQueueHead++ ] = data ;
 
-   if ( queueHead >= queueSize ) {     // More efficient than `queueHead %= queueSize`
-      queueHead = 0;
+   if ( gstQueueHead >= gstQueueSize ) {     // More efficient than `gstQueueHead %= gstQueueSize`
+      gstQueueHead = 0;
    }
 
    // _ASSERTE( _CrtCheckMemory() );   // Asserts removed for performance
-}
+}                                      // It's checked at the end, though
 
 
-/// Release the memory allocated to #pcmQueue
+/// Release the memory allocated to #gPcmQueue
 extern void pcmReleaseQueue();
 
 
 /// Common handle for audio task prioritization
 ///
 /// @see https://learn.microsoft.com/en-us/windows/win32/api/avrt/nf-avrt-avsetmmthreadcharacteristicsa
-extern DWORD mmcssTaskIndex;
+extern DWORD gdwMmcssTaskIndex;
 
 
 /// This event is signaled when the audio driver has some data to send.
 ///
 /// @see https://learn.microsoft.com/en-us/windows/win32/api/audioclient/nf-audioclient-iaudioclient-seteventhandle
-extern HANDLE gAudioSamplesReadyEvent;
+extern HANDLE ghAudioSamplesReadyEvent;

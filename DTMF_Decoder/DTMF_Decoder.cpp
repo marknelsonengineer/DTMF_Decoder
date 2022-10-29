@@ -60,9 +60,9 @@
 
 
 // Global Variables
-HINSTANCE ghInst = NULL;                       ///< Current instance
-WCHAR     gszTitle[ MAX_LOADSTRING ];          ///< The title bar text
-WCHAR     gszWindowClass[ MAX_LOADSTRING ];    ///< The main window class name
+static HINSTANCE shInst = NULL;                       ///< Current instance
+static WCHAR     sswTitle[ MAX_LOADSTRING ];          ///< The title bar text
+static WCHAR     sswWindowClass[ MAX_LOADSTRING ];    ///< The main window class name
 
 
 // Forward declarations of private functions in this file
@@ -88,17 +88,17 @@ int APIENTRY wWinMain(
 
    _ASSERTE( hInstance != NULL );
 
-   ghInst = hInstance; /// Store the instance handle in a global variable
+   shInst = hInstance; /// Store the instance handle in a global variable
 
    /// Initialize COM (needs to be called once per each thread)
    hr = CoInitializeEx( NULL, COINIT_APARTMENTTHREADED );
    CHECK_HR( "Failed to initialize COM" )
 
    /// Initialize global strings
-   ir = LoadStringW( hInstance, IDS_APP_TITLE,   gszTitle,       MAX_LOADSTRING );
+   ir = LoadStringW( hInstance, IDS_APP_TITLE,   sswTitle,       MAX_LOADSTRING );
    CHECK_IR( "Failed to retrive app title" );
 
-   ir = LoadStringW( hInstance, IDC_DTMFDECODER, gszWindowClass, MAX_LOADSTRING );
+   ir = LoadStringW( hInstance, IDC_DTMFDECODER, sswWindowClass, MAX_LOADSTRING );
    CHECK_IR( "Failed to retrieve window class name" );
 
    /// Register the Windows Class
@@ -115,7 +115,7 @@ int APIENTRY wWinMain(
    wcex.hCursor = LoadCursor( nullptr, IDC_ARROW );
    wcex.hbrBackground = NULL;  // To avoid flicker
    wcex.lpszMenuName = MAKEINTRESOURCEW( IDC_DTMFDECODER );
-   wcex.lpszClassName = gszWindowClass;
+   wcex.lpszClassName = sswWindowClass;
    wcex.hIconSm = LoadIcon( wcex.hInstance, MAKEINTRESOURCE( IDI_DTMF_DECODER ) );
 
    if ( !RegisterClassExW( &wcex ) ) {
@@ -125,13 +125,13 @@ int APIENTRY wWinMain(
 
    /// Create the window
    ghMainWindow = CreateWindowW(
-      gszWindowClass,
-      gszTitle,
+      sswWindowClass,
+      sswTitle,
       WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU,
       CW_USEDEFAULT,          // X position of window
       0,                      // Y position of window
-      windowWidth,            // Width of window
-      windowHeight,           // Height of window
+      giWindowWidth,            // Width of window
+      giWindowHeight,           // Height of window
       nullptr,                // hWndParent
       nullptr,                // hMenu
       hInstance,              // hInstance
@@ -208,7 +208,7 @@ LRESULT CALLBACK WndProc( HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam 
             // Parse the menu selections
             switch ( wmId ) {
                case IDM_ABOUT:
-                  DialogBox( ghInst, MAKEINTRESOURCE( IDD_ABOUTBOX ), hWnd, About );
+                  DialogBox( shInst, MAKEINTRESOURCE( IDD_ABOUTBOX ), hWnd, About );
                   break;
                case IDM_EXIT:
                   br = DestroyWindow( hWnd );
@@ -246,12 +246,12 @@ LRESULT CALLBACK WndProc( HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam 
          break ;
       case WM_CLOSE:    /// WM_CLOSE - Start the process of closing the application
          {
-            isRunning = false;
+            gbIsRunning = false;
             br = goertzel_end();
             WARN_BR( "Failed to end the Goertzel DFT threads" );
 
-            if ( gAudioSamplesReadyEvent != NULL ) {
-               br = SetEvent( gAudioSamplesReadyEvent );
+            if ( ghAudioSamplesReadyEvent != NULL ) {
+               br = SetEvent( ghAudioSamplesReadyEvent );
                WARN_BR( "Failed to signal gAudioSamplesReadyEvent" );
             }
 

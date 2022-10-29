@@ -47,15 +47,15 @@
 
 
 // Global Variables (private to this source file)
-ID2D1Factory*          gpD2DFactory        = NULL;  ///< The Direct2D Factory
-ID2D1HwndRenderTarget* gpRenderTarget      = NULL;	 ///< Render target
-ID2D1SolidColorBrush*  gpBrushForeground   = NULL;  ///< A light blue brush for the foreground
-ID2D1SolidColorBrush*  gpBrushHighlight    = NULL;  ///< A lighter blue brush for the highlight
-ID2D1SolidColorBrush*  gpBrushBackground   = NULL;  ///< A dark blue brush for the background (not used right now)
-IDWriteFactory*        gpDWriteFactory     = NULL;  ///< A DirectWrite factory object
-IDWriteTextFormat*     gpDigitTextFormat   = NULL;  ///< The font for the digits
-IDWriteTextFormat*     gpLettersTextFormat = NULL;  ///< The font for the letters above the digits (and the `Hz` units)
-IDWriteTextFormat*     gpFreqTextFormat    = NULL;  ///< The font for the frequency
+static ID2D1Factory*          spD2DFactory        = NULL;  ///< The Direct2D Factory
+static ID2D1HwndRenderTarget* spRenderTarget      = NULL;	 ///< Render target
+static ID2D1SolidColorBrush*  spBrushForeground   = NULL;  ///< A light blue brush for the foreground
+static ID2D1SolidColorBrush*  spBrushHighlight    = NULL;  ///< A lighter blue brush for the highlight
+static ID2D1SolidColorBrush*  spBrushBackground   = NULL;  ///< A dark blue brush for the background (not used right now)
+static IDWriteFactory*        spDWriteFactory     = NULL;  ///< A DirectWrite factory object
+static IDWriteTextFormat*     spDigitTextFormat   = NULL;  ///< The font for the digits
+static IDWriteTextFormat*     spLettersTextFormat = NULL;  ///< The font for the letters above the digits (and the `Hz` units)
+static IDWriteTextFormat*     spFreqTextFormat    = NULL;  ///< The font for the frequency
 
 #define BOX_WIDTH  (64)    /**< Width of each keypad button  */
 #define BOX_HEIGHT (64)    /**< Height of each keypad button */
@@ -73,14 +73,14 @@ IDWriteTextFormat*     gpFreqTextFormat    = NULL;  ///< The font for the freque
 #define COL2 (COL1 + BOX_WIDTH + GAP_WIDTH)      /**< X-axis distance from the left for the 3rd column */
 #define COL3 (COL2 + BOX_WIDTH + GAP_WIDTH)      /**< X-axis distance from the left for the 4th column */
 
-const int windowWidth = COL0 + ( BOX_WIDTH * 4 ) + ( GAP_WIDTH * 3 ) + BOX_WIDTH;
-const int windowHeight = ROW0 + ( BOX_HEIGHT * 4 ) + ( GAP_HEIGHT * 3 ) + BOX_HEIGHT + 50;  // The title is 25px and the menu is 25px
+const int giWindowWidth  = COL0 + ( BOX_WIDTH  * 4 ) + ( GAP_WIDTH  * 3 ) + BOX_WIDTH;
+const int giWindowHeight = ROW0 + ( BOX_HEIGHT * 4 ) + ( GAP_HEIGHT * 3 ) + BOX_HEIGHT + 50;  // The title is 25px and the menu is 25px
 
 /// Holds the location and display data for each key (button) on the keypad
 typedef struct {
    WCHAR  digit[2];   ///< The digit to print
-   size_t row;        ///< Row index into dtmfTones
-   size_t column;     ///< Column index into dtmfTones
+   size_t row;        ///< Row index into gDtmfTones
+   size_t column;     ///< Column index into gDtmfTones
    WCHAR  letters[5]; ///< The letters above the digit
    float  x;          ///< The upper-left corner of the digit's box
    float  y;          ///< The upper-left corner of the digit's box
@@ -89,7 +89,7 @@ typedef struct {
 
 /// An array of information (location and display data) for each key (button)
 /// on the keypad
-keypad_t keypad[ 16 ] = {
+static keypad_t keypad[ 16 ] = {
    {L"1", 0, 4,     L"", COL0, ROW0 },
    {L"2", 0, 5,  L"ABC", COL1, ROW0 },
    {L"3", 0, 6,  L"DEF", COL2, ROW0 },
@@ -110,9 +110,9 @@ keypad_t keypad[ 16 ] = {
 
 
 // Forward declarations of private functions in this file
-BOOL paintKey( _In_ size_t index );
-BOOL paintRowFreq( _In_ size_t index );
-BOOL paintColFreq( _In_ size_t index );
+static BOOL paintKey( _In_ size_t index );
+static BOOL paintRowFreq( _In_ size_t index );
+static BOOL paintColFreq( _In_ size_t index );
 
 
 /// Repaint the main window (keypad) -- probably because the state
@@ -144,24 +144,24 @@ BOOL mvcViewInitResources() {
    _ASSERTE( ghMainWindow != NULL );
 
    /// Initialize Direct2D
-   _ASSERTE( gpD2DFactory == NULL );
-   hr = D2D1CreateFactory( D2D1_FACTORY_TYPE_MULTI_THREADED, &gpD2DFactory );
+   _ASSERTE( spD2DFactory == NULL );
+   hr = D2D1CreateFactory( D2D1_FACTORY_TYPE_MULTI_THREADED, &spD2DFactory );
    CHECK_HR( "Failed to create Direct2D Factory" );
-   _ASSERTE( gpD2DFactory != NULL );
+   _ASSERTE( spD2DFactory != NULL );
 
    /// Initialize DirectWrite
-   _ASSERTE( gpDWriteFactory == NULL );
+   _ASSERTE( spDWriteFactory == NULL );
    hr = DWriteCreateFactory(
       DWRITE_FACTORY_TYPE_SHARED,
       __uuidof( IDWriteFactory ),
-      reinterpret_cast<IUnknown**>( &gpDWriteFactory )
+      reinterpret_cast<IUnknown**>( &spDWriteFactory )
    );
    CHECK_HR( "Failed to create DirectWrite Factory" );
-   _ASSERTE( gpDWriteFactory != NULL );
+   _ASSERTE( spDWriteFactory != NULL );
 
    /// Create the font for the digits
-   _ASSERTE( gpDigitTextFormat == NULL );
-   hr = gpDWriteFactory->CreateTextFormat(
+   _ASSERTE( spDigitTextFormat == NULL );
+   hr = spDWriteFactory->CreateTextFormat(
       L"Segoe UI",                  // Font family name
       NULL,                         // Font collection(NULL sets it to the system font collection)
       DWRITE_FONT_WEIGHT_MEDIUM,    // Weight
@@ -169,23 +169,23 @@ BOOL mvcViewInitResources() {
       DWRITE_FONT_STRETCH_NORMAL,   // Stretch
       36.0f,                        // Size
       L"en-us",                     // Local
-      &gpDigitTextFormat            // Pointer to recieve the created object
+      &spDigitTextFormat            // Pointer to recieve the created object
    );
    CHECK_HR( "Failed to create a font resource (digit text format)" );
-   _ASSERTE( gpDigitTextFormat != NULL );
+   _ASSERTE( spDigitTextFormat != NULL );
 
-   hr = gpDigitTextFormat->SetWordWrapping( DWRITE_WORD_WRAPPING_WRAP );
+   hr = spDigitTextFormat->SetWordWrapping( DWRITE_WORD_WRAPPING_WRAP );
    CHECK_HR( "Failed to set word wrap mode (digit text format)" );
 
-   hr = gpDigitTextFormat->SetTextAlignment( DWRITE_TEXT_ALIGNMENT_CENTER );  // Horizontal alignment
+   hr = spDigitTextFormat->SetTextAlignment( DWRITE_TEXT_ALIGNMENT_CENTER );  // Horizontal alignment
    CHECK_HR( "Failed to set text alignment (digit text format)" );
 
-   hr = gpDigitTextFormat->SetParagraphAlignment( DWRITE_PARAGRAPH_ALIGNMENT_CENTER );  // Vertical alignment
+   hr = spDigitTextFormat->SetParagraphAlignment( DWRITE_PARAGRAPH_ALIGNMENT_CENTER );  // Vertical alignment
    CHECK_HR( "Failed to set paragraph alighment (digit text format)" );
 
    /// Create the font for the letters
-   _ASSERTE( gpLettersTextFormat == NULL );
-   hr = gpDWriteFactory->CreateTextFormat(
+   _ASSERTE( spLettersTextFormat == NULL );
+   hr = spDWriteFactory->CreateTextFormat(
       L"Segoe UI",                  // Font family name
       NULL,                         // Font collection(NULL sets it to the system font collection)
       DWRITE_FONT_WEIGHT_REGULAR,   // Weight
@@ -193,23 +193,23 @@ BOOL mvcViewInitResources() {
       DWRITE_FONT_STRETCH_NORMAL,   // Stretch
       16.0f,                        // Size
       L"en-us",                     // Local
-      &gpLettersTextFormat          // Pointer to recieve the created object
+      &spLettersTextFormat          // Pointer to recieve the created object
    );
    CHECK_HR( "Failed to create a font resource (letters text format)" );
-   _ASSERTE( gpLettersTextFormat != NULL );
+   _ASSERTE( spLettersTextFormat != NULL );
 
-   hr = gpLettersTextFormat->SetWordWrapping( DWRITE_WORD_WRAPPING_WRAP );
+   hr = spLettersTextFormat->SetWordWrapping( DWRITE_WORD_WRAPPING_WRAP );
    CHECK_HR( "Failed to set word wrap mode (letters text format)" );
 
-   hr = gpLettersTextFormat->SetTextAlignment( DWRITE_TEXT_ALIGNMENT_CENTER );  // Horizontal alignment
+   hr = spLettersTextFormat->SetTextAlignment( DWRITE_TEXT_ALIGNMENT_CENTER );  // Horizontal alignment
    CHECK_HR( "Failed to set text alignment (letters text format)" );
 
-   hr = gpLettersTextFormat->SetParagraphAlignment( DWRITE_PARAGRAPH_ALIGNMENT_CENTER );  // Vertical alignment
+   hr = spLettersTextFormat->SetParagraphAlignment( DWRITE_PARAGRAPH_ALIGNMENT_CENTER );  // Vertical alignment
    CHECK_HR( "Failed to set paragraph alighment (letters text format)" );
 
    /// Create the font for the frequency labels
-   _ASSERTE( gpFreqTextFormat == NULL );
-   hr = gpDWriteFactory->CreateTextFormat(
+   _ASSERTE( spFreqTextFormat == NULL );
+   hr = spDWriteFactory->CreateTextFormat(
       L"Segoe UI",                  // Font family name
       NULL,                         // Font collection(NULL sets it to the system font collection)
       DWRITE_FONT_WEIGHT_REGULAR,   // Weight
@@ -217,18 +217,18 @@ BOOL mvcViewInitResources() {
       DWRITE_FONT_STRETCH_NORMAL,   // Stretch
       24.0f,                        // Size
       L"en-us",                     // Local
-      &gpFreqTextFormat             // Pointer to recieve the created object
+      &spFreqTextFormat             // Pointer to recieve the created object
    );
    CHECK_HR( "Failed to create a font resource (frequency text format)" );
-   _ASSERTE( gpFreqTextFormat != NULL );
+   _ASSERTE( spFreqTextFormat != NULL );
 
-   hr = gpFreqTextFormat->SetWordWrapping( DWRITE_WORD_WRAPPING_WRAP );
+   hr = spFreqTextFormat->SetWordWrapping( DWRITE_WORD_WRAPPING_WRAP );
    CHECK_HR( "Failed to set word wrap mode (frequency text format)" );
 
-   hr = gpFreqTextFormat->SetTextAlignment( DWRITE_TEXT_ALIGNMENT_TRAILING );  // Horizontal alignment
+   hr = spFreqTextFormat->SetTextAlignment( DWRITE_TEXT_ALIGNMENT_TRAILING );  // Horizontal alignment
    CHECK_HR( "Failed to set text alignment (frequency text format)" );
 
-   hr = gpFreqTextFormat->SetParagraphAlignment( DWRITE_PARAGRAPH_ALIGNMENT_CENTER );  // Vertical alignment
+   hr = spFreqTextFormat->SetParagraphAlignment( DWRITE_PARAGRAPH_ALIGNMENT_CENTER );  // Vertical alignment
    CHECK_HR( "Failed to set paragraph alighment (frequency text format)" );
 
    /// Create the Direct2D render target
@@ -236,40 +236,40 @@ BOOL mvcViewInitResources() {
    br = GetClientRect( ghMainWindow, &clientRectangle );
    CHECK_BR( "Failed to get the window size" );
 
-   _ASSERTE( gpRenderTarget == NULL );
-   hr = gpD2DFactory->CreateHwndRenderTarget(
+   _ASSERTE( spRenderTarget == NULL );
+   hr = spD2DFactory->CreateHwndRenderTarget(
       D2D1::RenderTargetProperties(),
       D2D1::HwndRenderTargetProperties( ghMainWindow, D2D1::SizeU( clientRectangle.right - clientRectangle.left, clientRectangle.bottom - clientRectangle.top ) ),
-      &gpRenderTarget
+      &spRenderTarget
    );
    CHECK_HR( "Failed to create Direct2D Render Target" );
-   _ASSERTE( gpRenderTarget != NULL );
+   _ASSERTE( spRenderTarget != NULL );
 
    /// Create the colors (brushes) for the foreground, highlight and background
-   _ASSERTE( gpBrushForeground == NULL );
-   hr = gpRenderTarget->CreateSolidColorBrush(
+   _ASSERTE( spBrushForeground == NULL );
+   hr = spRenderTarget->CreateSolidColorBrush(
       D2D1::ColorF( D2D1::ColorF( FOREGROUND_COLOR, 1.0f ) ),
-      &gpBrushForeground
+      &spBrushForeground
    );
    CHECK_HR( "Failed to create Direct2D Brush (Foreground)" );
-   _ASSERTE( gpBrushForeground != NULL );
+   _ASSERTE( spBrushForeground != NULL );
 
-   _ASSERTE( gpBrushHighlight == NULL );
-   hr = gpRenderTarget->CreateSolidColorBrush(
+   _ASSERTE( spBrushHighlight == NULL );
+   hr = spRenderTarget->CreateSolidColorBrush(
       D2D1::ColorF( D2D1::ColorF( HIGHLIGHT_COLOR, 1.0f ) ),
-      &gpBrushHighlight
+      &spBrushHighlight
    );
    CHECK_HR( "Failed to create Direct2D Brush (Highlight)" );
-   _ASSERTE( gpBrushHighlight != NULL );
+   _ASSERTE( spBrushHighlight != NULL );
 
    // This brush does not get used, so we will comment it out for now
-// _ASSERTE( gpBrushBackground == NULL );
-// hr = gpRenderTarget->CreateSolidColorBrush(
+// _ASSERTE( spBrushBackground == NULL );
+// hr = spRenderTarget->CreateSolidColorBrush(
 //    D2D1::ColorF( D2D1::ColorF( BACKGROUND_COLOR, 1.0f ) ),
-//    &gpBrushBackground
+//    &spBrushBackground
 // );
 // CHECK_HR( "Failed to create Direct2D Brush (Background)" );
-// _ASSERTE( gpBrushBackground != NULL );
+// _ASSERTE( spBrushBackground != NULL );
 
    return TRUE;
 }
@@ -282,11 +282,11 @@ BOOL mvcViewInitResources() {
 ///
 /// @return `true` if successful.  `false` if something went wrong.
 BOOL mvcViewCleanupResources() {
-   SAFE_RELEASE( gpBrushForeground );
-   SAFE_RELEASE( gpBrushHighlight );
-// SAFE_RELEASE( gpBrushBackground );  // It's not used, so we are commenting it out for now
-   SAFE_RELEASE( gpRenderTarget );
-   SAFE_RELEASE( gpD2DFactory );
+   SAFE_RELEASE( spBrushForeground );
+   SAFE_RELEASE( spBrushHighlight );
+// SAFE_RELEASE( spBrushBackground );  // It's not used, so we are commenting it out for now
+   SAFE_RELEASE( spRenderTarget );
+   SAFE_RELEASE( spD2DFactory );
 
    return TRUE;
 }
@@ -303,14 +303,14 @@ BOOL mvcViewCleanupResources() {
 BOOL mvcViewPaintWindow() {
    HRESULT hr;  // HRESULT result
 
-   _ASSERTE( gpRenderTarget != NULL );
+   _ASSERTE( spRenderTarget != NULL );
 
-   gpRenderTarget->BeginDraw() ;
+   spRenderTarget->BeginDraw() ;
    // No return value
 
    /// Clear to the background color.
    /// Failing to do this makes the window smudgy.
-   gpRenderTarget->Clear( D2D1::ColorF( BACKGROUND_COLOR, 1.0f ) );
+   spRenderTarget->Clear( D2D1::ColorF( BACKGROUND_COLOR, 1.0f ) );
    // No return value
 
    /// Draw the main window, generally top-down.  I'm unrolling the loops for a
@@ -332,10 +332,10 @@ BOOL mvcViewPaintWindow() {
    paintRowFreq( 3 );
    paintKey( 12 );   paintKey( 13 );   paintKey( 14 );   paintKey( 15 );
 
-   hr = gpRenderTarget->EndDraw();
+   hr = spRenderTarget->EndDraw();
    CHECK_HR( "Failed to end drawing operations on the render target " );
 
-   hasDtmfTonesChanged = false;  /// Reset the #hasDtmfTonesChanged bit
+   gbHasDtmfTonesChanged = false;  /// Reset the #gbHasDtmfTonesChanged bit
 
    return TRUE;
 }
@@ -349,21 +349,21 @@ BOOL mvcViewPaintWindow() {
 /// @param index Indicates the row to paint
 /// @return `true` if successful.  `false` if there were problems.
 BOOL paintRowFreq( _In_ size_t index ) {
-   _ASSERTE( gpRenderTarget      != NULL );
-   _ASSERTE( gpBrushHighlight    != NULL );
-   _ASSERTE( gpBrushForeground   != NULL );
-   _ASSERTE( gpLettersTextFormat != NULL );
-   _ASSERTE( gpFreqTextFormat    != NULL );
+   _ASSERTE( spRenderTarget      != NULL );
+   _ASSERTE( spBrushHighlight    != NULL );
+   _ASSERTE( spBrushForeground   != NULL );
+   _ASSERTE( spLettersTextFormat != NULL );
+   _ASSERTE( spFreqTextFormat    != NULL );
 
    keypad_t* pKey = &keypad[ (4 * index) + index ];  // The diaganol DTMF digits 1, 5, 9 and D
    size_t iFreq = pKey->row;
 
    ID2D1SolidColorBrush* pBrush;
 
-   if ( dtmfTones[ iFreq ].detected == TRUE ) {
-      pBrush = gpBrushHighlight;
+   if ( gDtmfTones[ iFreq ].detected == TRUE ) {
+      pBrush = spBrushHighlight;
    } else {
-      pBrush = gpBrushForeground;
+      pBrush = spBrushForeground;
    }
 
    D2D1_RECT_F freqTextRect = D2D1::RectF(
@@ -375,12 +375,12 @@ BOOL paintRowFreq( _In_ size_t index ) {
    // No return value (for error checking)
 
    // Get text length
-   UINT32 cTextLength = (UINT32) wcslen( dtmfTones[ iFreq ].label );
+   UINT32 cTextLength = (UINT32) wcslen( gDtmfTones[ iFreq ].label );
 
-   gpRenderTarget->DrawText(
-      dtmfTones[ iFreq ].label, // Text to render
+   spRenderTarget->DrawText(
+      gDtmfTones[ iFreq ].label, // Text to render
       cTextLength,              // Text length
-      gpFreqTextFormat,         // Text format
+      spFreqTextFormat,         // Text format
       freqTextRect,	           // The region of the window where the text will be rendered
       pBrush                    // The brush used to draw the text
    );
@@ -397,10 +397,10 @@ BOOL paintRowFreq( _In_ size_t index ) {
    const wchar_t* wszText = L"Hz";		        // String to render
    cTextLength = (UINT32) wcslen( wszText );	  // Get text length
 
-   gpRenderTarget->DrawText(
+   spRenderTarget->DrawText(
       wszText,                  // Text to render
       cTextLength,              // Text length
-      gpLettersTextFormat,      // Text format
+      spLettersTextFormat,      // Text format
       freqTextRect,	           // The region of the window where the text will be rendered
       pBrush                    // The brush used to draw the text
    );
@@ -418,21 +418,21 @@ BOOL paintRowFreq( _In_ size_t index ) {
 /// @param index Indicates the column to paint
 /// @return `true` if successful.  `false` if there were problems.
 BOOL paintColFreq( _In_ size_t index ) {
-   _ASSERTE( gpRenderTarget      != NULL );
-   _ASSERTE( gpBrushHighlight    != NULL );
-   _ASSERTE( gpBrushForeground   != NULL );
-   _ASSERTE( gpLettersTextFormat != NULL );
-   _ASSERTE( gpFreqTextFormat    != NULL );
+   _ASSERTE( spRenderTarget      != NULL );
+   _ASSERTE( spBrushHighlight    != NULL );
+   _ASSERTE( spBrushForeground   != NULL );
+   _ASSERTE( spLettersTextFormat != NULL );
+   _ASSERTE( spFreqTextFormat    != NULL );
 
    keypad_t* pKey = &keypad[ ( 4 * index ) + index ];  // The diaganol DTMF digits 1, 5, 9 and D
    size_t iFreq = pKey->column;
 
    ID2D1SolidColorBrush* pBrush;
 
-   if ( dtmfTones[ iFreq ].detected == TRUE ) {
-      pBrush = gpBrushHighlight;
+   if ( gDtmfTones[ iFreq ].detected == TRUE ) {
+      pBrush = spBrushHighlight;
    } else {
-      pBrush = gpBrushForeground;
+      pBrush = spBrushForeground;
    }
 
    D2D1_RECT_F freqTextRect = D2D1::RectF(
@@ -444,12 +444,12 @@ BOOL paintColFreq( _In_ size_t index ) {
    // No return value (for error checking)
 
    // Get text length
-   UINT32 cTextLength = (UINT32) wcslen( dtmfTones[ iFreq ].label );
+   UINT32 cTextLength = (UINT32) wcslen( gDtmfTones[ iFreq ].label );
 
-   gpRenderTarget->DrawText(
-      dtmfTones[ iFreq ].label, // Text to render
+   spRenderTarget->DrawText(
+      gDtmfTones[ iFreq ].label, // Text to render
       cTextLength,              // Text length
-      gpFreqTextFormat,         // Text format
+      spFreqTextFormat,         // Text format
       freqTextRect,	           // The region of the window where the text will be rendered
       pBrush                    // The brush used to draw the text
    );
@@ -466,10 +466,10 @@ BOOL paintColFreq( _In_ size_t index ) {
    const wchar_t* wszText = L"Hz";		        // String to render
    cTextLength = (UINT32) wcslen( wszText );	  // Get text length
 
-   gpRenderTarget->DrawText(
+   spRenderTarget->DrawText(
       wszText,                  // Text to render
       cTextLength,              // Text length
-      gpLettersTextFormat,      // Text format
+      spLettersTextFormat,      // Text format
       freqTextRect,	           // The region of the window where the text will be rendered
       pBrush                    // The brush used to draw the text
    );
@@ -488,21 +488,21 @@ BOOL paintColFreq( _In_ size_t index ) {
 /// @param index Indicates the key to paint
 /// @return `true` if successful.  `false` if there were problems.
 BOOL paintKey( _In_ size_t index ) {
-   _ASSERTE( gpRenderTarget      != NULL );
-   _ASSERTE( gpBrushHighlight    != NULL );
-   _ASSERTE( gpBrushForeground   != NULL );
-   _ASSERTE( gpDigitTextFormat   != NULL );
-   _ASSERTE( gpLettersTextFormat != NULL );
+   _ASSERTE( spRenderTarget      != NULL );
+   _ASSERTE( spBrushHighlight    != NULL );
+   _ASSERTE( spBrushForeground   != NULL );
+   _ASSERTE( spDigitTextFormat   != NULL );
+   _ASSERTE( spLettersTextFormat != NULL );
 
    ID2D1SolidColorBrush* pBrush;
 
-   if ( dtmfTones[ keypad[ index ].row ].detected == TRUE && dtmfTones[ keypad[ index ].column ].detected == TRUE ) {
-      pBrush = gpBrushHighlight;
+   if ( gDtmfTones[ keypad[ index ].row ].detected == TRUE && gDtmfTones[ keypad[ index ].column ].detected == TRUE ) {
+      pBrush = spBrushHighlight;
    } else {
-      pBrush = gpBrushForeground;
+      pBrush = spBrushForeground;
    }
 
-   gpRenderTarget->DrawRoundedRectangle(
+   spRenderTarget->DrawRoundedRectangle(
       D2D1::RoundedRect(
          D2D1::RectF( keypad[index].x, keypad[index].y, keypad[index].x + BOX_WIDTH, keypad[index].y + BOX_HEIGHT ),
          8.0f,
@@ -523,10 +523,10 @@ BOOL paintKey( _In_ size_t index ) {
    // Get text length
    UINT32 cTextLength = (UINT32) wcslen( keypad[index].digit);
 
-   gpRenderTarget->DrawText(
+   spRenderTarget->DrawText(
       keypad[index].digit, // Text to render
       cTextLength,         // Text length
-      gpDigitTextFormat,   // Text format
+      spDigitTextFormat,   // Text format
       digitTextRect,	      // The region of the window where the text will be rendered
       pBrush               // The brush used to draw the text
    );
@@ -545,10 +545,10 @@ BOOL paintKey( _In_ size_t index ) {
       // No return value (for error checking)
 
 
-      gpRenderTarget->DrawText(
+      spRenderTarget->DrawText(
          keypad[ index ].letters,  // Text to render
          cTextLength,              // Text length
-         gpLettersTextFormat,      // Text format
+         spLettersTextFormat,      // Text format
          lettersTextRect,          // The region of the window where the text will be rendered
          pBrush                    // The brush used to draw the text
       );

@@ -18,24 +18,24 @@
 ;///////////////////////////////////////////////////////////////////////////////
 
 
-externdef queueHead:qword
-externdef queueSize:qword
-externdef pcmQueue:qword
-externdef gfScaleFactor:dword
+externdef gstQueueHead:qword
+externdef gstQueueSize:qword
+externdef gPcmQueue:qword
+externdef fScaleFactor:dword
 
 .code
 
 option casemap:none    ; Make symbols case sensitive
 
 ; Note:  One optimization (for the sale of simplicity) is that we are
-;        analyzing the queue from position 0 to queueSize -- not from
+;        analyzing the queue from position 0 to gstQueueSize -- not from
 ;        the head of the queue.  This gets us down to 1 counter and
 ;        makes the program easier to read without affecting its accuracy
 ;
 ; CL = The UINT8 index (param 1)
 ; RDX = The 64-bit pointer to the dtmfTone struct (param 2)
-; R8 = pcmQueue (copied from external size_t)
-; R9 = pcmQueue + queueSize (marks the end of the queue)
+; R8 = gPcmQueue (copied from external size_t)
+; R9 = gPcmQueue + gstQueueSize (marks the end of the queue)
 ; R10 = Unused
 ; R11 = Unused
 ; XMM0 = q0
@@ -49,16 +49,16 @@ public goertzel_magnitude_64
 goertzel_magnitude_64 PROC
 
 	XOR RAX, RAX                   ; Zero out RAX
-	MOV  R8, pcmQueue              ; Read from this point in the Queue
+	MOV  R8, gPcmQueue              ; Read from this point in the Queue
 	MOV  R9, R8
-	ADD  R9, queueSize             ; Read up to this position
+	ADD  R9, gstQueueSize             ; Read up to this position
 
 	VPXOR XMM1, XMM1, XMM1         ; float q1 = 0;
 	VPXOR XMM2, XMM1, XMM1         ; float q2 = 0;
 	MOVSS XMM3, dword ptr [RDX + 56]  ; Copy toneStruct->coeff into XMM3
 
 forLoop:
-	CMP R8, R9                   ; pcmQueue < (pcmQueue + queueSize);
+	CMP R8, R9                   ; gPcmQueue < (gPcmQueue + gstQueueSize);
 	JNB exitForLoop
 	; Do the work of the for() loop
 
@@ -84,7 +84,7 @@ exitForLoop:
 	MULSS  XMM4, XMM4                 ; real * real
 	MULSS  XMM5, XMM5                 ; imag * imag
 	ADDSS  XMM4, XMM5                 ; real * real + imag * imag
-	MOVSS  XMM5, dword ptr [gfScaleFactor]
+	MOVSS  XMM5, dword ptr [fScaleFactor]
 	SQRTSS XMM4, XMM4                 ; Square root
 	DIVSS  XMM4, XMM5                 ; / gfScaleFactor
 	MOVSS  dword ptr [RDX + 44], XMM4 ; Store in toneStruct->goertzelMagnitude

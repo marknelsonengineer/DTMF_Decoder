@@ -28,7 +28,7 @@ BOOL mvcViewCleanupResources();
 BOOL mvcViewPaintWindow();
 BOOL mvcViewRefreshWindow();
 
-extern const int windowWidth;   ///< The overall width of the main window,
-                                ///< computed based on button size and spacing
-extern const int windowHeight;  ///< The overall height of the main window
-                                ///< computed based on button size and spacing
+extern const int giWindowWidth;   ///< The overall width of the main window,
+                                  ///< computed based on button size and spacing
+extern const int giWindowHeight;  ///< The overall height of the main window
+                                  ///< computed based on button size and spacing
