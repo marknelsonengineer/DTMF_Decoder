@@ -66,7 +66,7 @@ extern bool gbHasDtmfTonesChanged;
 
 
 /// Determine if the state of a DTMF tone detection has changed.  If it has,
-/// then we need to repaint the display.  See #gHasDtmfTonesChanged
+/// then we need to repaint the display.  See #gbHasDtmfTonesChanged
 inline void mvcModelToggleToneDetectedStatus( size_t toneIndex, bool detectedStatus ) {
    _ASSERTE( toneIndex < NUMBER_OF_DTMF_TONES );
 
@@ -81,7 +81,7 @@ inline void mvcModelToggleToneDetectedStatus( size_t toneIndex, bool detectedSta
 /// loops will continue to run.
 ///
 /// Set to `false` when it's time to shutdown the program.  Then, these threads
-/// will see that #isRunning is `false`, drop out of their `while()` loops and
+/// will see that #gbIsRunning is `false`, drop out of their `while()` loops and
 /// the threads will terminate naturally, cleaning up their resources.
 ///
 /// @internal This is a very important variable as it's what keeps the loops
