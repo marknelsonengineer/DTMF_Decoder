@@ -45,7 +45,7 @@
 #define NOKERNEL
 // #define NOUSER             /// Need the usual USERMODE API
 #define NONLS
-#define NOMB
+// #define NOMB               /// Need for the logger's MessageBox
 #define NOMEMMGR
 #define NOMETAFILE
 #define NOMINMAX
