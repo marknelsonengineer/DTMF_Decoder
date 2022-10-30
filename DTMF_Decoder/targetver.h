@@ -8,11 +8,11 @@
 ///
 /// @see https://learn.microsoft.com/en-us/windows/win32/winprog/using-the-windows-headers
 ///
-/// @file targetver.h
+/// @file    targetver.h
 /// @version 1.0
 ///
-/// @author Mark Nelson <marknels@hawaii.edu>
-/// @date   10_Oct_2022
+/// @author  Mark Nelson <marknels@hawaii.edu>
+/// @date    10_Oct_2022
 ///////////////////////////////////////////////////////////////////////////////
 
 #pragma once

@@ -6,9 +6,6 @@
 ///
 /// The main loop (with wWinMain and WndProc)
 ///
-/// @file    DTMF_Decoder.cpp
-/// @version 1.0
-///
 /// @see https://learn.microsoft.com/en-us/windows/win32/learnwin32/winmain--the-application-entry-point
 /// @see https://learn.microsoft.com/en-us/windows/win32/api/winuser/nc-winuser-wndproc
 ///
@@ -36,8 +33,11 @@
 /// @see https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-postquitmessage
 /// @see https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-enddialog
 ///
-/// @author Mark Nelson <marknels@hawaii.edu>
-/// @date   10_Oct_2022
+/// @file    DTMF_Decoder.cpp
+/// @version 1.0
+///
+/// @author  Mark Nelson <marknels@hawaii.edu>
+/// @date    10_Oct_2022
 ///////////////////////////////////////////////////////////////////////////////
 
 #include "framework.h"    // Standard system include files

@@ -3,18 +3,18 @@
 ;//          DTMF_Decoder - EE 469 - Fall 2022
 ;//
 ;//  A Windows Desktop C program that decodes DTMF tones
-;///
+;//
 ;/// A hand-coded, optimized Goertzel DFT that's intended to do all of its
 ;/// calculations in the CPU/registers.
-;///
-;/// @file goertzel.asm
-;/// @version 1.0
 ;///
 ;/// @see https://github.com/Harvie/Programs/blob/master/c/goertzel/goertzel.c
 ;/// @see https://en.wikipedia.org/wiki/Goertzel_algorithm
 ;///
-;/// @author Mark Nelson <marknels@hawaii.edu>
-;/// @date   25_Oct_2022
+;/// @file    goertzel.asm
+;/// @version 1.0
+;///
+;/// @author  Mark Nelson <marknels@hawaii.edu>
+;/// @date    25_Oct_2022
 ;///////////////////////////////////////////////////////////////////////////////
 
 

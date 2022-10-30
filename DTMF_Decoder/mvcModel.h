@@ -6,15 +6,14 @@
 //
 /// The model holds the state between the various modules
 ///
-/// @file mvcModel.h
-/// @version 1.0
-///
 /// @todo Consider having the display have an indicator light that shows the
 ///       threads are running
 ///
+/// @file    mvcModel.h
+/// @version 1.0
 ///
-/// @author Mark Nelson <marknels@hawaii.edu>
-/// @date   10_Oct_2022
+/// @author  Mark Nelson <marknels@hawaii.edu>
+/// @date    10_Oct_2022
 ///////////////////////////////////////////////////////////////////////////////
 
 #pragma once

@@ -7,9 +7,6 @@
 /// An 8-way multi-threaded Discrete Fast Forier Transform - specifically,
 /// the Goertzel algorithm for 8-bit PCM data.
 ///
-/// @file goertzel.cpp
-/// @version 1.0
-///
 /// @see https://github.com/Harvie/Programs/blob/master/c/goertzel/goertzel.c
 /// @see https://en.wikipedia.org/wiki/Goertzel_algorithm
 ///
@@ -27,8 +24,11 @@
 /// @see https://en.cppreference.com/w/c/numeric/math/sin
 /// @see https://en.cppreference.com/w/c/numeric/math/cos
 ///
-/// @author Mark Nelson <marknels@hawaii.edu>
-/// @date   10_Oct_2022
+/// @file    goertzel.cpp
+/// @version 1.0
+///
+/// @author  Mark Nelson <marknels@hawaii.edu>
+/// @date    10_Oct_2022
 ///////////////////////////////////////////////////////////////////////////////
 
 #include "framework.h"    // Standard system include files

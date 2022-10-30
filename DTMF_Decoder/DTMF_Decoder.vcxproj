@@ -148,6 +148,7 @@
     <ClInclude Include="DTMF_Decoder.h" />
     <ClInclude Include="framework.h" />
     <ClInclude Include="goertzel.h" />
+    <ClInclude Include="log.h" />
     <ClInclude Include="mvcModel.h" />
     <ClInclude Include="mvcView.h" />
     <ClInclude Include="Resource.h" />
@@ -157,6 +158,7 @@
     <ClCompile Include="audio.cpp" />
     <ClCompile Include="DTMF_Decoder.cpp" />
     <ClCompile Include="goertzel.cpp" />
+    <ClCompile Include="log.cpp" />
     <ClCompile Include="mvcModel.cpp" />
     <ClCompile Include="mvcView.cpp" />
   </ItemGroup>

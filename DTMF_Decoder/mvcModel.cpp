@@ -6,16 +6,16 @@
 //
 /// The model holds the state between the various modules
 ///
-/// @file mvcModel.cpp
-/// @version 1.0
-///
 /// @see https://learn.microsoft.com/en-us/cpp/c-runtime-library/reference/malloc-dbg                
 /// @see https://learn.microsoft.com/en-us/previous-versions/windows/desktop/legacy/aa366877(v=vs.85)
 /// @see https://learn.microsoft.com/en-us/cpp/c-runtime-library/reference/free-dbg                  
 /// @see https://learn.microsoft.com/en-us/cpp/c-runtime-library/reference/crtcheckmemory            
 ///
-/// @author Mark Nelson <marknels@hawaii.edu>
-/// @date   10_Oct_2022
+/// @file    mvcModel.cpp
+/// @version 1.0
+///
+/// @author  Mark Nelson <marknels@hawaii.edu>
+/// @date    10_Oct_2022
 ///////////////////////////////////////////////////////////////////////////////
 
 #include "framework.h"    // Standard system include files

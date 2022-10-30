@@ -6,9 +6,6 @@
 //
 /// Windows Audio Driver code
 ///
-/// @file audio.cpp
-/// @version 1.0
-///
 /// @see https://learn.microsoft.com/en-us/windows/win32/api/_coreaudio/
 ///
 /// @see https://learn.microsoft.com/en-us/windows/win32/api/mmdeviceapi/nn-mmdeviceapi-immdevice
@@ -57,8 +54,11 @@
 /// @todo Watch the program with Process Monitor and make sure it's not
 ///       over-spinning any threads.  So far, it looks very good.
 ///
-/// @author Mark Nelson <marknels@hawaii.edu>
-/// @date   10_Oct_2022
+/// @file    audio.cpp
+/// @version 1.0
+///
+/// @author  Mark Nelson <marknels@hawaii.edu>
+/// @date    10_Oct_2022
 ///////////////////////////////////////////////////////////////////////////////
 
 #include "framework.h"    // Standard system include files

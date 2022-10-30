@@ -6,11 +6,11 @@
 //
 /// Windows Audio Driver code
 ///
-/// @file audio.h
+/// @file    audio.h
 /// @version 1.0
 ///
-/// @author Mark Nelson <marknels@hawaii.edu>
-/// @date   10_Oct_2022
+/// @author  Mark Nelson <marknels@hawaii.edu>
+/// @date    10_Oct_2022
 ///////////////////////////////////////////////////////////////////////////////
 
 #pragma once

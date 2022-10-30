@@ -7,9 +7,6 @@
 /// The implementation of the GDI and Direct2D paint commands as the view
 /// component of this model-view-controller application.
 ///
-/// @file mvcView.cpp
-/// @version 1.0
-///
 /// @see http://www.catch22.net/tuts/win32/flicker-free-drawing
 ///
 /// @see https://learn.microsoft.com/en-us/windows/win32/api/d2d1/nf-d2d1-d2d1createfactory-r1
@@ -31,8 +28,11 @@
 ///
 /// @see https://en.cppreference.com/w/c/string/wide/wcslen
 ///
-/// @author Mark Nelson <marknels@hawaii.edu>
-/// @date   10_Oct_2022
+/// @file    mvcView.cpp
+/// @version 1.0
+///
+/// @author  Mark Nelson <marknels@hawaii.edu>
+/// @date    10_Oct_2022
 ///////////////////////////////////////////////////////////////////////////////
 
 #include "framework.h"    // Standard system include files
