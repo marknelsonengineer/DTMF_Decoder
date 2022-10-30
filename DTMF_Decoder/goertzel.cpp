@@ -164,12 +164,12 @@ DWORD WINAPI goertzelWorkThread( _In_ LPVOID pContext ) {
             SetEvent( shDoneDFTevent[ index ] );
          }
       } else if ( dwWaitResult == WAIT_FAILED ) {
-         OutputDebugStringA( __FUNCTION__ ":  The wait was failed.  Exiting" );
-         gbIsRunning = false;
+         OutputDebugStringA( __FUNCTION__ ":  The wait was failed.  Exiting.  Investigate!" );
+         gracefulShutdown();
          break;  // While loop
       } else {
          OutputDebugStringA( __FUNCTION__ ":  The wait was ended for some other reason.  Exiting.  Investigate!" );
-         gbIsRunning = false;
+         gracefulShutdown();
          break;  // While loop
       }
    }

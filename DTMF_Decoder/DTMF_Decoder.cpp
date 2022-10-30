@@ -280,6 +280,23 @@ LRESULT CALLBACK WndProc( HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam 
 }
 
 
+/// Gracefully initiate the shutdown of the application
+///
+/// The app has multiple threads and message loops, so shutdown has to do 
+/// things like:
+///   - Tell the thread loops to quit
+///   - Signal the callback handles
+///   - Actually drop out of the thread loops
+///   - Cleanup the resources in use
+/// 
+/// This function doesn't do these things, but it does get the ball rolling by
+/// effectively pressing the Close button on the window.
+void gracefulShutdown() {
+   gbIsRunning = false;
+   SendMessage( ghMainWindow, WM_CLOSE, 0, 0 );  // Shutdown the app
+}
+
+
 /// Message handler for the About dialog box
 ///
 /// @see https://learn.microsoft.com/en-us/windows/win32/api/winuser/nc-winuser-wndproc

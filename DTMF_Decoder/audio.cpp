@@ -249,8 +249,7 @@ void audioCapture() {
          br = goertzel_compute_dtmf_tones();
          if ( !br ) {
             OutputDebugStringA( __FUNCTION__ ":  Failed to compute the DTMF tones.  Investigate!!" );
-            gbIsRunning = false;
-            SendMessage( ghMainWindow, WM_CLOSE, 0, 0 );  // Shutdown the app
+            gracefulShutdown();
          }
 
          /// If, after computing all 8 of the DFTs, if the detected state
@@ -259,8 +258,7 @@ void audioCapture() {
             br = mvcViewRefreshWindow();
             if ( !br ) {
                OutputDebugStringA( __FUNCTION__ ":  Failed to refresh the main window.  Investigate!!" );
-               gbIsRunning = false;
-               SendMessage( ghMainWindow, WM_CLOSE, 0, 0 );  // Shutdown the app
+               gracefulShutdown();
             }
          }
       }
@@ -318,8 +316,7 @@ void audioCapture() {
          hr = spCaptureClient->ReleaseBuffer( framesAvailable );
          if ( hr != S_OK ) {
             OutputDebugStringA( __FUNCTION__ ":  ReleaseBuffer didn't return S_OK.  Investigate!!" );
-            gbIsRunning = false;
-            SendMessage( ghMainWindow, WM_CLOSE, 0, 0 );  // Shutdown the app
+            gracefulShutdown();
          }
       }
 
@@ -330,11 +327,10 @@ void audioCapture() {
    } else {
       /// If the audio device changes (unplugged, for example) then GetBuffer
       /// will return something unexpected and we should see it here.  If this
-      /// happens, set #gbIsRunning to `false` and gracefully shutdown the app.
+      /// happens, gracefully shutdown the app.
 
       OutputDebugStringA( __FUNCTION__ ":  GetBuffer did not return S_OK.  Investigate!!" );
-      gbIsRunning = false;
-      SendMessage(ghMainWindow, WM_CLOSE, 0, 0);  // Shutdown the app
+      gracefulShutdown();
    }
 }
 
@@ -386,13 +382,11 @@ DWORD WINAPI audioCaptureThread( LPVOID Context ) {
          }
       } else if ( dwWaitResult == WAIT_FAILED ) {
          OutputDebugStringA( __FUNCTION__ ":  The wait was failed.  Exiting" );
-         gbIsRunning = false;
-         SendMessage( ghMainWindow, WM_CLOSE, 0, 0 );  // Shutdown the app
+         gracefulShutdown();
          break;  // While loop
       } else {
          OutputDebugStringA( __FUNCTION__ ":  The wait was ended for some other reason.  Exiting.  Investigate!" );
-         gbIsRunning = false;
-         SendMessage( ghMainWindow, WM_CLOSE, 0, 0 );  // Shutdown the app
+         gracefulShutdown();
          break;  // While loop
       }
    }

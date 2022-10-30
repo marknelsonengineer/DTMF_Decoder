@@ -16,3 +16,6 @@
 
 /// The name of the application
 #define APP_NAME "DTMF Decoder"
+
+
+extern void gracefulShutdown();
