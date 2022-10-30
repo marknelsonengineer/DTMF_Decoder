@@ -72,6 +72,7 @@
 #include <crtdbg.h>       // For the _ASSERTE macro and _malloc_dbg
 
 #include "DTMF_Decoder.h" // For APP_NAME
+#include "log.h"          // For our logging functions
 
 
 /// Release the pointer P to a COM object by calling the IUnknown::Release
