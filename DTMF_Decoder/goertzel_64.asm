@@ -32,12 +32,12 @@ option casemap:none    ; Make symbols case sensitive
 ;        the head of the queue.  This gets us down to 1 counter and
 ;        makes the program easier to read without affecting its accuracy
 ;
-; CL = The UINT8 index (param 1)
-; RDX = The 64-bit pointer to the dtmfTone struct (param 2)
-; R8 = gPcmQueue (copied from external size_t)
-; R9 = gPcmQueue + gstQueueSize (marks the end of the queue)
-; R10 = Unused
-; R11 = Unused
+; CL   = The UINT8 index (const param 1)
+; RDX  = The 64-bit pointer to the dtmfTone struct (param 2)
+; R8   = gPcmQueue (copied from external size_t)
+; R9   = gPcmQueue + gstQueueSize (marks the end of the queue)
+; R10  = Unused
+; R11  = Unused
 ; XMM0 = q0
 ; XMM1 = q1
 ; XMM2 = q2
@@ -48,17 +48,17 @@ option casemap:none    ; Make symbols case sensitive
 public goertzel_magnitude_64
 goertzel_magnitude_64 PROC
 
-	XOR RAX, RAX                   ; Zero out RAX
-	MOV  R8, gPcmQueue              ; Read from this point in the Queue
+	XOR RAX, RAX                      ; Zero out RAX
+	MOV  R8, gPcmQueue                ; Read from this point in the Queue
 	MOV  R9, R8
 	ADD  R9, gstQueueSize             ; Read up to this position
 
-	VPXOR XMM1, XMM1, XMM1         ; float q1 = 0;
-	VPXOR XMM2, XMM1, XMM1         ; float q2 = 0;
+	VPXOR XMM1, XMM1, XMM1            ; float q1 = 0;
+	VPXOR XMM2, XMM1, XMM1            ; float q2 = 0;
 	MOVSS XMM3, dword ptr [RDX + 56]  ; Copy toneStruct->coeff into XMM3
 
 forLoop:
-	CMP R8, R9                   ; gPcmQueue < (gPcmQueue + gstQueueSize);
+	CMP R8, R9                        ; gPcmQueue < (gPcmQueue + gstQueueSize);
 	JNB exitForLoop
 	; Do the work of the for() loop
 

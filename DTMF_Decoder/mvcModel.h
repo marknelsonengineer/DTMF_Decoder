@@ -66,7 +66,7 @@ extern bool gbHasDtmfTonesChanged;
 
 /// Determine if the state of a DTMF tone detection has changed.  If it has,
 /// then we need to repaint the display.  See #gbHasDtmfTonesChanged
-inline void mvcModelToggleToneDetectedStatus( size_t toneIndex, bool detectedStatus ) {
+inline void mvcModelToggleToneDetectedStatus( _In_ const size_t toneIndex, _In_ const bool detectedStatus ) {
    _ASSERTE( toneIndex < NUMBER_OF_DTMF_TONES );
 
    if ( gDtmfTones[ toneIndex ].detected != detectedStatus ) {
@@ -156,13 +156,13 @@ extern "C" size_t gstQueueSize;
 ///
 /// Uses `_malloc_dbg`
 /// @see https://learn.microsoft.com/en-us/cpp/c-runtime-library/reference/malloc-dbg?view=msvc-170
-extern BOOL pcmSetQueueSize( _In_ size_t size );
+extern BOOL pcmSetQueueSize( _In_ const size_t size );
 
 
 /// Enqueue a byte of PCM data to `gPcmQueue`
 ///
 /// Delcared `inline` for performance reasons
-inline void pcmEnqueue( _In_ BYTE data ) {
+inline void pcmEnqueue( _In_ const BYTE data ) {
    _ASSERTE( gPcmQueue != NULL );
    _ASSERTE( gstQueueHead < gstQueueSize );
 

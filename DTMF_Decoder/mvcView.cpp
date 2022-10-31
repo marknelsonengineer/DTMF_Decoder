@@ -110,9 +110,9 @@ static keypad_t keypad[ 16 ] = {
 
 
 // Forward declarations of private functions in this file
-static BOOL paintKey( _In_ size_t index );
-static BOOL paintRowFreq( _In_ size_t index );
-static BOOL paintColFreq( _In_ size_t index );
+static BOOL paintKey(     _In_ const size_t index );
+static BOOL paintRowFreq( _In_ const size_t index );
+static BOOL paintColFreq( _In_ const size_t index );
 
 
 /// Repaint the main window (keypad) -- probably because the state
@@ -348,7 +348,7 @@ BOOL mvcViewPaintWindow() {
 ///
 /// @param index Indicates the row to paint
 /// @return `true` if successful.  `false` if there were problems.
-BOOL paintRowFreq( _In_ size_t index ) {
+BOOL paintRowFreq( _In_ const size_t index ) {
    _ASSERTE( spRenderTarget      != NULL );
    _ASSERTE( spBrushHighlight    != NULL );
    _ASSERTE( spBrushForeground   != NULL );
@@ -417,7 +417,7 @@ BOOL paintRowFreq( _In_ size_t index ) {
 ///
 /// @param index Indicates the column to paint
 /// @return `true` if successful.  `false` if there were problems.
-BOOL paintColFreq( _In_ size_t index ) {
+BOOL paintColFreq( _In_ const size_t index ) {
    _ASSERTE( spRenderTarget      != NULL );
    _ASSERTE( spBrushHighlight    != NULL );
    _ASSERTE( spBrushForeground   != NULL );
@@ -487,7 +487,7 @@ BOOL paintColFreq( _In_ size_t index ) {
 ///
 /// @param index Indicates the key to paint
 /// @return `true` if successful.  `false` if there were problems.
-BOOL paintKey( _In_ size_t index ) {
+BOOL paintKey( _In_ const size_t index ) {
    _ASSERTE( spRenderTarget      != NULL );
    _ASSERTE( spBrushHighlight    != NULL );
    _ASSERTE( spBrushForeground   != NULL );

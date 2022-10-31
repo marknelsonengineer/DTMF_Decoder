@@ -46,7 +46,7 @@
 
 static HANDLE shStartDFTevent[ NUMBER_OF_DTMF_TONES ];  ///< Handles to events
 static HANDLE shDoneDFTevent[ NUMBER_OF_DTMF_TONES ];   ///< Handles to events
-static HANDLE shWorkThreads[ NUMBER_OF_DTMF_TONES ];   ///< The worker threads
+static HANDLE shWorkThreads[ NUMBER_OF_DTMF_TONES ];    ///< The worker threads
 
 extern "C" float fScaleFactor = 0;  ///< Set in goertzel_init() and used in goertzel_magnitude()
 
@@ -54,7 +54,7 @@ extern "C" float fScaleFactor = 0;  ///< Set in goertzel_init() and used in goer
    #pragma message( "Compiling 64-bit program" )
 
    extern "C" {
-      void goertzel_magnitude_64( UINT8 index, dtmfTones_t* toneStruct );
+      void goertzel_magnitude_64( const UINT8 index, dtmfTones_t* toneStruct );
    };
 #else
    #pragma message( "Compiling 32-bit program" )
@@ -73,8 +73,8 @@ extern "C" float fScaleFactor = 0;  ///< Set in goertzel_init() and used in goer
 /// @param toneStruct  A pointer to #gDtmfTones (so it doesn't have to
 ///                    re-compute the index each time
 void goertzel_magnitude(
-   _In_     UINT8        index,
-   _Inout_  dtmfTones_t* toneStruct ) {
+   _In_     const UINT8        index,
+   _Inout_        dtmfTones_t* toneStruct ) {
 
    _ASSERTE( gstQueueHead != NULL );
    _ASSERTE( gstQueueSize > 0 );
@@ -193,7 +193,7 @@ DWORD WINAPI goertzelWorkThread( _In_ LPVOID pContext ) {
 ///
 /// @param  iSampleRate  Samples per second
 /// @return `true` if successful.  `false` if there was a problem.
-BOOL goertzel_init( _In_ int iSampleRate ) {
+BOOL goertzel_init( _In_ const int iSampleRate ) {
    _ASSERTE( iSampleRate > 0 );
    _ASSERTE( gstQueueSize > 0 );
 

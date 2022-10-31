@@ -132,8 +132,8 @@ static audio_format_t sAudioFormat = UNKNOWN_AUDIO_FORMAT;
 /// @param frameIndex The frameIndex number to process
 /// @return `true` if successful.  `false` if there were problems.
 BOOL processAudioFrame(
-   _In_     BYTE*    pData,
-   _In_     UINT32   frameIndex ) {
+   _In_     const BYTE*    pData,
+   _In_     const UINT32   frameIndex ) {
 
    _ASSERTE( pData != NULL );
    _ASSERTE( sAudioFormat != UNKNOWN_AUDIO_FORMAT );
@@ -426,12 +426,12 @@ DWORD WINAPI audioCaptureThread( LPVOID Context ) {
     Valid bits per sample=32
     Extended wave format is IEEE Float
 @endverbatim */
-BOOL audioPrintWaveFormat( _In_ WAVEFORMATEX* pFmt ) {
+BOOL audioPrintWaveFormat( _In_ const WAVEFORMATEX* pFmt ) {
    _ASSERTE( pFmt != NULL );
 
    if ( pFmt->wFormatTag == WAVE_FORMAT_EXTENSIBLE ) {
       LOG_DEBUG( "Using WAVE_FORMAT_EXTENSIBLE format");
-      WAVEFORMATEXTENSIBLE* pFmtEx = (WAVEFORMATEXTENSIBLE*) pFmt;
+      WAVEFORMATEXTENSIBLE* const pFmtEx = (WAVEFORMATEXTENSIBLE*) pFmt;
 
       LOG_DEBUG( "Channels=%" PRIu16,              pFmtEx->Format.nChannels );
       LOG_DEBUG( "Samples per Second=%" PRIu32,    pFmtEx->Format.nSamplesPerSec );

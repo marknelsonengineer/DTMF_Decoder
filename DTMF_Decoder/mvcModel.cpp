@@ -58,7 +58,7 @@ size_t gstQueueSize = 0;
 /// @endcond
 
 
-BOOL pcmSetQueueSize( _In_ size_t size ) {
+BOOL pcmSetQueueSize( _In_ const size_t size ) {
 
    _ASSERTE( gPcmQueue == NULL );
    _ASSERTE( gstQueueSize == 0 );

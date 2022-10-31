@@ -26,7 +26,7 @@
 /// detected a tone.
 #define GOERTZEL_MAGNITUDE_THRESHOLD  10.0f
 
-extern BOOL goertzel_init( _In_ int SAMPLING_RATE_IN );
+extern BOOL goertzel_init( _In_ const int SAMPLING_RATE_IN );
 
 extern BOOL goertzel_compute_dtmf_tones();
 
