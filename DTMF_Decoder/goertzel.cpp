@@ -149,7 +149,7 @@ DWORD WINAPI goertzelWorkThread( _In_ LPVOID pContext ) {
             #ifdef _WIN64
                goertzel_magnitude_64( (UINT8) index, &gDtmfTones[index] );
             #else
-              goertzel_magnitude( index, &dtmfTones[index] );
+              goertzel_magnitude( iIndex, &gDtmfTones[index] );
             #endif
 
             if ( gDtmfTones[index].goertzelMagnitude >= GOERTZEL_MAGNITUDE_THRESHOLD ) {
