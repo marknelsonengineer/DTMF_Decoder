@@ -29,8 +29,8 @@ The source code documentation (hosted by UH) is [here](https://www2.hawaii.edu/~
     - I don't trust that it's a solid foundation i.e. [Silverlight](https://www.neowin.net/news/former-microsoft-pm-silverlight-is-dead/)
       and one WinUI 3 reviewer [wrote](https://mariusbancila.ro/blog/2022/04/08/unwrapping-winui3-for-cpp/):
     > WinUI 3 is trumpeted as the next big thing in Windows development.  ... I personally don't see
-      this as the modern native library C++ Windows develoeprs have been wishing for the past
-      12-15 years.  ... The API is cumberson at best.  The generated code is not optimal.
+      this as the modern native library C++ Windows developers have been wishing for the past
+      12-15 years.  ... The API is cumbersome at best.  The generated code is not optimal.
       I think that time has shown that WinRT and UWP were a mistake.  WinUI, instead of
       starting from scratch, sweeps the dirt under the carpet.  I think it's another mistake
       and time will tell whether I'm write or wrong.
@@ -41,7 +41,7 @@ The source code documentation (hosted by UH) is [here](https://www2.hawaii.edu/~
 
 - **The Graphics Framework:**  I started down the GDI path, but good `old Stack Overflow pointed me
   towards **Direct2D**.
-  - **GDI:**  It's depricated.  Also, I want to explore APIs that were written for GPUs.
+  - **GDI:**  It's deprecated.  Also, I want to explore APIs that are written for GPUs.
   - **GDI+:**  I want to write this in C
   - I'm looking at [this](https://learn.microsoft.com/en-us/windows/win32/direct2d/getting-started-with-direct2d)
     and [this](https://bobobobo.wordpress.com/2008/01/31/how-to-create-a-basic-window-in-c/) for a starting point
@@ -52,18 +52,22 @@ The source code documentation (hosted by UH) is [here](https://www2.hawaii.edu/~
   - Note:  Should I have chosen to do a console-based log, I'd have dumped to a syslog on localhost.
   - I think I'll try using [DebugOutputString](https://learn.microsoft.com/en-us/windows/win32/api/debugapi/nf-debugapi-outputdebugstringa)
 
-- **Performance:** (Unintended, but fun) Due to the realtime nature of the application, I had to hand-code a [Goertzel Algorithm](https://en.wikipedia.org/wiki/Goertzel_algorithm) (a type of [Discrete Forier Transform](https://en.wikipedia.org/wiki/Discrete_Fourier_transform)) in x86-64 Assembly Language.
+- **Performance:** (Unintended, but fun) Due to the realtime nature of the 
+  application, I had to hand-code a [Goertzel Algorithm](https://en.wikipedia.org/wiki/Goertzel_algorithm) 
+  (a type of [Discrete Fourier Transform](https://en.wikipedia.org/wiki/Discrete_Fourier_transform)) 
+  in x86-64 Assembly Language.
 
 - **Assertions:** I love assertions.  There's two ways to implement assert in a program
   like this:
   - Standard C [assert](https://learn.microsoft.com/en-us/cpp/c-runtime-library/reference/assert-macro-assert-wassert?view=msvc-170) macro
   - Win32 CRT Debugging tools like [_ASSERTE](https://learn.microsoft.com/en-us/cpp/c-runtime-library/reference/assert-asserte-assert-expr-macros?view=msvc-170)
 
-  For this project, I'm going with _ASSERTE.  There are more options and this is an exploritory project.
+  For this project, I'm going with _ASSERTE.  There are more options and this 
+  is an exploratory project.
 
   Note:  I compared the Debug and Release configurations of both of these techniques
-  with Ghidra.  I was pleasantly suprised to see that both completely disappear in the
-  Release versions.  In a Debug configuration, they have diferent implementations.
+  with Ghidra.  I was pleasantly surprised to see that both completely disappear in the
+  Release versions.  In a Debug configuration, they have different implementations.
 
 ### Toolchain
 This project is the product of a tremendous amount of R&D and would not be possible without the following world-class tools:
