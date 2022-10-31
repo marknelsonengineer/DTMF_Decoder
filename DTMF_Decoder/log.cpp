@@ -9,13 +9,13 @@
 /// Requirements for the logger:
 ///   - Log to `OutputDebugString` with the flexibility of `printf`
 ///   - Both wide and narrow logging
-///   - For log levels #LOG_LEVEL_FATAL, #LOG_LEVEL_ERROR and #LOG_LEVEL_WARN 
+///   - For log levels #LOG_LEVEL_FATAL, #LOG_LEVEL_ERROR and #LOG_LEVEL_WARN
 ///     also show a Message Box
 ///   - Bounds checking on the string buffer
 ///   - Hold the buffer on the stack so it's both thread safe and re-entrant safe
-///   - Append a \n because that's how the Windws debugger likes to print 
+///   - Append a \n because that's how the Windws debugger likes to print
 ///     output
-/// 
+///
 /// @todo sweep for new @see references and format nicely
 ///
 /// @file    log.cpp
@@ -32,30 +32,30 @@
 #include <stdarg.h>       // For va_start
 
 
-/// Save a random number at the end of the string buffer.  When we're done, 
+/// Save a random number at the end of the string buffer.  When we're done,
 /// make sure it's untouched.
-/// 
+///
 /// If we overrun the buffer and violate the stack guard, then fail fast by
 /// throwing an `_ASSERT`.
 #define STACK_GUARD 0xed539d63
 
 
 /// Generic logging function (narrow character)
-/// 
+///
 /// This is intended to be called through the logging macros like #LOG_INFO.
 /// It is not intended to be called directly.
-/// 
-/// I'm choosing to make this a function rather than an inline.  Header-only 
-/// files are great, but I'd like to keep the buffer and all of the `vsprintf` 
+///
+/// I'm choosing to make this a function rather than an inline.  Header-only
+/// files are great, but I'd like to keep the buffer and all of the `vsprintf`
 /// stuff in a self-contained library rather than push it into the caller's source.
-/// 
+///
 /// @param logLevel      The level of this logging event
 /// @param appName       The name of the application
 /// @param functionName  The name of the function
-/// @param format, ...   `printf`-style formatting 
-void logA( 
-   _In_ const logLevels_t logLevel, 
-   _In_ const CHAR*       appName, 
+/// @param format, ...   `printf`-style formatting
+void logA(
+   _In_ const logLevels_t logLevel,
+   _In_ const CHAR*       appName,
    _In_ const CHAR*       functionName,
    _In_ const CHAR*       format,
    _In_ ... ) {
@@ -117,18 +117,18 @@ void logA(
 
 
 /// Generic logging function (wide character)
-/// 
-/// This is intended to be called through the logging macros like #LOGW_INFO.
+///
+/// This is intended to be called through the logging macros like #LOG_INFO_W.
 /// It is not intended to be called directly.
-/// 
-/// I'm choosing to make this a function rather than an inline.  Header-only 
-/// files are great, but I'd like to keep the buffer and all of the `vsprintf` 
+///
+/// I'm choosing to make this a function rather than an inline.  Header-only
+/// files are great, but I'd like to keep the buffer and all of the `vsprintf`
 /// stuff in a self-contained library rather than push it into the caller's source.
-/// 
+///
 /// @param logLevel      The level of this logging event
 /// @param appName       The name of the application
 /// @param functionName  The name of the function
-/// @param format, ...   `printf`-style formatting 
+/// @param format, ...   `printf`-style formatting
 void logW(
    _In_ const logLevels_t logLevel,
    _In_ const WCHAR* appName,
@@ -214,7 +214,7 @@ void logTest() {
    // Bounds testing... the following lines should succeed
    LOG_INFO( "Narrow: 890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345" );
    LOG_INFO( "Narrow: 8901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456" );
-   
+
    LOG_INFO_W( L"Wide: 67890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345" );
    LOG_INFO_W( L"Wide: 678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456" );
 

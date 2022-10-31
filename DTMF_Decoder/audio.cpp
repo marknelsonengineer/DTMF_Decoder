@@ -102,7 +102,7 @@ static HANDLE          shCaptureThread      = NULL; ///< The audio capture threa
 static IAudioCaptureClient* spCaptureClient = NULL; ///< The audio capture client
 
 static CHAR            sBuf[ 256 ];   ///< Debug buffer  @todo Put a guard around this
-static WCHAR           wsBuf[ 256 ];  ///< Debug buffer  @todo Put a guard around this
+//static WCHAR           wsBuf[ 256 ];  ///< Debug buffer  @todo Put a guard around this
 
 
 #ifdef MONITOR_PCM_AUDIO
@@ -134,8 +134,8 @@ static audio_format_t sAudioFormat = UNKNOWN_AUDIO_FORMAT;
 /// @param pData      Pointer to the head of the audio bufer
 /// @param frameIndex The frameIndex number to process
 /// @return `true` if successful.  `false` if there were problems.
-BOOL processAudioFrame( 
-   _In_     BYTE*    pData, 
+BOOL processAudioFrame(
+   _In_     BYTE*    pData,
    _In_     UINT32   frameIndex ) {
 
    _ASSERTE( pData != NULL );
@@ -176,8 +176,7 @@ BOOL processAudioFrame(
          if ( ch1Sample < suMonitorCh1Min ) suMonitorCh1Min = ch1Sample;
 
          if ( sbMonitor ) {
-            sprintf_s( sBuf, sizeof( sBuf ), "Channel 1:  Min: %" PRIu8 "   Max: %" PRIu8, suMonitorCh1Min, suMonitorCh1Max );
-            OutputDebugStringA( sBuf );
+            LOG_TRACE( "Channel 1:  Min: %" PRIu8 "   Max: %" PRIu8, suMonitorCh1Min, suMonitorCh1Max );
 
             suMonitorCh1Max = 0;
             suMonitorCh1Min = 255;
@@ -299,17 +298,26 @@ void audioCapture() {
 
             }
 
+            /// If #MONITOR_INTERVAL_SECONDS is on, the monitoring output will produce:
+/**@verbatim
+audioCapture: Frames available=448  frame position=2118098   697Hz=0.02   770Hz=0.01   852Hz=0.02   941Hz=0.01  1209Hz=0.03  1336Hz=0.02  1477Hz=0.00  1633Hz=0.01
+processAudioFrame: Channel 1:  Min: 125   Max: 129
+@endverbatim */
+
             if ( sbMonitor ) {  // Monitor data on this pass
-               OutputDebugStringA( __FUNCTION__ ":  Monitoring loop" );
-               sprintf_s( sBuf, sizeof( sBuf ), "Frames available=%" PRIu32 "    frame position=%" PRIu64, framesAvailable, framePosition );
-               OutputDebugStringA( sBuf );
-
-               memset( sBuf, 0, 1 );
-
-               for ( int i = 0 ; i < NUMBER_OF_DTMF_TONES ; i++ ) {
-                  sprintf_s( sBuf+strlen(sBuf), sizeof(sBuf), "  %4.0fHz=%4.2f", gDtmfTones[i].frequency, gDtmfTones[i].goertzelMagnitude);
-               }
-               OutputDebugStringA( sBuf );
+               LOG_TRACE( "Frames available=%" PRIu32 "  frame position=%" PRIu64
+                          "  %4.0fHz=%4.2f  %4.0fHz=%4.2f  %4.0fHz=%4.2f  %4.0fHz=%4.2f"
+                          "  %4.0fHz=%4.2f  %4.0fHz=%4.2f  %4.0fHz=%4.2f  %4.0fHz=%4.2f",
+                  framesAvailable, framePosition,
+                  gDtmfTones[ 0 ].frequency, gDtmfTones[ 0 ].goertzelMagnitude,
+                  gDtmfTones[ 1 ].frequency, gDtmfTones[ 1 ].goertzelMagnitude,
+                  gDtmfTones[ 2 ].frequency, gDtmfTones[ 2 ].goertzelMagnitude,
+                  gDtmfTones[ 3 ].frequency, gDtmfTones[ 3 ].goertzelMagnitude,
+                  gDtmfTones[ 4 ].frequency, gDtmfTones[ 4 ].goertzelMagnitude,
+                  gDtmfTones[ 5 ].frequency, gDtmfTones[ 5 ].goertzelMagnitude,
+                  gDtmfTones[ 6 ].frequency, gDtmfTones[ 6 ].goertzelMagnitude,
+                  gDtmfTones[ 7 ].frequency, gDtmfTones[ 7 ].goertzelMagnitude
+                  );
             }
          #endif
 
@@ -337,7 +345,7 @@ void audioCapture() {
 
 /// This thread waits for the audio device to call us back when it has some
 /// data to process.
-/// 
+///
 /// @see https://learn.microsoft.com/en-us/previous-versions/windows/desktop/legacy/ms686736(v=vs.85)
 ///
 /// @param Context Not used
@@ -381,11 +389,11 @@ DWORD WINAPI audioCaptureThread( LPVOID Context ) {
             audioCapture();
          }
       } else if ( dwWaitResult == WAIT_FAILED ) {
-         LOG_FATAL( "WaitForSingleObject failed.  Exiting.  Investigate!" );
+         LOG_FATAL( "WaitForSingleObject in audio capture thread failed.  Exiting.  Investigate!" );
          gracefulShutdown();
          break;  // While loop
       } else {
-         LOG_FATAL( "WaitForSingleObject ended for some unknown reason.  Exiting.  Investigate!" )
+         LOG_FATAL( "WaitForSingleObject in audio capture thread failed.  Exiting.  Investigate!" );
          gracefulShutdown();
          break;  // While loop
       }
@@ -519,7 +527,7 @@ BOOL audioInit() {
       return FALSE;
    }
 
-   LOG_TRACE_W( L":  Device ID=%s", spwstrDeviceId );
+   LOG_INFO_W( L":  Device ID=%s", spwstrDeviceId );
 
    /// Get the State from IMMDevice
    hr = spDevice->GetState( &sdwState );
@@ -550,7 +558,7 @@ BOOL audioInit() {
       OutputDebugStringA( __FUNCTION__ ":  Failed to retrieve the friendly name of the audio adapter for the device.  Continuing." );
       sDeviceInterfaceFriendlyName.pcVal = NULL;
    } else {
-      LOG_TRACE_W( L":  Device audio adapter friendly name=%s", sDeviceInterfaceFriendlyName.pwszVal );
+      LOG_INFO_W( L":  Device audio adapter friendly name=%s", sDeviceInterfaceFriendlyName.pwszVal );
    }
 
    hr = spPropertyStore->GetValue( PKEY_Device_DeviceDesc, &sDeviceDescription );
@@ -558,7 +566,7 @@ BOOL audioInit() {
       OutputDebugStringA( __FUNCTION__ ":  Failed to retrieve the device's description.  Continuing." );
       sDeviceDescription.pcVal = NULL;
    } else {
-      LOG_TRACE_W( L":  Device description=%s", sDeviceDescription.pwszVal );
+      LOG_INFO_W( L":  Device description=%s", sDeviceDescription.pwszVal );
    }
 
    hr = spPropertyStore->GetValue( PKEY_Device_FriendlyName, &sDeviceFriendlyName );
@@ -566,7 +574,7 @@ BOOL audioInit() {
       OutputDebugStringA( __FUNCTION__ ":  Failed to retrieve the friendly name of the device.  Continuing." );
       sDeviceFriendlyName.pcVal = NULL;
    } else {
-      LOG_TRACE_W( L":  Device friendly name=%s", sDeviceFriendlyName.pwszVal );
+      LOG_INFO_W( L":  Device friendly name=%s", sDeviceFriendlyName.pwszVal );
    }
 
    /// Use Activate on IMMDevice to create an IAudioClient
@@ -650,19 +658,15 @@ BOOL audioInit() {
    hr = spAudioClient->GetDevicePeriod( &sDefaultDevicePeriod, &sMinimumDevicePeriod );
    CHECK_HR( "Failed to get audio client device periods" );
 
-   sprintf_s( sBuf, sizeof( sBuf ), "%s:  Default device period=%lli ms", __FUNCTION__, sDefaultDevicePeriod/10000 );
-   OutputDebugStringA( sBuf );
-
-   sprintf_s( sBuf, sizeof( sBuf ), "%s:  Minimum device period=%lli ms", __FUNCTION__, sMinimumDevicePeriod/10000 );
-   OutputDebugStringA( sBuf );
+   LOG_INFO( "%s:  Default device period=%lli ms", __FUNCTION__, sDefaultDevicePeriod / 10000 );
+   LOG_INFO( "%s:  Minimum device period=%lli ms", __FUNCTION__, sMinimumDevicePeriod / 10000 );
 
 
    /// Initialize the DTMF buffer
    br = pcmSetQueueSize( spMixFormat->nSamplesPerSec / 1000 * SIZE_OF_QUEUE_IN_MS );
    CHECK_BR( "Failed to allocate PCM queue" );
 
-   sprintf_s( sBuf, sizeof( sBuf ), "%s:  Queue size=%zu bytes or %d ms", __FUNCTION__, gstQueueSize, SIZE_OF_QUEUE_IN_MS );
-   OutputDebugStringA( sBuf );
+   LOG_INFO( "%s:  Queue size=%zu bytes or %d ms", __FUNCTION__, gstQueueSize, SIZE_OF_QUEUE_IN_MS );
 
    /// After everything is initialized, set #gbIsRunning to `true`
    gbIsRunning = true;

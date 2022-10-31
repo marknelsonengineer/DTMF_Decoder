@@ -72,8 +72,8 @@ extern "C" float fScaleFactor = 0;  ///< Set in goertzel_init() and used in goer
 /// @param index       The index into the DTMF tones array
 /// @param toneStruct  A pointer to #gDtmfTones (so it doesn't have to
 ///                    re-compute the index each time
-void goertzel_magnitude( 
-   _In_     UINT8        index,                
+void goertzel_magnitude(
+   _In_     UINT8        index,
    _Inout_  dtmfTones_t* toneStruct ) {
 
    _ASSERTE( gstQueueHead != NULL );
@@ -104,7 +104,7 @@ void goertzel_magnitude(
 
 
 /// Runs one of the 8 DFT worker threads
-/// 
+///
 /// @see https://learn.microsoft.com/en-us/previous-versions/windows/desktop/legacy/ms686736(v=vs.85)
 ///
 /// @param pContext Holds the index of which tone this thread is responsibile
@@ -164,11 +164,11 @@ DWORD WINAPI goertzelWorkThread( _In_ LPVOID pContext ) {
             SetEvent( shDoneDFTevent[ index ] );
          }
       } else if ( dwWaitResult == WAIT_FAILED ) {
-         LOG_FATAL( "WaitForSingleObject failed.  Exiting.  Investigate!" );
+         LOG_FATAL( "WaitForSingleObject in Goertzel thread failed.  Exiting.  Investigate!" );
          gracefulShutdown();
          break;  // While loop
       } else {
-         LOG_FATAL( "WaitForSingleObject ended for an unknown reason.  Exiting.  Investigate!" );
+         LOG_FATAL( "WaitForSingleObject in Goertzel thread ended for an unknown reason.  Exiting.  Investigate!" );
          gracefulShutdown();
          break;  // While loop
       }
