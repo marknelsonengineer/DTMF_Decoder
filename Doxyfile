@@ -911,7 +911,8 @@ WARN_LOGFILE           =
 INPUT                  = Z:/Src/VisualStudio/DTMF_Decoder/DTMF_Decoder \
                          Z:/Src/VisualStudio/DTMF_Decoder/README.md \
                          REFERENCES.md \
-                         Z:/Src/VisualStudio/DTMF_Decoder/REFERENCES.md
+                         Z:/Src/VisualStudio/DTMF_Decoder/REFERENCES.md \
+                         ARCHITECTURE.md
 
 # This tag can be used to specify the character encoding of the source files
 # that doxygen parses. Internally doxygen uses the UTF-8 encoding. Doxygen uses

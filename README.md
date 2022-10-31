@@ -89,3 +89,8 @@ This project is the product of a tremendous amount of R&D and would not be possi
 ### Using DTMF Decoder
 DTMF Decoder applies the [Unix philosophy](https://en.wikipedia.org/wiki/Unix_philosophy) of doing one thing very well:  Decoding DTMF strings.   Therefore, it does not provide a lot of status/popups/messages to users.   However, DTMF Decoder does send quite a bit of data and status information to [OutputDebugString](https://learn.microsoft.com/en-us/windows/win32/api/debugapi/nf-debugapi-outputdebugstringa).  Therefore, using [DebugView](https://learn.microsoft.com/en-us/sysinternals/downloads/debugview) is a good way to see what's going on inside.
 
+
+### DTMF Decoder's Call Graph
+
+Here's how the whole thing fits together.  Checkout [Architecture](ARCHITECTURE.md)
+![DTMF Decoder's Call Graph](./images/Call_Graph.svg)

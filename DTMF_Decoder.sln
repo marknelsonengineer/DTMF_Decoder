@@ -8,6 +8,7 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{0FC234A6-A252-4D75-97A2-F9E5C1997AC8}"
 	ProjectSection(SolutionItems) = preProject
 		.gitignore = .gitignore
+		ARCHITECTURE.md = ARCHITECTURE.md
 		Doxyfile = Doxyfile
 		README.md = README.md
 		REFERENCES.md = REFERENCES.md
