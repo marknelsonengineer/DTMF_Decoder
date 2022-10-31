@@ -80,7 +80,7 @@ int APIENTRY wWinMain(
    _In_     LPWSTR    lpCmdLine,
    _In_     int       nCmdShow ) {
 
-   OutputDebugStringA( APP_NAME ": Starting" );
+   LOG_TRACE( "Starting" );
 
    BOOL    br;  // BOOL result
    HRESULT hr;  // HRESULT result
@@ -188,7 +188,7 @@ int APIENTRY wWinMain(
 
    CoUninitialize();  /// Unwind COM
 
-   OutputDebugStringA( APP_NAME ": All global resources were cleaned up.  Ending program." );
+   LOG_INFO( "All global resources were cleaned up.  Ending program." );
 
    return (int) msg.wParam;
 }

@@ -69,4 +69,20 @@ enum logLevels_t {
 #define LOG_FATAL_W( format, ... ) logW( LOG_LEVEL_FATAL, APP_NAME_W, __FUNCTIONW__, format, __VA_ARGS__ ); 
 
 
+extern void logA(
+   _In_ const logLevels_t logLevel,
+   _In_ const CHAR* appName,
+   _In_ const CHAR* functionName,
+   _In_ const CHAR* format,
+   _In_ ... );
+
+
+extern void logW(
+   _In_ const logLevels_t logLevel,
+   _In_ const WCHAR* appName,
+   _In_ const WCHAR* functionName,
+   _In_ const WCHAR* format,
+   _In_ ... );
+
+
 extern void logTest();

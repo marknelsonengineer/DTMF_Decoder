@@ -164,11 +164,11 @@ DWORD WINAPI goertzelWorkThread( _In_ LPVOID pContext ) {
             SetEvent( shDoneDFTevent[ index ] );
          }
       } else if ( dwWaitResult == WAIT_FAILED ) {
-         OutputDebugStringA( __FUNCTION__ ":  The wait was failed.  Exiting.  Investigate!" );
+         LOG_FATAL( "WaitForSingleObject failed.  Exiting.  Investigate!" );
          gracefulShutdown();
          break;  // While loop
       } else {
-         OutputDebugStringA( __FUNCTION__ ":  The wait was ended for some other reason.  Exiting.  Investigate!" );
+         LOG_FATAL( "WaitForSingleObject ended for an unknown reason.  Exiting.  Investigate!" );
          gracefulShutdown();
          break;  // While loop
       }

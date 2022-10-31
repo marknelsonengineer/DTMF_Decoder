@@ -248,7 +248,7 @@ void audioCapture() {
          ///        will continue after the DFT threads are done
          br = goertzel_compute_dtmf_tones();
          if ( !br ) {
-            OutputDebugStringA( __FUNCTION__ ":  Failed to compute the DTMF tones.  Investigate!!" );
+            LOG_FATAL( "Failed to compute DTMF tones.  Exiting.  Investigate!" );
             gracefulShutdown();
          }
 
@@ -257,7 +257,7 @@ void audioCapture() {
          if ( gbHasDtmfTonesChanged ) {
             br = mvcViewRefreshWindow();
             if ( !br ) {
-               OutputDebugStringA( __FUNCTION__ ":  Failed to refresh the main window.  Investigate!!" );
+               LOG_FATAL( "Failed to refresh the main window.  Exiting.  Investigate!" );
                gracefulShutdown();
             }
          }
@@ -315,7 +315,7 @@ void audioCapture() {
 
          hr = spCaptureClient->ReleaseBuffer( framesAvailable );
          if ( hr != S_OK ) {
-            OutputDebugStringA( __FUNCTION__ ":  ReleaseBuffer didn't return S_OK.  Investigate!!" );
+            LOG_FATAL( "ReleaseBuffer didn't return S_OK.  Exiting.  Investigate!" );
             gracefulShutdown();
          }
       }
@@ -329,7 +329,7 @@ void audioCapture() {
       /// will return something unexpected and we should see it here.  If this
       /// happens, gracefully shutdown the app.
 
-      OutputDebugStringA( __FUNCTION__ ":  GetBuffer did not return S_OK.  Investigate!!" );
+      LOG_FATAL( "GetBuffer did not return S_OK.  Exiting.  Investigate!" );
       gracefulShutdown();
    }
 }
@@ -381,11 +381,11 @@ DWORD WINAPI audioCaptureThread( LPVOID Context ) {
             audioCapture();
          }
       } else if ( dwWaitResult == WAIT_FAILED ) {
-         OutputDebugStringA( __FUNCTION__ ":  The wait was failed.  Exiting" );
+         LOG_FATAL( "WaitForSingleObject failed.  Exiting.  Investigate!" );
          gracefulShutdown();
          break;  // While loop
       } else {
-         OutputDebugStringA( __FUNCTION__ ":  The wait was ended for some other reason.  Exiting.  Investigate!" );
+         LOG_FATAL( "WaitForSingleObject ended for some unknown reason.  Exiting.  Investigate!" )
          gracefulShutdown();
          break;  // While loop
       }
@@ -519,8 +519,7 @@ BOOL audioInit() {
       return FALSE;
    }
 
-   swprintf_s( wsBuf, sizeof( wsBuf ), __FUNCTIONW__ L":  Device ID=%s", spwstrDeviceId );
-   OutputDebugStringW( wsBuf );
+   LOG_TRACE_W( L":  Device ID=%s", spwstrDeviceId );
 
    /// Get the State from IMMDevice
    hr = spDevice->GetState( &sdwState );
@@ -551,8 +550,7 @@ BOOL audioInit() {
       OutputDebugStringA( __FUNCTION__ ":  Failed to retrieve the friendly name of the audio adapter for the device.  Continuing." );
       sDeviceInterfaceFriendlyName.pcVal = NULL;
    } else {
-      swprintf_s( wsBuf, sizeof( wsBuf ), __FUNCTIONW__ L":  Device audio adapter friendly name=%s", sDeviceInterfaceFriendlyName.pwszVal );
-      OutputDebugStringW( wsBuf );
+      LOG_TRACE_W( L":  Device audio adapter friendly name=%s", sDeviceInterfaceFriendlyName.pwszVal );
    }
 
    hr = spPropertyStore->GetValue( PKEY_Device_DeviceDesc, &sDeviceDescription );
@@ -560,8 +558,7 @@ BOOL audioInit() {
       OutputDebugStringA( __FUNCTION__ ":  Failed to retrieve the device's description.  Continuing." );
       sDeviceDescription.pcVal = NULL;
    } else {
-      swprintf_s( wsBuf, sizeof( wsBuf ), __FUNCTIONW__ L":  Device description=%s", sDeviceDescription.pwszVal );
-      OutputDebugStringW( wsBuf );
+      LOG_TRACE_W( L":  Device description=%s", sDeviceDescription.pwszVal );
    }
 
    hr = spPropertyStore->GetValue( PKEY_Device_FriendlyName, &sDeviceFriendlyName );
@@ -569,8 +566,7 @@ BOOL audioInit() {
       OutputDebugStringA( __FUNCTION__ ":  Failed to retrieve the friendly name of the device.  Continuing." );
       sDeviceFriendlyName.pcVal = NULL;
    } else {
-      swprintf_s( wsBuf, sizeof( wsBuf ), __FUNCTIONW__ L":  Device friendly name=%s", sDeviceFriendlyName.pwszVal );
-      OutputDebugStringW( wsBuf );
+      LOG_TRACE_W( L":  Device friendly name=%s", sDeviceFriendlyName.pwszVal );
    }
 
    /// Use Activate on IMMDevice to create an IAudioClient
