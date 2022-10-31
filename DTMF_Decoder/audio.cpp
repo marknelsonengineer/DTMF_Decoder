@@ -101,9 +101,6 @@ static UINT32          suBufferSize         =    0; ///< The maximum capacity of
 static HANDLE          shCaptureThread      = NULL; ///< The audio capture thread
 static IAudioCaptureClient* spCaptureClient = NULL; ///< The audio capture client
 
-static CHAR            sBuf[ 256 ];   ///< Debug buffer  @todo Put a guard around this
-//static WCHAR           wsBuf[ 256 ];  ///< Debug buffer  @todo Put a guard around this
-
 
 #ifdef MONITOR_PCM_AUDIO
    #define MONITOR_INTERVAL_SECONDS (4)   /**< The monitoring interval.  Set to 0 to disable monitoring */
@@ -229,7 +226,7 @@ void audioCapture() {
    /// Use GetBuffer to get a bunch of frames of audio from the capture client
    hr = spCaptureClient->GetBuffer( &pData, &framesAvailable, &flags, &framePosition, NULL );
    if ( hr == S_OK ) {
-      // OutputDebugStringA( __FUNCTION__ ":  I got data!" );
+      // LOG_TRACE( "I got data!" );
       _ASSERTE( pData != NULL );
 
       if ( flags == 0 ) {
@@ -264,23 +261,23 @@ void audioCapture() {
 
       /// Carefully analyze the flags returned by GetBuffer
       if ( flags & AUDCLNT_BUFFERFLAGS_SILENT ) {
-         OutputDebugStringA( __FUNCTION__ ":  Buffer flag set:  SILENT" );
+         LOG_INFO( "Buffer flag set: SILENT" );
          // Nothing so see here.  Move along.
          flags &= !AUDCLNT_BUFFERFLAGS_SILENT;  // Clear AUDCLNT_BUFFERFLAGS_SILENT from flags
       }
       if ( flags & AUDCLNT_BUFFERFLAGS_DATA_DISCONTINUITY ) {
-         OutputDebugStringA( __FUNCTION__ ":  Buffer flag set:  DATA_DISCONTINUITY" );
+         LOG_INFO( "Buffer flag set: DATA_DISCONTINUITY" );
          // Throw these packets out
          flags &= !AUDCLNT_BUFFERFLAGS_DATA_DISCONTINUITY;  // Clear AUDCLNT_BUFFERFLAGS_DATA_DISCONTINUITY from flags
       }
       if ( flags & AUDCLNT_BUFFERFLAGS_TIMESTAMP_ERROR ) {
-         OutputDebugStringA( __FUNCTION__ ":  Buffer flag set:  TIMESTAMP_ERROR" );
-         // Throw this packet out as well
+         LOG_INFO( "Buffer flag set: TIMESTAMP_ERROR" );
+         // Throw these packets out as well
          flags &= !AUDCLNT_BUFFERFLAGS_TIMESTAMP_ERROR;  // Clear AUDCLNT_BUFFERFLAGS_TIMESTAMP_ERROR from flags
       }
       if ( flags != 0 ) {
-         OutputDebugStringA( __FUNCTION__ ":  Some other bufer flags are set.  Investigate!" );
-         // Throw this packet out as well
+         LOG_WARN( ":  Some other bufer flags are set.  Investigate!" );
+         // Throw these packets
       }
 
       if ( framesAvailable > 0 ) {
@@ -329,9 +326,9 @@ processAudioFrame: Channel 1:  Min: 125   Max: 129
       }
 
    } else if ( hr == AUDCLNT_S_BUFFER_EMPTY ) {
-      OutputDebugStringA( __FUNCTION__ ":  GetBuffer returned an empty buffer.  Continue." );
+      LOG_INFO( "GetBuffer returned an empty buffer.  Continue." );
    } else if ( hr == AUDCLNT_E_OUT_OF_ORDER ) {
-      OutputDebugStringA( __FUNCTION__ ":  GetBuffer returned out of order data.  Continue." );
+      LOG_INFO( "GetBuffer returned out of order data.  Continue." );
    } else {
       /// If the audio device changes (unplugged, for example) then GetBuffer
       /// will return something unexpected and we should see it here.  If this
@@ -351,7 +348,7 @@ processAudioFrame: Channel 1:  Min: 125   Max: 129
 /// @param Context Not used
 /// @return Return `0` if successful.  `0xFFFF `if there was a problem.
 DWORD WINAPI audioCaptureThread( LPVOID Context ) {
-   OutputDebugStringA( __FUNCTION__ ":  Start capture thread" );
+   LOG_TRACE( "Start capture thread" );
 
    HRESULT hr;                  // HRESULT result
    HANDLE  mmcssHandle = NULL;
@@ -359,7 +356,7 @@ DWORD WINAPI audioCaptureThread( LPVOID Context ) {
    /// Initialize COM for the thread
    hr = CoInitializeEx( NULL, COINIT_MULTITHREADED );
    if ( hr != S_OK ) {
-      OutputDebugStringA( __FUNCTION__ ":  Failed to initialize COM in thread" );
+      LOG_FATAL( "Failed to initialize COM in thread." );
       ExitThread( 0xFFFF );
    }
 
@@ -367,9 +364,9 @@ DWORD WINAPI audioCaptureThread( LPVOID Context ) {
    /// priority for this thread
    mmcssHandle = AvSetMmThreadCharacteristics( L"Capture", &gdwMmcssTaskIndex );
    if ( mmcssHandle == NULL ) {
-      OutputDebugStringA( __FUNCTION__ ":  Failed to set MMCSS on the audio capture thread.  Continuing." );
+      LOG_WARN( "Failed to set MMCSS on the audio capture thread.  Continuing." );
    }
-   OutputDebugStringA( __FUNCTION__ ":  Set MMCSS on thread." );
+   LOG_TRACE( "Set MMCSS on the audio capture thread." );
 
    #ifdef MONITOR_PCM_AUDIO
       suFramesToMonitor = MONITOR_INTERVAL_SECONDS * spMixFormat->nSamplesPerSec;
@@ -403,14 +400,14 @@ DWORD WINAPI audioCaptureThread( LPVOID Context ) {
 
    if ( mmcssHandle != NULL ) {
       if ( !AvRevertMmThreadCharacteristics( mmcssHandle ) ) {
-         OutputDebugStringA( __FUNCTION__ ":  Failed to revert MMCSS on the audio capture thread.  Continuing." );
+         LOG_WARN( "Failed to revert MMCSS on the audio capture thread.  Continuing." );
       }
       mmcssHandle = NULL;
    }
 
    CoUninitialize();
 
-   OutputDebugStringA( __FUNCTION__ ":  End capture thread" );
+   LOG_TRACE( "End capture thread" );
 
    ExitThread( 0 );
 }
@@ -433,59 +430,39 @@ BOOL audioPrintWaveFormat( _In_ WAVEFORMATEX* pFmt ) {
    _ASSERTE( pFmt != NULL );
 
    if ( pFmt->wFormatTag == WAVE_FORMAT_EXTENSIBLE ) {
-      OutputDebugStringA( "   " __FUNCTION__ ":  Using WAVE_FORMAT_EXTENSIBLE format");
+      LOG_DEBUG( "Using WAVE_FORMAT_EXTENSIBLE format");
       WAVEFORMATEXTENSIBLE* pFmtEx = (WAVEFORMATEXTENSIBLE*) pFmt;
 
-      sprintf_s( sBuf, sizeof( sBuf ), "   Channels=%" PRIu16, pFmtEx->Format.nChannels );
-      OutputDebugStringA( sBuf );
-
-      sprintf_s( sBuf, sizeof( sBuf ), "   Samples per Second=%" PRIu32, pFmtEx->Format.nSamplesPerSec );
-      OutputDebugStringA( sBuf );
-
-      sprintf_s( sBuf, sizeof( sBuf ), "   Bytes per Second=%" PRIu32, pFmtEx->Format.nAvgBytesPerSec );
-      OutputDebugStringA( sBuf );
-
-      sprintf_s( sBuf, sizeof( sBuf ), "   Block (frame) alignment, in bytes=%" PRIu32, pFmtEx->Format.nBlockAlign );
-      OutputDebugStringA( sBuf );
-
-      sprintf_s( sBuf, sizeof( sBuf ), "   Bits per sample=%" PRIu32, pFmtEx->Format.wBitsPerSample );
-      OutputDebugStringA( sBuf );
-
-      sprintf_s( sBuf, sizeof( sBuf ), "   Valid bits per sample=%" PRIu16, pFmtEx->Samples.wValidBitsPerSample );
-      OutputDebugStringA( sBuf );
+      LOG_DEBUG( "Channels=%" PRIu16,              pFmtEx->Format.nChannels );
+      LOG_DEBUG( "Samples per Second=%" PRIu32,    pFmtEx->Format.nSamplesPerSec );
+      LOG_DEBUG( "Bytes per Second=%" PRIu32,      pFmtEx->Format.nAvgBytesPerSec );
+      LOG_DEBUG( "Block (frame) alignment, in bytes=%" PRIu32, pFmtEx->Format.nBlockAlign );
+      LOG_DEBUG( "Bits per sample=%" PRIu32,       pFmtEx->Format.wBitsPerSample );
+      LOG_DEBUG( "Valid bits per sample=%" PRIu16, pFmtEx->Samples.wValidBitsPerSample );
 
       if ( pFmtEx->SubFormat == KSDATAFORMAT_SUBTYPE_PCM ) {
-         OutputDebugStringA( "   Extended wave format is PCM" );
+         LOG_DEBUG( "Extended wave format is PCM" );
       } else if ( pFmtEx->SubFormat == KSDATAFORMAT_SUBTYPE_IEEE_FLOAT ) {
-         OutputDebugStringA( "   Extended wave format is IEEE Float" );
+         LOG_DEBUG( "Extended wave format is IEEE Float" );
       } else {
-         OutputDebugStringA( "   Extended wave format is not PCM" );
+         LOG_DEBUG( "Extended wave format is not PCM" );
       }
    } else {
-      OutputDebugStringA( "   " __FUNCTION__ ":  Using WAVE_FORMAT format");
+      LOG_DEBUG( "Using WAVE_FORMAT format");
 
       if ( pFmt->wFormatTag == WAVE_FORMAT_PCM ) {
-         OutputDebugStringA( "   Wave format is PCM" );
+         LOG_DEBUG( "Wave format is PCM" );
       } else if ( pFmt->wFormatTag == WAVE_FORMAT_IEEE_FLOAT ) {
-         OutputDebugStringA( "   Wave format is IEEE Float" );
+         LOG_DEBUG( "Wave format is IEEE Float" );
       } else {
-         OutputDebugStringA( "   Wave format is not PCM" );
+         LOG_DEBUG( "Wave format is not PCM" );
       }
 
-      sprintf_s( sBuf, sizeof( sBuf ), "   Channels=%" PRIu16, pFmt->nChannels );
-      OutputDebugStringA( sBuf );
-
-      sprintf_s( sBuf, sizeof( sBuf ), "   Samples per Second=%" PRIu32, pFmt->nSamplesPerSec );
-      OutputDebugStringA( sBuf );
-
-      sprintf_s( sBuf, sizeof( sBuf ), "   Bytes per Second=%" PRIu32, pFmt->nAvgBytesPerSec );
-      OutputDebugStringA( sBuf );
-
-      sprintf_s( sBuf, sizeof( sBuf ), "   Block (frame) alignment, in bytes=%" PRIu32, pFmt->nBlockAlign );
-      OutputDebugStringA( sBuf );
-
-      sprintf_s( sBuf, sizeof( sBuf ), "   Bits per sample=%" PRIu32, pFmt->wBitsPerSample );
-      OutputDebugStringA( sBuf );
+      LOG_DEBUG( "Channels=%" PRIu16,           pFmt->nChannels );
+      LOG_DEBUG( "Samples per Second=%" PRIu32, pFmt->nSamplesPerSec );
+      LOG_DEBUG( "Bytes per Second=%" PRIu32,   pFmt->nAvgBytesPerSec );
+      LOG_DEBUG( "Block (frame) alignment, in bytes=%" PRIu32, pFmt->nBlockAlign );
+      LOG_DEBUG( "Bits per sample=%" PRIu32,    pFmt->wBitsPerSample );
    }
 
    return TRUE;
@@ -500,7 +477,7 @@ BOOL audioInit() {
    BOOL    br;  // BOOL result
 
    if ( sShareMode == AUDCLNT_SHAREMODE_EXCLUSIVE ) {
-      OutputDebugStringA( __FUNCTION__ ":  Exclusive mode not supported right now" );
+      LOG_FATAL( "Exclusive mode not supported right now" );
       return FALSE;
    }
 
@@ -523,7 +500,7 @@ BOOL audioInit() {
    /// Get the ID from IMMDevice
    hr = spDevice->GetId( &spwstrDeviceId );
    if ( hr != S_OK || spwstrDeviceId == NULL ) {
-      OutputDebugStringA( __FUNCTION__ ":  Failed to get the device's ID string" );
+      LOG_FATAL( "Failed to get the device's ID string" );
       return FALSE;
    }
 
@@ -532,19 +509,19 @@ BOOL audioInit() {
    /// Get the State from IMMDevice
    hr = spDevice->GetState( &sdwState );
    if ( hr != S_OK || sdwState == NULL ) {
-      OutputDebugStringA( __FUNCTION__ ":  Failed to get the device's state" );
+      LOG_FATAL( "Failed to get the device's state" );
       return FALSE;
    }
 
    if ( sdwState != DEVICE_STATE_ACTIVE ) {
-      OutputDebugStringA( __FUNCTION__ ":  The audio device state is not active" );
+      LOG_FATAL( "The audio device state is not active" );
       return FALSE;
    }
 
    /// Get the Property Store from IMMDevice
    hr = spDevice->OpenPropertyStore( STGM_READ, &spPropertyStore );
    if ( hr != S_OK || spPropertyStore == NULL ) {
-      OutputDebugStringA( __FUNCTION__ ":  Failed to open device property store" );
+      LOG_FATAL( "Failed to open device property store" );
       return FALSE;
    }
 
@@ -555,7 +532,7 @@ BOOL audioInit() {
 
    hr = spPropertyStore->GetValue( PKEY_DeviceInterface_FriendlyName, &sDeviceInterfaceFriendlyName );
    if ( hr != S_OK ) {
-      OutputDebugStringA( __FUNCTION__ ":  Failed to retrieve the friendly name of the audio adapter for the device.  Continuing." );
+      LOG_WARN( "Failed to retrieve the friendly name of the audio adapter for the device.  Continuing." );
       sDeviceInterfaceFriendlyName.pcVal = NULL;
    } else {
       LOG_INFO_W( L":  Device audio adapter friendly name=%s", sDeviceInterfaceFriendlyName.pwszVal );
@@ -563,7 +540,7 @@ BOOL audioInit() {
 
    hr = spPropertyStore->GetValue( PKEY_Device_DeviceDesc, &sDeviceDescription );
    if ( hr != S_OK ) {
-      OutputDebugStringA( __FUNCTION__ ":  Failed to retrieve the device's description.  Continuing." );
+      LOG_WARN( "Failed to retrieve the device's description.  Continuing." );
       sDeviceDescription.pcVal = NULL;
    } else {
       LOG_INFO_W( L":  Device description=%s", sDeviceDescription.pwszVal );
@@ -571,7 +548,7 @@ BOOL audioInit() {
 
    hr = spPropertyStore->GetValue( PKEY_Device_FriendlyName, &sDeviceFriendlyName );
    if ( hr != S_OK ) {
-      OutputDebugStringA( __FUNCTION__ ":  Failed to retrieve the friendly name of the device.  Continuing." );
+      LOG_WARN( "Failed to retrieve the friendly name of the device.  Continuing." );
       sDeviceFriendlyName.pcVal = NULL;
    } else {
       LOG_INFO_W( L":  Device friendly name=%s", sDeviceFriendlyName.pwszVal );
@@ -580,7 +557,7 @@ BOOL audioInit() {
    /// Use Activate on IMMDevice to create an IAudioClient
    hr = spDevice->Activate( __uuidof( IAudioClient ), CLSCTX_ALL, NULL, (void**) &spAudioClient );
    if ( hr != S_OK || spAudioClient == NULL ) {
-      OutputDebugStringA( __FUNCTION__ ":  Failed to create an audio client" );
+      LOG_FATAL( "Failed to create an audio client" );
       return FALSE;
    }
 
@@ -589,27 +566,27 @@ BOOL audioInit() {
    /// Get the default audio format that the audio driver wants to use
    hr = spAudioClient->GetMixFormat( &spMixFormat );
    if ( hr != S_OK || spMixFormat == NULL ) {
-      OutputDebugStringA( __FUNCTION__ ":  Failed to retrieve mix format" );
+      LOG_FATAL( "Failed to retrieve mix format" );
       return FALSE;
    }
 
    _ASSERTE( spMixFormat != NULL );
 
-   OutputDebugStringA( __FUNCTION__ ":  The mix format follows" );
+   LOG_DEBUG( "The mix format follows:" );
    audioPrintWaveFormat( spMixFormat );
 
    hr = spAudioClient->IsFormatSupported( sShareMode, spMixFormat, &spAudioFormatUsed );
    if ( hr == S_OK ) {
-      OutputDebugStringA( __FUNCTION__ ":  The requested format is supported");
+      LOG_INFO( "The requested format is supported");
    } else if ( hr == AUDCLNT_E_UNSUPPORTED_FORMAT ) {
-      OutputDebugStringA( __FUNCTION__ ":  The requested format is is not supported" );
+      LOG_FATAL( "The requested format is is not supported" );
       return FALSE;
    } else if( hr == S_FALSE && spAudioFormatUsed != NULL) {
-      OutputDebugStringA( __FUNCTION__ ":  The requested format is not available, but this format is..." );
+      LOG_DEBUG( "The requested format is not available, but this format is..." );
       audioPrintWaveFormat( spAudioFormatUsed );
       return FALSE;
    } else {
-      OutputDebugStringA( __FUNCTION__ ":  Failed to validate the requested format" );
+      LOG_FATAL( "Failed to validate the requested format" );
       return FALSE;
    }
 
@@ -631,7 +608,7 @@ BOOL audioInit() {
    }
 
    if ( sAudioFormat == UNKNOWN_AUDIO_FORMAT ) {
-      OutputDebugStringA( __FUNCTION__ ":  Failed to match with the audio format" );
+      LOG_FATAL( "Failed to match with the audio format" );
       return FALSE;
    }
 
@@ -643,14 +620,13 @@ BOOL audioInit() {
                                               | AUDCLNT_STREAMFLAGS_AUTOCONVERTPCM, 0, 0, spMixFormat, NULL );
    if ( hr != S_OK ) {
       /// @todo Look at more error codes and print out higher-fidelity error messages
-      OutputDebugStringA( __FUNCTION__ ":  Failed to initialize the audio client" );
+      LOG_FATAL( "Failed to initialize the audio client" );
       return FALSE;
    }
 
    hr = spAudioClient->GetBufferSize( &suBufferSize );
    CHECK_HR( "Failed to get buffer size" );
-   sprintf_s( sBuf, sizeof( sBuf ), "%s:  The maximum capacity of the buffer is %" PRIu32" frames or %i ms", __FUNCTION__, suBufferSize, (int) (1.0 / spMixFormat->nSamplesPerSec * 1000 * suBufferSize ) );
-   OutputDebugStringA( sBuf );
+   LOG_INFO( "The maximum capacity of the buffer is %" PRIu32" frames or %i ms", suBufferSize, (int) (1.0 / spMixFormat->nSamplesPerSec * 1000 * suBufferSize ) );
    /// Right now, the buffer is ~22ms or about the perfect size to capture
    /// VoIP voice, which is 20ms.
 
@@ -679,7 +655,7 @@ BOOL audioInit() {
    /// Create the callback events
    ghAudioSamplesReadyEvent = CreateEventEx( NULL, NULL, 0, EVENT_MODIFY_STATE | SYNCHRONIZE );
    if ( ghAudioSamplesReadyEvent == NULL ) {
-      OutputDebugStringA( __FUNCTION__ ":  Failed to create audio samples ready event" );
+      LOG_FATAL( "Failed to create an audio samples ready event" );
       return FALSE;
    }
 
@@ -693,7 +669,7 @@ BOOL audioInit() {
    /// Start the thread
    shCaptureThread = CreateThread( NULL, 0, audioCaptureThread, NULL, 0, NULL );
    if ( shCaptureThread == NULL ) {
-      OutputDebugStringA( __FUNCTION__ ":  Failed to create the capture thread" );
+      LOG_FATAL( "Failed to create the capture thread" );
       return FALSE;
    }
 
@@ -701,7 +677,7 @@ BOOL audioInit() {
    hr = spAudioClient->Start();
    CHECK_HR( "Failed to start capturing the audio stream" );
 
-   OutputDebugStringA( __FUNCTION__ ":  The audio capture interface has been initialized" );
+   LOG_INFO( "The audio capture interface has been initialized" );
 
    /// The thread of execution goes back to #wWinMain, which starts the main
    /// message loop

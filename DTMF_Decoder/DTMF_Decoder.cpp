@@ -119,7 +119,7 @@ int APIENTRY wWinMain(
    wcex.hIconSm = LoadIcon( wcex.hInstance, MAKEINTRESOURCE( IDI_DTMF_DECODER ) );
 
    if ( !RegisterClassExW( &wcex ) ) {
-      OutputDebugStringA( APP_NAME ": Failed to register window class.  Exiting.");
+      LOG_FATAL( "Failed to register window class.  Exiting.");
       return FALSE;
    }
 
@@ -138,7 +138,7 @@ int APIENTRY wWinMain(
       nullptr );              // lpParam
 
    if ( !ghMainWindow ) {
-      OutputDebugStringA( APP_NAME ": Failed to create main window.  Exiting." );
+      LOG_FATAL( "Failed to create main window.  Exiting." );
       return FALSE;
    }
 
@@ -157,17 +157,17 @@ int APIENTRY wWinMain(
    /// Initialize Win32 message loop
    ShowWindow( ghMainWindow, nCmdShow );   // It's OK to ignore the result of this
    if ( !UpdateWindow( ghMainWindow ) ) {
-      OutputDebugStringA( APP_NAME ": Failed to do the initial window update.  Exiting." );
+      LOG_FATAL( "Failed to do the initial window update.  Exiting." );
       return FALSE;
    }
 
    HACCEL hAccelTable = LoadAccelerators( hInstance, MAKEINTRESOURCE( IDC_DTMFDECODER ) );
    if ( hAccelTable == NULL ) {
-      OutputDebugStringA( APP_NAME ": Failed to load manu accelerator.  Exiting." );
+      LOG_FATAL( "Failed to load manu accelerator.  Exiting." );
       return FALSE;
    }
 
-   OutputDebugStringA( APP_NAME ": All global resources were successfully initialized" );
+   LOG_INFO( "All global resources were successfully initialized" );
 
 
    /// Main message loop

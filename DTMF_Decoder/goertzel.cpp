@@ -115,8 +115,6 @@ void goertzel_magnitude(
 DWORD WINAPI goertzelWorkThread( _In_ LPVOID pContext ) {
    _ASSERTE( pContext != NULL );
 
-   CHAR sBuf[ 256 ];  // Debug buffer   /// @todo Put a guard around this
-
    int iIndex = *(int*) pContext;  // This comes to us as an int from dtmfTones_t
    size_t index = iIndex;          // But we use it as an index into an array, so convert to size_t
 
@@ -124,8 +122,7 @@ DWORD WINAPI goertzelWorkThread( _In_ LPVOID pContext ) {
    _ASSERTE( shStartDFTevent[ index ] != NULL );
    _ASSERTE( shDoneDFTevent[ index ]  != NULL );
 
-   sprintf_s( sBuf, sizeof( sBuf ), __FUNCTION__ ":  Start Goertzel DFT thread index=%zu", index );
-   OutputDebugStringA( sBuf );
+   LOG_TRACE( "Start Goertzel DFT thread index=%zu", index );
 
    HANDLE mmcssHandle = NULL;  // Local to the thread for safety
 
@@ -137,9 +134,9 @@ DWORD WINAPI goertzelWorkThread( _In_ LPVOID pContext ) {
    /// @see https://learn.microsoft.com/en-us/windows/win32/api/avrt/nf-avrt-avsetmmthreadcharacteristicsa
    mmcssHandle = AvSetMmThreadCharacteristics( L"Capture", &gdwMmcssTaskIndex );
    if ( mmcssHandle == NULL ) {
-      OutputDebugStringA( __FUNCTION__ ":  Failed to set MMCSS on Goertzel work thread.  Continuing." );
+      LOG_WARN( "Failed to set MMCSS on Goertzel work thread.  Continuing." );
    }
-   // OutputDebugStringA( __FUNCTION__ ":  Set MMCSS on Goertzel work thread." );
+   // LOG_INFO( "Set MMCSS on Goertzel work thread." );
 
 // while ( gbIsRunning && index == 4 ) {   // Use for debugging/development
    while ( gbIsRunning ) {
@@ -177,12 +174,12 @@ DWORD WINAPI goertzelWorkThread( _In_ LPVOID pContext ) {
    // The thread is done.  Shut it down.
    if ( mmcssHandle != NULL ) {
       if( !AvRevertMmThreadCharacteristics( mmcssHandle ) ) {
-         OutputDebugStringA( __FUNCTION__ ":  Failed to revert MMCSS on Goertzel work thread.  Continuing." );
+         LOG_WARN( "Failed to revert MMCSS on Goertzel work thread.  Continuing." );
       }
       mmcssHandle = NULL;
    }
 
-   OutputDebugStringA( __FUNCTION__ ":  End Goertzel DFT thread" );
+   LOG_TRACE( "End Goertzel DFT thread." );
 
    ExitThread( 0 );
 }
@@ -220,20 +217,20 @@ BOOL goertzel_init( _In_ int iSampleRate ) {
    for ( int i = 0 ; i < NUMBER_OF_DTMF_TONES ; i++ ) {
       shStartDFTevent[ i ] = CreateEventA( NULL, FALSE, FALSE, NULL );
       if ( shStartDFTevent[ i ] == NULL ) {
-         OutputDebugStringA( __FUNCTION__ ":  Failed to create a startDFTevent event handle" );
+         LOG_ERROR( "Failed to create a startDFTevent event handle" );
          return FALSE;
       }
 
       shDoneDFTevent[ i ] = CreateEventA( NULL, FALSE, FALSE, NULL );
       if ( shDoneDFTevent[ i ] == NULL ) {
-         OutputDebugStringA( __FUNCTION__ ":  Failed to create a doneDFTevent event handle" );
+         LOG_ERROR( "Failed to create a doneDFTevent event handle" );
          return FALSE;
       }
 
       /// Start the threads
       shWorkThreads[i] = CreateThread(NULL, 0, goertzelWorkThread, &gDtmfTones[i].index, 0, NULL);
       if ( shWorkThreads[ i ] == NULL ) {
-         OutputDebugStringA( __FUNCTION__ ":  Failed to create a Goertzel work thread" );
+         LOG_ERROR( "Failed to create a Goertzel work thread" );
          return FALSE;
       }
    }

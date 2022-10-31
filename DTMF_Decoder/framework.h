@@ -91,20 +91,20 @@
 
 /// Standardized macro for checking the result of COM HRESULT values
 /// @see https://learn.microsoft.com/en-us/windows/win32/com/using-macros-for-error-handling
-#define CHECK_HR( message )                         \
-   if ( FAILED( hr ) ) {                            \
-      OutputDebugStringA( APP_NAME ": " message );  \
-      return FALSE;                                 \
+#define CHECK_HR( message ) \
+   if ( FAILED( hr ) ) {    \
+      LOG_FATAL( message ); \
+      return FALSE;         \
    }
 
 
 /// Standardized macro for checking the result of GDI BOOL results.  For example,
 /// If the function succeeds, the return value is nonzero.
 /// If the function fails, the return value is zero.
-#define CHECK_BR( message )                         \
-   if ( !br ) {                                     \
-      OutputDebugStringA( APP_NAME ": " message );  \
-      return FALSE;                                 \
+#define CHECK_BR( message ) \
+   if ( !br ) {             \
+      LOG_FATAL( message ); \
+      return FALSE;         \
    }
 
 
@@ -113,19 +113,19 @@
 /// If the function fails, the return value is zero.
 ///
 /// Just print a warning.  Don't RETURN or change the program flow
-#define WARN_BR( message )                          \
-   if ( !br ) {                                     \
-      OutputDebugStringA( APP_NAME ": " message );  \
+#define WARN_BR( message )  \
+   if ( !br ) {             \
+      LOG_WARN( message );  \
    }
 
 
 /// Standardized macro for checking the result of INT results.  For example,
 /// If the function succeeds, the return value is nonzero.
 /// If the function fails, the return value is zero.
-#define CHECK_IR( message )                         \
-   if ( !ir ) {                                     \
-      OutputDebugStringA( APP_NAME ": " message );  \
-      return FALSE;                                 \
+#define CHECK_IR( message ) \
+   if ( !ir ) {             \
+      LOG_FATAL( message ); \
+      return FALSE;         \
    }
 
 
