@@ -14,8 +14,11 @@
 #pragma once
 
 
-/// The name of the application
-#define APP_NAME "DTMF Decoder"
+/// The name of the application (narrow character)
+#define APP_NAME     "DTMF Decoder"
+
+/// The name of the application (wide character)
+#define APP_NAME_W  L"DTMF Decoder"
 
 
 extern void gracefulShutdown();
