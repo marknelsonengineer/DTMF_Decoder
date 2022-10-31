@@ -16,8 +16,20 @@
 ///   - Append a \n because that's how the Windws debugger likes to print
 ///     output
 ///
-/// @todo sweep for new @see references and format nicely
-///
+/// ### APIs Used
+/// | API                  | Link                                                                                                                              |
+/// |--------------------- | ----------------------------------------------------------------------------------------------------------------------------------|
+/// | `va_arg`             | https://learn.microsoft.com/en-us/cpp/c-runtime-library/reference/va-arg-va-copy-va-end-va-start?view=msvc-170                    |
+/// | `sprintf_s`          | https://learn.microsoft.com/en-us/cpp/c-runtime-library/reference/sprintf-s-sprintf-s-l-swprintf-s-swprintf-s-l?view=msvc-170     |
+/// | `vsprintf_s`         | https://learn.microsoft.com/en-us/cpp/c-runtime-library/reference/vsprintf-s-vsprintf-s-l-vswprintf-s-vswprintf-s-l?view=msvc-170 |
+/// | `OutputDebugStringA` | https://learn.microsoft.com/en-us/windows/win32/api/debugapi/nf-debugapi-outputdebugstringa                                       |
+/// | `_ASSERT_EXPR`       | https://learn.microsoft.com/en-us/cpp/c-runtime-library/reference/assert-asserte-assert-expr-macros?view=msvc-170                 |
+/// | `MessageBoxA`        | https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-messageboxa                                                |
+/// | `swprintf_s`         | https://learn.microsoft.com/en-us/cpp/c-runtime-library/reference/sprintf-s-sprintf-s-l-swprintf-s-swprintf-s-l?view=msvc-170     |
+/// | `vswprintf_s`        | https://learn.microsoft.com/en-us/cpp/c-runtime-library/reference/vsprintf-s-vsprintf-s-l-vswprintf-s-vswprintf-s-l?view=msvc-170 |
+/// | `OutputDebugStringW` | https://learn.microsoft.com/en-us/windows/win32/api/debugapi/nf-debugapi-outputdebugstringw                                       |
+/// | `MessageBoxW`        | https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-messageboxw                                                |
+/// 
 /// @file    log.cpp
 /// @version 1.0
 ///
@@ -90,7 +102,7 @@ void logA(
    pBufferHead       += numCharsWritten;
 
    /// Append a `\n` for MSVC's debugger
-   numCharsWritten = vsprintf_s( pBufferHead, bufCharsRemaining, "\n", args);
+   numCharsWritten = sprintf_s( pBufferHead, bufCharsRemaining, "\n" );
    bufCharsRemaining -= numCharsWritten;
    pBufferHead       += numCharsWritten;
 
