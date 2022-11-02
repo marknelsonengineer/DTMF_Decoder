@@ -1,3 +1,18 @@
+/* ////////////////////////////////////////////////////////////////////////////
+//          University of Hawaii, College of Engineering
+//          DTMF_Decoder - EE 469 - Fall 2022
+//
+//  A Windows Desktop C program that decodes DTMF tones
+//
+/// Custom style sheet for Doxygen documentation
+///
+/// @file    estraStyleSheet.css
+/// @version 1.0
+///
+/// @author  Mark Nelson <marknels@hawaii.edu>
+/// @date    2_Nov_2022
+//////////////////////////////////////////////////////////////////////////// */
+
 code {
     color: green;
 }
@@ -5,4 +20,16 @@ code {
 pre.fragment {
     color: green;
     background-color: #e8e8e8
+}
+
+span.comment {
+    color: green;
+}
+
+span.preprocessor {
+    color: dimgray;
+}
+
+span.keywordflow {
+    color: darkorange;
 }
