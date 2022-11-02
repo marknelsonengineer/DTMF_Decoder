@@ -20,6 +20,20 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "html", "html", "{8C0060C4-F
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "images", "images", "{921F6D11-A804-4B40-84A9-834B011DEE8F}"
+	ProjectSection(SolutionItems) = preProject
+		images\Call_Graph.svg = images\Call_Graph.svg
+		images\dia.png = images\dia.png
+		images\dot.png = images\dot.png
+		images\DTMF_Decoder_iOS.PNG = images\DTMF_Decoder_iOS.PNG
+		images\DTMF_Decoder_logo.png = images\DTMF_Decoder_logo.png
+		images\DTMF_Decoder_Windows.jpg = images\DTMF_Decoder_Windows.jpg
+		images\logo_doxygen.png = images\logo_doxygen.png
+		images\logo_ghidra.png = images\logo_ghidra.png
+		images\logo_git.png = images\logo_git.png
+		images\logo_github.png = images\logo_github.png
+		images\logo_sysinternals.png = images\logo_sysinternals.png
+		images\Visual_Studio_Logo.png = images\Visual_Studio_Logo.png
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
