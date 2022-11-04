@@ -1,15 +1,32 @@
 #!/bin/bash
 
-# @todo header
-# @todo get into associative arrays for passing data around
-# @todo gcc -fpreprocessed does not work on the mac
+###############################################################################
+##          University of Hawaii, College of Engineering
+##          DTMF_Decoder - EE 469 - Fall 2022
+##
+##  A Windows Desktop C program that decodes DTMF tones
+## 
+### Generate a STATISTICS.md file
+###
+### @see https://shields.io
+###
+### @todo get into associative arrays for passing data around
+### @todo gcc -fpreprocessed does not work on the mac
+###
+### @file    stats.sh
+### @version 2.0
+###
+### @author  Mark Nelson <marknels@hawaii.edu>
+### @date    4_Nov_2022
+###############################################################################
 
 
+# Create 3 temporary files
 ALL_FILES=$(mktemp -q /tmp/stats.XXXXXX || exit 1)
 WORKING_FILES=$(mktemp -q /tmp/stats.XXXXXX || exit 1)
 REMAINING_FILES=$(mktemp -q /tmp/stats.XXXXXX || exit 1)
 
-# Set trap to clean up the temporary files
+# Trap to clean up temporary files
 trap 'rm -f -- "$ALL_FILES" "$WORKING_FILES" "$REMAINING_FILES"' EXIT
 
 
@@ -86,33 +103,6 @@ function processDataFiles {
 }
 
 
-function process_row_as_source {
-   array=()
-   while IFS=  read -r -d $'\0'; do
-      array+=("$REPLY")
-   done < <(eval "${2} -print0")
-   processSourceFiles "${1}" "${array[@]}"
-}
-
-
-function process_row_as_text {
-   array=()
-   while IFS=  read -r -d $'\0'; do
-      array+=("$REPLY")
-   done < <(eval "${2} -print0")
-   processTextFiles "${1}" "${array[@]}"
-}
-
-
-function process_row_as_data {
-   array=()
-   while IFS=  read -r -d $'\0'; do
-      array+=("$REPLY")
-   done < <(eval "${2} -print0")
-   processDataFiles "${1}" "${array[@]}"
-}
-
-
 function extract_working_files {
    egrep    ${1}  $ALL_FILES > $WORKING_FILES
    egrep -v ${1}  $ALL_FILES > $REMAINING_FILES
@@ -166,11 +156,36 @@ function print_date {
 }
 
 
+function print_shields_io_tags {
+   GITHUB_USERNAME="marknelsonengineer"
+	GITHUB_REPO="DTMF_Decoder"
+	STYLE="social"
+
+	repo1="![GitHub code size in bytes](https://img.shields.io/github/languages/code-size/${GITHUB_USERNAME}/${GITHUB_REPO}?style=${STYLE})"
+	repo2="![GitHub repo size](https://img.shields.io/github/repo-size/${GITHUB_USERNAME}/${GITHUB_REPO}?style=${STYLE})"
+	repo3="![GitHub contributors](https://img.shields.io/github/contributors/${GITHUB_USERNAME}/${GITHUB_REPO}?style=${STYLE})"
+
+	commit1="![GitHub commit activity](https://img.shields.io/github/commit-activity/w/${GITHUB_USERNAME}/${GITHUB_REPO}?style=${STYLE})"
+	commit2="![GitHub last commit](https://img.shields.io/github/last-commit/${GITHUB_USERNAME}/${GITHUB_REPO}?style=${STYLE})"
+	issue1="![GitHub issues](https://img.shields.io/github/issues-raw/${GITHUB_USERNAME}/${GITHUB_REPO}?style=${STYLE})"
+	issue2="![GitHub closed issues](https://img.shields.io/github/issues-closed-raw/${GITHUB_USERNAME}/${GITHUB_REPO}?style=${STYLE})"
+	social1="![GitHub forks](https://img.shields.io/github/forks/${GITHUB_USERNAME}/${GITHUB_REPO}?style=${STYLE})"
+	social2="![GitHub Repo stars](https://img.shields.io/github/stars/${GITHUB_USERNAME}/${GITHUB_REPO}?style=${STYLE})"
+	tags1="![GitHub tag (latest by date)](https://img.shields.io/github/v/tag/${GITHUB_USERNAME}/${GITHUB_REPO}?style=${STYLE})"
+	
+	printf "#### GitHub Statistics\n"
+   printf "| Repository                            | Commits                     | Issues                    | Social                      | Tags     |\n"
+   printf "|---------------------------------------|-----------------------------|---------------------------|-----------------------------|----------|\n"
+	printf "|${repo1} <br/> ${repo2} <br/> ${repo3} | ${commit1} <br/> ${commit2} | ${issue1} <br/> ${issue2} | ${social1} <br/> ${social2} | ${tags1} |\n"
+}
+
+
 print_title
 print_file_statistics
 # print_number_of_unit_tests
 # print_number_of_individual_tests
 # print_number_of_commits  # Broken because remote directory is not a git repo
+print_shields_io_tags
 print_date
 
 
