@@ -181,6 +181,7 @@ int APIENTRY wWinMain(
          DispatchMessage( &msg );
       }
    }
+   PostQuitMessage( msg.wParam );   // No return value to check
 
    /// Cleanup all resources
    br = audioCleanup();
