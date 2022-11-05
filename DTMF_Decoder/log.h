@@ -69,6 +69,10 @@ enum logLevels_t {
 #define LOG_FATAL_W( format, ... ) logW( LOG_LEVEL_FATAL, APP_NAME_W, __FUNCTIONW__, format, __VA_ARGS__ )
 
 
+extern BOOL logInit( _In_ const HWND hWindow );
+
+extern BOOL logCleanup();
+
 extern void logA(
    _In_ const logLevels_t logLevel,
    _In_ const CHAR* appName,

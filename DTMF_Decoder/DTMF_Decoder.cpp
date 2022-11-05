@@ -142,6 +142,10 @@ int APIENTRY wWinMain(
       return FALSE;
    }
 
+   /// Initialize the logger
+   br = logInit( ghMainWindow );
+   CHECK_BR( "Failed to initialize the logger.  Exiting." );
+
    /// Initialize the model
    br = mvcModelInit();
    CHECK_BR( "Failed to initialize the model.  Exiting." );
@@ -181,7 +185,7 @@ int APIENTRY wWinMain(
          DispatchMessage( &msg );
       }
    }
-   PostQuitMessage( msg.wParam );   // No return value to check
+   PostQuitMessage( (int) msg.wParam );   // No return value to check
 
    /// Cleanup all resources
    br = audioCleanup();
@@ -215,6 +219,8 @@ LRESULT CALLBACK WndProc( HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam 
                   br = DestroyWindow( hWnd );
                   WARN_BR( "Failed to destroy window.  Investigate!!" );
 
+                  logCleanup();
+
                   break;
                default:
                   return DefWindowProc( hWnd, message, wParam, lParam );
@@ -238,6 +244,7 @@ LRESULT CALLBACK WndProc( HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam 
          {
             switch ( wParam ) {
                case VK_ESCAPE:
+                  // logTest();                          // This is a good place to test the logger
                   SendMessage( hWnd, WM_CLOSE, 0, 0 );
                   break ;
                default:
@@ -261,6 +268,8 @@ LRESULT CALLBACK WndProc( HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam 
 
             br = DestroyWindow( hWnd );
             WARN_BR( "Failed to destroy window" );
+
+            logCleanup();
 
             break;
          }

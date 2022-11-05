@@ -30,9 +30,9 @@
 /// | `OutputDebugStringW` | https://learn.microsoft.com/en-us/windows/win32/api/debugapi/nf-debugapi-outputdebugstringw                                       |
 /// | `MessageBoxW`        | https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-messageboxw                                                |
 /// | `MessageBeep`        | https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-messagebeep                                                |
-/// 
+///
 /// @file    log.cpp
-/// @version 1.0
+/// @version 1.1
 ///
 /// @author  Mark Nelson <marknels@hawaii.edu>
 /// @date    29_Oct_2022
@@ -51,6 +51,37 @@
 /// If we overrun the buffer and violate the stack guard, then fail fast by
 /// throwing an `_ASSERT`.
 #define STACK_GUARD 0xed539d63
+
+
+/// The handle to a window that will "own" the message box popups.
+static HWND shMainWindow = NULL;
+
+
+/// Initialize the logger
+///
+/// Per Raymond Chen's book, all windows, including message boxes, should be owned by their
+/// calling window.  I don't want to pass an hWnd into each log (although, in the future
+/// that may be necessary).  So, I'll initialize the logger and set #shMainWindow.
+///
+/// @param hWindow The window that will own the log message boxes (usually the
+///                application's main window).
+///
+/// @return `true` if successful.  `false` if there was a problem.
+BOOL logInit( _In_ const HWND hWindow ) {
+   shMainWindow = hWindow;
+
+   return TRUE;
+}
+
+
+/// Cleanup the logger
+///
+/// @return `true` if successful.  `false` if there was a problem.
+BOOL logCleanup() {
+   shMainWindow = NULL;  /// Set #shMainWindow to `NULL`
+
+   return TRUE;
+}
 
 
 /// Generic logging function (narrow character)
@@ -120,13 +151,13 @@ void logA(
    OutputDebugStringA( buffer.sBuf );
 
    if ( logLevel == LOG_LEVEL_WARN ) {
-      MessageBoxA( NULL, buffer.sBuf, appName, MB_OK | MB_ICONWARNING );
+      MessageBoxA( shMainWindow, buffer.sBuf, appName, MB_OK | MB_ICONWARNING );
    } else if ( logLevel == LOG_LEVEL_ERROR ) {
       MessageBeep( MB_ICONERROR );   // No need to check for a result code
-      MessageBoxA( NULL, buffer.sBuf, appName, MB_OK | MB_ICONERROR );
+      MessageBoxA( shMainWindow, buffer.sBuf, appName, MB_OK | MB_ICONERROR );
    } else if ( logLevel == LOG_LEVEL_FATAL ) {
       MessageBeep( MB_ICONSTOP );    // No need to check for a result code
-      MessageBoxA( NULL, buffer.sBuf, appName, MB_OK | MB_ICONSTOP );
+      MessageBoxA( shMainWindow, buffer.sBuf, appName, MB_OK | MB_ICONSTOP );
    }
 }
 
@@ -195,11 +226,11 @@ void logW(
    OutputDebugStringW( buffer.sBuf );
 
    if ( logLevel == LOG_LEVEL_WARN ) {
-      MessageBoxW( NULL, buffer.sBuf, appName, MB_OK | MB_ICONWARNING );
+      MessageBoxW( shMainWindow, buffer.sBuf, appName, MB_OK | MB_ICONWARNING );
    } else if ( logLevel == LOG_LEVEL_ERROR ) {
-      MessageBoxW( NULL, buffer.sBuf, appName, MB_OK | MB_ICONERROR );
+      MessageBoxW( shMainWindow, buffer.sBuf, appName, MB_OK | MB_ICONERROR );
    } else if ( logLevel == LOG_LEVEL_FATAL ) {
-      MessageBoxW( NULL, buffer.sBuf, appName, MB_OK | MB_ICONSTOP );
+      MessageBoxW( shMainWindow, buffer.sBuf, appName, MB_OK | MB_ICONSTOP );
    }
 }
 
@@ -211,18 +242,18 @@ void logTest() {
    LOG_TRACE( "Testing LOG_TRACE (narrow)" );
    LOG_DEBUG( "Testing LOG_DEBUG (narrow)" );
    LOG_INFO(  "Testing LOG_INFO (narrow)"  );
-// LOG_WARN(  "Testing LOG_WARN (narrow)"  );
-// LOG_ERROR( "Testing LOG_ERROR (narrow)" );
-// LOG_FATAL( "Testing LOG_FATAL (narrow)" );
+   LOG_WARN(  "Testing LOG_WARN (narrow)"  );
+   LOG_ERROR( "Testing LOG_ERROR (narrow)" );
+   LOG_FATAL( "Testing LOG_FATAL (narrow)" );
 
    LOG_TRACE( "Testing LOG_TRACE (narrow) varargs [%d] [%s] [%f]", 1, "OK", 1.0 );
 
    LOG_TRACE_W( L"Testing LOG_TRACE (wide)" );
    LOG_DEBUG_W( L"Testing LOG_DEBUG (wide)" );
    LOG_INFO_W(  L"Testing LOG_INFO (wide)"  );
-// LOG_WARN_W(  L"Testing LOG_WARN (wide)"  );
-// LOG_ERROR_W( L"Testing LOG_ERROR (wide)" );
-// LOG_FATAL_W( L"Testing LOG_FATAL (wide)" );
+   LOG_WARN_W(  L"Testing LOG_WARN (wide)"  );
+   LOG_ERROR_W( L"Testing LOG_ERROR (wide)" );
+   LOG_FATAL_W( L"Testing LOG_FATAL (wide)" );
 
    LOG_TRACE_W( L"Testing LOG_TRACE (wide) varargs [%d] [%s] [%f]", 1, L"OK", 1.0 );
 
