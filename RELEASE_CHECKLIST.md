@@ -1,5 +1,5 @@
-Pre-Release Checklist
-=====================
+Release Checklist
+=================
 
 This is for a Visual Studio-based WIN32 C Windows program
 
@@ -17,10 +17,10 @@ This is for a Visual Studio-based WIN32 C Windows program
 - Last looks
     - Do a `Rebuild Project` without any warnings
     - Regenerate the statistics:
-      ```
+
           wsl
           $ cd ~/src/VisualStudio/DTMF_Decoder
           $ ./bin/stats.sh | tee STATISTICS.md
-      ```
+
     - Run [DOT Online](https://dreampuf.github.io/GraphvizOnline) to regenerate 
       the call diagram
