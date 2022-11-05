@@ -30,8 +30,10 @@ REMAINING_FILES=$(mktemp -q /tmp/stats.XXXXXX || exit 1)
 trap 'rm -f -- "$ALL_FILES" "$WORKING_FILES" "$REMAINING_FILES"' EXIT
 
 
-# Put all of the source files in $ALL_FILES
-find . ! -path "./Doxygen/*" ! -path "./x64/*" ! -path "*/.vs/*" ! -path "./.git/*" ! -path "*/Release/*" ! -path "*/Debug/*" ! -path "./Ghidra/*" ! -name ".DS_Store" -type f > $ALL_FILES
+function get_all_files {
+	# Put all of the source files in $ALL_FILES
+	find . ! -path "./Doxygen/*" ! -path "./x64/*" ! -path "*/.vs/*" ! -path "./.git/*" ! -path "*/Release/*" ! -path "*/Debug/*" ! -path "./Ghidra/*" ! -name ".DS_Store" -type f > $ALL_FILES
+}
 
 
 function print_title {
@@ -145,8 +147,8 @@ function print_number_of_individual_tests {
 
 function print_number_of_commits {
    printf "\n"
-   unit_tests=`git rev-list --all --count`
-   printf "Number of commits:  %d\n" $unit_tests
+   number_of_commits=`git rev-list --all --count`
+   printf "Number of commits:  %d\n\n" $number_of_commits
 }
 
 
@@ -171,26 +173,41 @@ function print_shields_io_tags {
 	issue2="![GitHub closed issues](https://img.shields.io/github/issues-closed-raw/${GITHUB_USERNAME}/${GITHUB_REPO}?style=${STYLE})"
 	social1="![GitHub forks](https://img.shields.io/github/forks/${GITHUB_USERNAME}/${GITHUB_REPO}?style=${STYLE})"
 	social2="![GitHub Repo stars](https://img.shields.io/github/stars/${GITHUB_USERNAME}/${GITHUB_REPO}?style=${STYLE})"
-	tags1="![GitHub tag (latest by date)](https://img.shields.io/github/v/tag/${GITHUB_USERNAME}/${GITHUB_REPO}?style=${STYLE})"
 	
+	printf "\n"
 	printf "#### GitHub Statistics\n"
-   printf "| Repository                            | Commits                     | Issues                    | Social                      | Tags     |\n"
-   printf "|---------------------------------------|-----------------------------|---------------------------|-----------------------------|----------|\n"
-	printf "|${repo1} <br/> ${repo2} <br/> ${repo3} | ${commit1} <br/> ${commit2} | ${issue1} <br/> ${issue2} | ${social1} <br/> ${social2} | ${tags1} |\n"
+	
+	print_number_of_commits
+	
+   printf "| Repository                            | Commits                     | Issues                    | Social                      |\n"
+   printf "|---------------------------------------|-----------------------------|---------------------------|-----------------------------|\n"
+	printf "|${repo1} <br/> ${repo2} <br/> ${repo3} | ${commit1} <br/> ${commit2} | ${issue1} <br/> ${issue2} | ${social1} <br/> ${social2} |\n"
 }
 
 
+function print_tags {
+# Use the following to get the tag/release history
+# $ git tag --sort=v:refname --format="%(tag)|%(contents)|%(creator)"
+	printf "\n"
+	printf "#### Tags\n"
+	
+	printf "| Tag | Date | Author |\n"
+	printf "|-----|------|--------|\n"
+	git for-each-ref --sort=creatordate --format '%(refname:strip=2)|%(creatordate)|%(authorname)' refs/tags
+	
+	printf "\n"
+} 
+
+
 print_title
+get_all_files
 print_file_statistics
 # print_number_of_unit_tests
 # print_number_of_individual_tests
 # print_number_of_commits  # Broken because remote directory is not a git repo
+print_tags
 print_shields_io_tags
 print_date
-
-
-# Use the following to get the tag/release history
-# $ git tag --sort=v:refname --format="%(tag)|%(contents)|%(creator)"
 
 
 # clean up the temporary files
