@@ -29,6 +29,7 @@
 /// | `vswprintf_s`        | https://learn.microsoft.com/en-us/cpp/c-runtime-library/reference/vsprintf-s-vsprintf-s-l-vswprintf-s-vswprintf-s-l?view=msvc-170 |
 /// | `OutputDebugStringW` | https://learn.microsoft.com/en-us/windows/win32/api/debugapi/nf-debugapi-outputdebugstringw                                       |
 /// | `MessageBoxW`        | https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-messageboxw                                                |
+/// | `MessageBeep`        | https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-messagebeep                                                |
 /// 
 /// @file    log.cpp
 /// @version 1.0
@@ -121,8 +122,10 @@ void logA(
    if ( logLevel == LOG_LEVEL_WARN ) {
       MessageBoxA( NULL, buffer.sBuf, appName, MB_OK | MB_ICONWARNING );
    } else if ( logLevel == LOG_LEVEL_ERROR ) {
+      MessageBeep( MB_ICONERROR );   // No need to check for a result code
       MessageBoxA( NULL, buffer.sBuf, appName, MB_OK | MB_ICONERROR );
    } else if ( logLevel == LOG_LEVEL_FATAL ) {
+      MessageBeep( MB_ICONSTOP );    // No need to check for a result code
       MessageBoxA( NULL, buffer.sBuf, appName, MB_OK | MB_ICONSTOP );
    }
 }
