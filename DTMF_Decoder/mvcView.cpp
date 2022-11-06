@@ -354,6 +354,10 @@ BOOL mvcViewCleanupResources() {
 /// Populate a D2D1_RECT_F rectangle and ensure that the new rectangle needs to
 /// be updated by checking pUpdateRect.
 ///
+/// Many thanks to Silent Matt for validating an optimized algorithm for
+/// rectangle overlap detection.
+/// @see https://silentmatt.com/rectangle-intersection/
+///
 /// @param pRect_F      Pointer to the floating-point rectangle structure that
 ///                     will be populated **if** the rectangle needs updating.
 ///                     If the rectangle does not need updating, this structure
@@ -375,7 +379,7 @@ static inline BOOL makeFloatRect(
    _In_  const LONG   bottom ) {
 
    if ( pUpdateRect->left >= right )  /// Fail fast if the rectangle is outside the update region
-      return FALSE; 
+      return FALSE;
    if ( pUpdateRect->right <= left )
       return FALSE;
    if ( pUpdateRect->top >= bottom )
