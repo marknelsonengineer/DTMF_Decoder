@@ -12,8 +12,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		Doxyfile = Doxyfile
 		README.md = README.md
 		REFERENCES.md = REFERENCES.md
-		STATISTICS.md = STATISTICS.md
 		RELEASE_CHECKLIST.md = RELEASE_CHECKLIST.md
+		STATISTICS.md = STATISTICS.md
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "html", "html", "{8C0060C4-F258-4A3A-9246-C89EEA7D050F}"
@@ -23,6 +23,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "html", "html", "{8C0060C4-F
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "images", "images", "{921F6D11-A804-4B40-84A9-834B011DEE8F}"
 	ProjectSection(SolutionItems) = preProject
+		images\Call_Graph.dot = images\Call_Graph.dot
+		images\Call_Graph.dot.orig = images\Call_Graph.dot.orig
 		images\Call_Graph.svg = images\Call_Graph.svg
 		images\dia.png = images\dia.png
 		images\dot.png = images\dot.png

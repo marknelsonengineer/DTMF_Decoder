@@ -1,0 +1,93 @@
+digraph "wWinMain"
+{
+ // INTERACTIVE_SVG=YES
+ // LATEX_PDF_SIZE
+  bgcolor="transparent";
+  edge [fontname=Helvetica,fontsize=10,labelfontname=Helvetica,labelfontsize=10];
+  node [fontname=Helvetica,fontsize=10,shape=box,height=0.2,width=0.4];
+  rankdir="LR";
+  
+  subgraph cluster_0 {
+    style=filled;
+    color=lightgrey;
+    node [style=filled,color=white];
+    Node5 -> Node6 [color="steelblue1",style="solid"];
+    Node6 -> Node7 [color="steelblue1",style="solid"];
+    Node6 -> Node9 [color="steelblue1",style="solid"];
+    Node9 -> Node10 [color="steelblue1",style="solid"];
+    label=<<FONT POINT-SIZE="18.0" FACE="Helvetica">Audio Capture Thread</FONT>>;
+  }
+
+  subgraph cluster_1 {
+    style=filled;
+    color=lightgrey;
+    node [style=filled,color=white];
+    Node13 -> Node14 [color="steelblue1",style="solid"];
+    Node13 -> Node15 [color="steelblue1",style="solid"];
+    Node15 -> Node16 [color="steelblue1",style="solid"];
+    Node15 -> Node17 [color="steelblue1",style="solid"];
+    label=<<FONT POINT-SIZE="18.0" FACE="Helvetica">Goertzel Work Threads (x8)</FONT>>;
+  }
+  
+  Node1 [label="wWinMain",height=0.2,width=0.4,color="gray40", fillcolor="grey60", style="filled", fontcolor="black",tooltip="Program entrypoint."];
+  Node1 -> Node2 [color="steelblue1",style="solid"];
+  Node2 [label="audioCleanup",height=0.2,width=0.4,color="grey40", fillcolor="white", style="filled",URL="$audio_8cpp.html#a14c68cb6d5f722f9905d837f3b199b5e",tooltip="Cleanup all things audio."];
+  Node2 -> Node3 [color="steelblue1",style="solid"];
+  Node3 [label="pcmReleaseQueue",height=0.2,width=0.4,color="grey40", fillcolor="white", style="filled",URL="$mvcModel_8cpp.html#a599848a20b16abb30c5ccdac8759f7b0",tooltip="Release the memory allocated to gPcmQueue."];
+  Node1 -> Node4 [color="steelblue1",style="solid"];
+  Node4 [label="audioInit",height=0.2,width=0.4,color="grey40", fillcolor="white", style="filled",URL="$audio_8cpp.html#ab70c083a94ae0d8c4d41f3f16f5fadf6",tooltip="Initialize the audio capture device and start the capture thread."];
+  Node4 -> Node5 [color="steelblue1",style="solid"];
+  Node5 [label="audioCaptureThread",height=0.2,width=0.4,color="grey40", fillcolor="white", style="filled",URL="$audio_8cpp.html#a0d5a135c46acd46c0de0f0135c586b5f",tooltip="This thread waits for the audio device to call us back when it has some data to process."];
+  Node6 [label="audioCapture",height=0.2,width=0.4,color="grey40", fillcolor="white", style="filled",URL="$audio_8cpp.html#a904b8424a3b1eba0ee5be3c7797d0846",tooltip="Get audio frames from the device and process them."];
+  Node7 [label="goertzel_compute_dtmf_tones",height=0.2,width=0.4,color="grey40", fillcolor="white", style="filled",URL="$goertzel_8cpp.html#a1403e4b9b099e2b67396c6999d80154a",tooltip="Signal the 8 Goertzel worker threads, then wait for them to finish their analysis."];
+  Node6 -> Node8 [color="steelblue1",style="solid"];
+  Node8 [label="gracefulShutdown",height=0.2,width=0.4,color="grey40", fillcolor="white", style="filled",URL="$DTMF__Decoder_8cpp.html#ab51c747b8e9f544fb2cb2ada323c9292",tooltip="Gracefully initiate the shutdown of the application."];
+  Node9 [label="processAudioFrame",height=0.2,width=0.4,color="grey40", fillcolor="white", style="filled",URL="$audio_8cpp.html#a6cda0abf4600bd7ee57889f9a995ba96",tooltip="Process the audio frameIndex, converting it into PCM_8, adding the sample to gPcmQueue and monitoring..."];
+  Node10 [label="pcmEnqueue",height=0.2,width=0.4,color="grey40", fillcolor="white", style="filled",URL="$mvcModel_8h.html#a58d02f9b7016647bfc4e83e2da3df637",tooltip="Enqueue a byte of PCM data to gPcmQueue"];
+  Node5 -> Node8 [color="steelblue1",style="solid"];
+  Node4 -> Node11 [color="steelblue1",style="solid"];
+  Node11 [label="audioPrintWaveFormat",height=0.2,width=0.4,color="grey40", fillcolor="white", style="filled",URL="$audio_8cpp.html#ae5d64151681c70f4e2aa8f2030c85a40",tooltip="Print the WAVEFORMATEX or WAVEFORMATEXTENSIBLE structure to OutputDebug."];
+  Node4 -> Node12 [color="steelblue1",style="solid"];
+  Node12 [label="goertzel_init",height=0.2,width=0.4,color="grey40", fillcolor="white", style="filled",URL="$goertzel_8cpp.html#a8a455f45eb4c8d36a38dcfc671c12ae5",tooltip="Initialize values needed by the Goertzel DFT."];
+  Node12 -> Node13 [color="steelblue1",style="solid"];
+  Node13 [label="goertzelWorkThread",height=0.2,width=0.4,color="grey40", fillcolor="white", style="filled",URL="$goertzel_8cpp.html#a66d78f41dc38ffa372912b2d4078023f",tooltip="Runs one of the 8 DFT worker threads."];
+  Node14 [label="goertzel_magnitude",height=0.2,width=0.4,color="grey40", fillcolor="white", style="filled",URL="$goertzel_8cpp.html#a7b931e498a5f0a93f2a1db8af404ccf4",tooltip="Compute the Goertzel magnitude of 8-bit PCM data."];
+  Node13 -> Node8 [color="steelblue1",style="solid"];
+  Node15 [label="mvcModelToggleToneDetectedStatus",height=0.2,width=0.4,color="grey40", fillcolor="white", style="filled",URL="$mvcModel_8h.html#a7de7b93a7c3e0280e0df75d860053fd5",tooltip="Determine if the state of a DTMF tone detection has changed."];
+  Node16 [label="mvcInvalidateColumn",height=0.2,width=0.4,color="grey40", fillcolor="white", style="filled",URL="$mvcView_8cpp.html#aed94d0658dc95df369ab6e4a9cf029f2",tooltip="Invalidate the column (not the whole screen)"];
+  Node17 [label="mvcInvalidateRow",height=0.2,width=0.4,color="grey40", fillcolor="white", style="filled",URL="$mvcView_8cpp.html#a313f75e9324507b538855f9a00935c9b",tooltip="Invalidate just the row (not the whole screen)"];
+  Node4 -> Node18 [color="steelblue1",style="solid"];
+  Node18 [label="pcmSetQueueSize",height=0.2,width=0.4,color="grey40", fillcolor="white", style="filled",URL="$mvcModel_8cpp.html#af8dd5b7c6f2c447fa7eee420a54b9ce7",tooltip="Set the size of gPcmQueue, allocate and zero the space for it."];
+  Node1 -> Node19 [color="steelblue1",style="solid"];
+  Node19 [label="logInit",height=0.2,width=0.4,color="grey40", fillcolor="white", style="filled",URL="$log_8cpp.html#a55bedd559f44901637ef8ed7bc7017cf",tooltip="Initialize the logger."];
+  Node1 -> Node20 [color="steelblue1",style="solid"];
+  Node20 [label="mvcModelInit",height=0.2,width=0.4,color="grey40", fillcolor="white", style="filled",URL="$mvcModel_8cpp.html#afba4e16ba72d01f6eb03b9c4f4a4d400",tooltip="Currently does nothing, but it's good to have around."];
+  Node1 -> Node21 [color="steelblue1",style="solid"];
+  Node21 [label="mvcViewInitResources",height=0.2,width=0.4,color="grey40", fillcolor="white", style="filled",URL="$mvcView_8cpp.html#a439e3f885b2da7f984a87d9621ee6803",tooltip="Initialize all of the resources needed to draw the main window."];
+  Node1 -> Node22 [color="steelblue1",style="solid"];
+  Node22 [label="WndProc",height=0.2,width=0.4,color="grey40", fillcolor="white", style="filled",URL="$DTMF__Decoder_8cpp.html#a30a1e3b0304f1b083637664cbda94e72",tooltip="Message handler for the main window."];
+  Node22 -> Node23 [color="steelblue1",style="solid"];
+  Node23 [label="About",height=0.2,width=0.4,color="grey40", fillcolor="white", style="filled",URL="$DTMF__Decoder_8cpp.html#aa9ea8fa776a88d87ad4600dfe701882a",tooltip="Message handler for the About dialog box."];
+  Node22 -> Node24 [color="steelblue1",style="solid"];
+  Node24 [label="audioStopDevice",height=0.2,width=0.4,color="grey40", fillcolor="white", style="filled",URL="$audio_8cpp.html#afa5f082435f8bb7259188938ac7126cb",tooltip="Stop the audio device."];
+  Node22 -> Node25 [color="steelblue1",style="solid"];
+  Node25 [label="goertzel_cleanup",height=0.2,width=0.4,color="grey40", fillcolor="white", style="filled",URL="$goertzel_8cpp.html#a9ab293566c92c2f7248ed6a2d45dd58b",tooltip="Cleanup Goertzel event handles and threads."];
+  Node22 -> Node26 [color="steelblue1",style="solid"];
+  Node26 [label="goertzel_end",height=0.2,width=0.4,color="grey40", fillcolor="white", style="filled",URL="$goertzel_8cpp.html#a2a56fe65909c5aeb5d130dd6eae51cdd",tooltip="Signal all of the threads so they can end on their own terms."];
+  Node22 -> Node27 [color="steelblue1",style="solid"];
+  Node27 [label="logCleanup",height=0.2,width=0.4,color="grey40", fillcolor="white", style="filled",URL="$log_8cpp.html#a6895ef574aac68ccafbeb26ee1519ade",tooltip="Cleanup the logger."];
+  Node22 -> Node28 [color="steelblue1",style="solid"];
+  Node28 [label="mvcViewCleanupResources",height=0.2,width=0.4,color="grey40", fillcolor="white", style="filled",URL="$mvcView_8cpp.html#aadcdd80cbecad16883c70763e2ea6e2e",tooltip="Cleanup the resources (in reverse order of their creation)"];
+  Node22 -> Node29 [color="steelblue1",style="solid"];
+  Node29 [label="mvcViewPaintWindow",height=0.2,width=0.4,color="grey40", fillcolor="white", style="filled",URL="$mvcView_8cpp.html#ab5224696cb939bcc71085fb51e9872cc",tooltip="Paint the main window containing the DTMF keypad."];
+  Node29 -> Node30 [color="steelblue1",style="solid"];
+  Node30 [label="paintColFreqs",height=0.2,width=0.4,color="grey40", fillcolor="white", style="filled",URL="$mvcView_8cpp.html#a1137f2b02c7c8ed412ac8b64600334b6",tooltip="Paint a frequency label above each column."];
+  Node30 -> Node31 [color="steelblue1",style="solid"];
+  Node31 [label="makeFloatRect",height=0.2,width=0.4,color="grey40", fillcolor="white", style="filled",URL="$mvcView_8cpp.html#a5f1680754734f68059dc7827fac420f2",tooltip="Populate a D2D1_RECT_F rectangle and ensure that the new rectangle needs to be updated by checking pU..."];
+  Node29 -> Node32 [color="steelblue1",style="solid"];
+  Node32 [label="paintKeys",height=0.2,width=0.4,color="grey40", fillcolor="white", style="filled",URL="$mvcView_8cpp.html#aac30a49256af90df8139dedb5e5ff276",tooltip="The detailed work to paint each key on the keypad... painting the rectangle, digit and letters above ..."];
+  Node32 -> Node31 [color="steelblue1",style="solid"];
+  Node29 -> Node33 [color="steelblue1",style="solid"];
+  Node33 [label="paintRowFreqs",height=0.2,width=0.4,color="grey40", fillcolor="white", style="filled",URL="$mvcView_8cpp.html#ab8104e776553c1a94e3b84601764022e",tooltip="Paint a frequency label before each row."];
+  Node33 -> Node31 [color="steelblue1",style="solid"];
+}
