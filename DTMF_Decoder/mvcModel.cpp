@@ -31,18 +31,15 @@ BOOL mvcModelInit() {
 
 
 dtmfTones_t gDtmfTones[ NUMBER_OF_DTMF_TONES ] = {
-   { 0,  697.0, false, L"697" },
-   { 1,  770.0, false, L"770" },
-   { 2,  852.0, false, L"852" },
-   { 3,  941.0, false, L"941" },
-   { 4, 1209.0, false, L"1209" },
-   { 5, 1336.0, false, L"1336" },
-   { 6, 1477.0, false, L"1477" },
-   { 7, 1633.0, false, L"1633" }
+   { 0,  697.0, false, L"697" },   // Row 0
+   { 1,  770.0, false, L"770" },   // Row 1
+   { 2,  852.0, false, L"852" },   // Row 2
+   { 3,  941.0, false, L"941" },   // Row 3
+   { 4, 1209.0, false, L"1209" },  // Column 0
+   { 5, 1336.0, false, L"1336" },  // Column 1
+   { 6, 1477.0, false, L"1477" },  // Column 2
+   { 7, 1633.0, false, L"1633" }   // Column 3
 };
-
-
-bool gbHasDtmfTonesChanged = false;
 
 
 bool gbIsRunning = false;

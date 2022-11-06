@@ -130,8 +130,8 @@ int APIENTRY wWinMain(
       WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU,
       CW_USEDEFAULT,          // X position of window
       0,                      // Y position of window
-      giWindowWidth,            // Width of window
-      giWindowHeight,           // Height of window
+      giWindowWidth,          // Width of window
+      giWindowHeight,         // Height of window
       nullptr,                // hWndParent
       nullptr,                // hMenu
       hInstance,              // hInstance
@@ -145,6 +145,8 @@ int APIENTRY wWinMain(
    /// Initialize the logger
    br = logInit( ghMainWindow );
    CHECK_BR( "Failed to initialize the logger.  Exiting." );
+
+   LOG_TRACE( "Created main window:  Width=%d  Height=%d", giWindowWidth, giWindowHeight );
 
    /// Initialize the model
    br = mvcModelInit();
@@ -229,11 +231,18 @@ LRESULT CALLBACK WndProc( HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam 
          break;
       case WM_PAINT:  /// WM_PAINT - Paint the main window
          {
+            RECT updateRect;
+            br = GetUpdateRect( hWnd, &updateRect, FALSE );
+
+            if ( !br ) {
+               break;  // If there is no update region, then don't paint anything
+            }
+
             PAINTSTRUCT ps;
             HDC hdc = BeginPaint( hWnd, &ps );
 
-            // Add any drawing code that uses hdc here...
-            br = mvcViewPaintWindow();
+            // Add any drawing code here...
+            br = mvcViewPaintWindow( &updateRect );
             WARN_BR( "Failed to paint window.  Investigate!!" );
 
             br = EndPaint( hWnd, &ps );

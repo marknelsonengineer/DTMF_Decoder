@@ -247,16 +247,6 @@ void audioCapture() {
             LOG_FATAL( "Failed to compute DTMF tones.  Exiting.  Investigate!" );
             gracefulShutdown();
          }
-
-         /// If, after computing all 8 of the DFTs, if the detected state
-         /// has changed, then refresh the main window
-         if ( gbHasDtmfTonesChanged ) {
-            br = mvcViewRefreshWindow();
-            if ( !br ) {
-               LOG_FATAL( "Failed to refresh the main window.  Exiting.  Investigate!" );
-               gracefulShutdown();
-            }
-         }
       }
 
       /// Carefully analyze the flags returned by GetBuffer

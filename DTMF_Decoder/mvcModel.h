@@ -19,6 +19,7 @@
 #pragma once
 
 #include <Windows.h>      // For WCHAR, BYTE, etc.
+#include "mvcView.h"      // for mvcInvalidateRow and mvcInvalidateColumn
 
 
 /// The number of DTMF tones DTMF Decoder processes
@@ -56,22 +57,26 @@ typedef struct {
 extern dtmfTones_t gDtmfTones[ NUMBER_OF_DTMF_TONES ];
 
 
-/// Temporarily set to `true` when the Goertzel DFT detects that any DTMF tone
-/// has changed.
-///
-/// `false` if there are no recent changes (so there's no need to repaint the
-/// screen).
-extern bool gbHasDtmfTonesChanged;
-
-
 /// Determine if the state of a DTMF tone detection has changed.  If it has,
-/// then we need to repaint the display.  See #gbHasDtmfTonesChanged
-inline void mvcModelToggleToneDetectedStatus( _In_ const size_t toneIndex, _In_ const bool detectedStatus ) {
+/// then we need to invalidate that region of the display.
+inline void mvcModelToggleToneDetectedStatus(
+   _In_ const size_t toneIndex,
+   _In_ const BOOL  detectedStatus ) {
+
    _ASSERTE( toneIndex < NUMBER_OF_DTMF_TONES );
 
    if ( gDtmfTones[ toneIndex ].detected != detectedStatus ) {
       gDtmfTones[ toneIndex ].detected = detectedStatus;
-      gbHasDtmfTonesChanged = true;
+
+      BOOL br;  // BOOL result
+
+      if ( ( toneIndex & 0b1100 ) == 0 ) {  // If toneIndex is between 0 and 3
+         br = mvcInvalidateRow( toneIndex );
+      } else {
+         br = mvcInvalidateColumn( toneIndex - 4 );  // toneIndex is between 4 and 7,
+      }                                              // which turns into columns 0 through 3
+
+      WARN_BR( "Failed to invalidate region of screen" );
    }
 }
 
