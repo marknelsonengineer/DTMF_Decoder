@@ -356,6 +356,7 @@ BOOL mvcViewCleanupResources() {
 ///
 /// Many thanks to Silent Matt for validating an optimized algorithm for
 /// rectangle overlap detection.
+/// @see https://stackoverflow.com/questions/306316/determine-if-two-rectangles-overlap-each-other
 /// @see https://silentmatt.com/rectangle-intersection/
 ///
 /// @param pRect_F      Pointer to the floating-point rectangle structure that
