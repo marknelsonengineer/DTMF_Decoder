@@ -39,6 +39,11 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "images", "images", "{921F6D
 		images\Visual_Studio_Logo.png = images\Visual_Studio_Logo.png
 	EndProjectSection
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Optimizer", "Optimizer", "{BC73996E-58A7-4251-B0D1-C40E45E6F9F7}"
+	ProjectSection(SolutionItems) = preProject
+		Optimizer\DTMF_Decoder_x64_Release.pgd = Optimizer\DTMF_Decoder_x64_Release.pgd
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64

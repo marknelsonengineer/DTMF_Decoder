@@ -32,6 +32,7 @@
 /// @see https://learn.microsoft.com/en-us/windows/win32/api/synchapi/nf-synchapi-setevent
 /// @see https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-postquitmessage
 /// @see https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-enddialog
+/// @see https://learn.microsoft.com/en-us/cpp/build/pgoautosweep
 ///
 /// @file    DTMF_Decoder.cpp
 /// @version 1.0
@@ -42,6 +43,7 @@
 
 #include "framework.h"    // Standard system include files
 #include <combaseapi.h>   // For initializing COM
+#include <pgobootrun.h>   // For PgoAutoSweep
 
 #include "DTMF_Decoder.h" // For APP_NAME
 #include "mvcModel.h"     // Holds the persistent model for the application
@@ -169,6 +171,7 @@ int APIENTRY wWinMain(
       return FALSE;
    }
 
+   // PgoAutoSweep( APP_NAME_W );  /// Generate Profile-Guided Optimizations (PGO) after initializtion
    LOG_INFO( "All global resources were successfully initialized" );
 
 
@@ -191,6 +194,7 @@ int APIENTRY wWinMain(
 
    CoUninitialize();  /// Unwind COM
 
+   // PgoAutoSweep( APP_NAME_W );  /// Generate Profile-Guided Optimizations (PGO) at the end
    LOG_INFO( "All global resources were cleaned up.  Ending program." );
 
    return (int) msg.wParam;

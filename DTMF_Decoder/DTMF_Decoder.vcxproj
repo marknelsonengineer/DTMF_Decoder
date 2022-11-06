@@ -144,6 +144,8 @@
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
+      <LinkTimeCodeGeneration>UseLinkTimeCodeGeneration</LinkTimeCodeGeneration>
+      <AdditionalOptions>/USEPROFILE:AGGRESSIVE /USEPROFILE:PGD="$(SolutionDir)Optimizer\DTMF_Decoder_x64_Release.pgd %(AdditionalOptions)</AdditionalOptions>
     </Link>
     <MASM>
       <PreprocessorDefinitions>_WIN64;%(PreprocessorDefinitions)</PreprocessorDefinitions>

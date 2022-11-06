@@ -38,3 +38,27 @@ This checklist is for a Visual Studio Win32 C Windows program
     - Regenerate the Doxygen documentation
     - Push the Doxygen documentation to UH
     - Sync the repo with GitHub
+
+### Profile Guided Optimization
+Checkout [Profile-guided optimizations](https://learn.microsoft.com/en-us/cpp/build/profile-guided-optimizations?view=msvc-170) 
+
+Uncomment the 2 instances of:  `PgoAutoSweep( APP_NAME_W );` in `DTMF_Decoder.cpp`
+
+Target a build for the **x64 Release** version
+
+When generating a profile, add `/genprofile:exact pgobootrun.lib` to Liker > Command Line > Additional Options:
+
+Rebuild the x64 Release version
+
+Open a Developer PowerShell, cd to the x64/Release folder
+
+Run DTMF Decoder and decode the following digits:  1 5 9 D * 8 6 A 2 6 C 4 8 # 0 7 4 2 3 B C # 
+
+Note that several new *.pgc files are created.
+
+Run `pgomgr /merge *.pgc .\DTMF_Decoder_x64_Release.pgd` to merge the files
+Checkout the profile database with:  `pgrmgr /summary .\DTMF_Decoder_x64_Release.pgd` and `pgomgr /summary /detail .\DTMF_Decoder_x64_Release.pgd`
+
+Now, copy `DTMF_Decoder_x64_Release.pgd` and the `.pgc` files to ./Optimizer
+
+Finally, add `/USEPROFILE:AGGRESSIVE /USEPROFILE:PGD="$(SolutionDir)Optimizer\DTMF_Decoder_x64_Release.pgd" ` to the Linker Options
