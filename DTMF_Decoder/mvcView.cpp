@@ -48,7 +48,7 @@
 
 // Global Variables (private to this source file)
 static ID2D1Factory*          spD2DFactory        = NULL;  ///< The Direct2D Factory
-static ID2D1HwndRenderTarget* spRenderTarget      = NULL;	 ///< Render target
+static ID2D1HwndRenderTarget* spRenderTarget      = NULL;  ///< Render target
 static ID2D1SolidColorBrush*  spBrushForeground   = NULL;  ///< A light blue brush for the foreground
 static ID2D1SolidColorBrush*  spBrushHighlight    = NULL;  ///< A lighter blue brush for the highlight
 static ID2D1SolidColorBrush*  spBrushBackground   = NULL;  ///< A dark blue brush for the background (not used right now)
@@ -82,52 +82,43 @@ typedef struct {
    size_t row;        ///< Row index into gDtmfTones
    size_t column;     ///< Column index into gDtmfTones
    WCHAR  letters[5]; ///< The letters above the digit
-   float  x;          ///< The upper-left corner of the digit's box
-   float  y;          ///< The upper-left corner of the digit's box
-   LONG   lx;
-   LONG   ly; /// @todo RENAME and REPLACE
+   LONG   x;          ///< The upper-left corner of the digit's box
+   LONG   y;          ///< The upper-left corner of the digit's box
 } keypad_t;
 
 
 /// An array of information (location and display data) for each key (button)
 /// on the keypad
 static keypad_t keypad[ 16 ] = {
-   {L"1", 0, 4,     L"", COL0, ROW0, COL0, ROW0 },
-   {L"2", 0, 5,  L"ABC", COL1, ROW0, COL1, ROW0 },
-   {L"3", 0, 6,  L"DEF", COL2, ROW0, COL2, ROW0 },
-   {L"A", 0, 7,     L"", COL3, ROW0, COL3, ROW0 },
-   {L"4", 1, 4,  L"GHI", COL0, ROW1, COL0, ROW1 },
-   {L"5", 1, 5,  L"JKL", COL1, ROW1, COL1, ROW1 },
-   {L"6", 1, 6,  L"MNO", COL2, ROW1, COL2, ROW1 },
-   {L"B", 1, 7,     L"", COL3, ROW1, COL3, ROW1 },
-   {L"7", 2, 4, L"PQRS", COL0, ROW2, COL0, ROW2 },
-   {L"8", 2, 5,  L"TUV", COL1, ROW2, COL1, ROW2 },
-   {L"9", 2, 6, L"WXYZ", COL2, ROW2, COL2, ROW2 },
-   {L"C", 2, 7,     L"", COL3, ROW2, COL3, ROW2 },
-   {L"*", 3, 4,     L"", COL0, ROW3, COL0, ROW3 },
-   {L"0", 3, 5,     L"", COL1, ROW3, COL1, ROW3 },
-   {L"#", 3, 6,     L"", COL2, ROW3, COL2, ROW3 },
-   {L"D", 3, 7,     L"", COL3, ROW3, COL3, ROW3 }
+   {L"1", 0, 4,     L"", COL0, ROW0 },
+   {L"2", 0, 5,  L"ABC", COL1, ROW0 },
+   {L"3", 0, 6,  L"DEF", COL2, ROW0 },
+   {L"A", 0, 7,     L"", COL3, ROW0 },
+   {L"4", 1, 4,  L"GHI", COL0, ROW1 },
+   {L"5", 1, 5,  L"JKL", COL1, ROW1 },
+   {L"6", 1, 6,  L"MNO", COL2, ROW1 },
+   {L"B", 1, 7,     L"", COL3, ROW1 },
+   {L"7", 2, 4, L"PQRS", COL0, ROW2 },
+   {L"8", 2, 5,  L"TUV", COL1, ROW2 },
+   {L"9", 2, 6, L"WXYZ", COL2, ROW2 },
+   {L"C", 2, 7,     L"", COL3, ROW2 },
+   {L"*", 3, 4,     L"", COL0, ROW3 },
+   {L"0", 3, 5,     L"", COL1, ROW3 },
+   {L"#", 3, 6,     L"", COL2, ROW3 },
+   {L"D", 3, 7,     L"", COL3, ROW3 }
 };
-
-
-// Forward declarations of private functions in this file
-static inline void paintKeys(      _In_ const RECT* pUpdateRect );
-static inline void paintRowFreqs(  _In_ const RECT* pUpdateRect );
-static inline void paintColFreqs( _In_ const RECT* pUpdateRect );
 
 
 /// Invalidate just the row (not the whole screen)
 ///
-/// @param row Index of the row...0 through 3.
+/// @param row Index of the row... 0 through 3.
 ///
 /// @return `true` if successful.  `false` if there was a problem.
 BOOL mvcInvalidateRow( _In_ const size_t row ) {
    _ASSERTE( row <= 3 );
    _ASSERTE( ghMainWindow != NULL );
 
-   BOOL br;  // BOOL result
-
+   BOOL br;            // BOOL result
    RECT rectToRedraw;  // The rectangle to redraw
 
    rectToRedraw.left = 0;
@@ -135,19 +126,19 @@ BOOL mvcInvalidateRow( _In_ const size_t row ) {
 
    switch ( row ) {
       case 0:
-         rectToRedraw.top = ROW0;
+         rectToRedraw.top    = ROW0;
          rectToRedraw.bottom = ROW0 + BOX_HEIGHT;
          break;
       case 1:
-         rectToRedraw.top = ROW1;
+         rectToRedraw.top    = ROW1;
          rectToRedraw.bottom = ROW1 + BOX_HEIGHT;
          break;
       case 2:
-         rectToRedraw.top = ROW2;
+         rectToRedraw.top    = ROW2;
          rectToRedraw.bottom = ROW2 + BOX_HEIGHT;
          break;
       case 3:
-         rectToRedraw.top = ROW3;
+         rectToRedraw.top    = ROW3;
          rectToRedraw.bottom = ROW3 + BOX_HEIGHT;
          break;
    }
@@ -168,7 +159,7 @@ BOOL mvcInvalidateColumn( _In_ const size_t column ) {
    _ASSERTE( column <= 3 );
    _ASSERTE( ghMainWindow != NULL );
 
-   BOOL br;  // BOOL result
+   BOOL br;            // BOOL result
    RECT rectToRedraw;  // The rectangle to redraw
 
    rectToRedraw.top = 0;
@@ -176,19 +167,19 @@ BOOL mvcInvalidateColumn( _In_ const size_t column ) {
 
    switch ( column ) {
       case 0:
-         rectToRedraw.left = COL0 - 16;
+         rectToRedraw.left  = COL0 - 16;
          rectToRedraw.right = COL0 + 71;
          break;
       case 1:
-         rectToRedraw.left = COL1 - 16;
+         rectToRedraw.left  = COL1 - 16;
          rectToRedraw.right = COL1 + 71;
          break;
       case 2:
-         rectToRedraw.left = COL2 - 16;
+         rectToRedraw.left  = COL2 - 16;
          rectToRedraw.right = COL2 + 71;
          break;
       case 3:
-         rectToRedraw.left = COL3 - 16;
+         rectToRedraw.left  = COL3 - 16;
          rectToRedraw.right = COL3 + 71;
          break;
    }
@@ -311,6 +302,7 @@ BOOL mvcViewInitResources() {
    CHECK_HR( "Failed to create Direct2D Render Target" );
    _ASSERTE( spRenderTarget != NULL );
 
+
    /// Create the colors (brushes) for the foreground, highlight and background
    _ASSERTE( spBrushForeground == NULL );
    hr = spRenderTarget->CreateSolidColorBrush(
@@ -320,6 +312,7 @@ BOOL mvcViewInitResources() {
    CHECK_HR( "Failed to create Direct2D Brush (Foreground)" );
    _ASSERTE( spBrushForeground != NULL );
 
+
    _ASSERTE( spBrushHighlight == NULL );
    hr = spRenderTarget->CreateSolidColorBrush(
       D2D1::ColorF( D2D1::ColorF( HIGHLIGHT_COLOR, 1.0f ) ),
@@ -328,7 +321,7 @@ BOOL mvcViewInitResources() {
    CHECK_HR( "Failed to create Direct2D Brush (Highlight)" );
    _ASSERTE( spBrushHighlight != NULL );
 
-   // This brush does not get used, so we will comment it out for now
+
    _ASSERTE( spBrushBackground == NULL );
    hr = spRenderTarget->CreateSolidColorBrush(
       D2D1::ColorF( D2D1::ColorF( BACKGROUND_COLOR, 1.0f ) ),
@@ -350,7 +343,7 @@ BOOL mvcViewInitResources() {
 BOOL mvcViewCleanupResources() {
    SAFE_RELEASE( spBrushForeground );
    SAFE_RELEASE( spBrushHighlight );
-   SAFE_RELEASE( spBrushBackground );  // It's not used, so we are commenting it out for now
+   SAFE_RELEASE( spBrushBackground );
    SAFE_RELEASE( spRenderTarget );
    SAFE_RELEASE( spD2DFactory );
 
@@ -358,76 +351,45 @@ BOOL mvcViewCleanupResources() {
 }
 
 
-
-/// Paint the main window containing the DTMF keypad
+/// Populate a D2D1_RECT_F rectangle and ensure that the new rectangle needs to
+/// be updated by checking pUpdateRect.
 ///
-/// @todo Modify this code so that only the specific keys and lables that
-///       have changed get redrawn.  This gets rid of flicker.  Issue #8
-/// @see  http://www.catch22.net/tuts/win32/flicker-free-drawing#
-///
-/// @return `true` if successful.  `false` if there were problems.
-BOOL mvcViewPaintWindow( _In_ const RECT* pUpdateRect ) {
-   HRESULT hr;  // HRESULT result
+/// @param pRect_F      Pointer to the floating-point rectangle structure that
+///                     will be populated **if** the rectangle needs updating.
+///                     If the rectangle does not need updating, this structure
+///                     does not change.
+/// @param pUpdateRect  The rectangle that needs to be refreshed (from WM_PAINT)
+/// @param left         The rectangle that's being made
+/// @param top          The rectangle that's being made
+/// @param right        The rectangle that's being made
+/// @param bottom       The rectangle that's being made
+/// @return `TRUE` if the rectangle that's being made has any overlap with
+///         pUpdateRect.  `FALSE` if the rectangle that's being made is outside
+///         of pUpdateRect (which probably means it doesn't need to be redrawn).
+static inline BOOL makeFloatRect(
+   _Out_ D2D1_RECT_F* pRect_F,
+   _In_  const RECT*  pUpdateRect,
+   _In_  const LONG   left,
+   _In_  const LONG   top,
+   _In_  const LONG   right,
+   _In_  const LONG   bottom ) {
 
-   _ASSERTE( spRenderTarget != NULL );
-   _ASSERTE( pUpdateRect    != NULL );
-
-   LOG_TRACE( "Update region:  (%d, %d) to (%d, %d)", pUpdateRect->left, pUpdateRect->top, pUpdateRect->right, pUpdateRect->bottom );
-
-   spRenderTarget->BeginDraw();          // No return value to check for errors
-
-   /// Paint the background color into the update region.
-   _ASSERTE( spBrushBackground != NULL );
-
-   D2D1_RECT_F updateRect_F = D2D1::RectF(
-      static_cast<FLOAT>( pUpdateRect->left ),
-      static_cast<FLOAT>( pUpdateRect->top ),
-      static_cast<FLOAT>( pUpdateRect->right ),
-      static_cast<FLOAT>( pUpdateRect->bottom )
-   );                                     // No return value to check for erors
-
-   spRenderTarget->FillRectangle(
-      updateRect_F,         // The rectangle to fill
-      spBrushBackground     // The background brush
-   );                                     // No return value to check for erors
-
-   /// Draw the main window... starting with the column and row labels
-   paintColFreqs( pUpdateRect );
-   paintRowFreqs( pUpdateRect );
-
-   /// Paint each of the keys
-   ///
-   /// @internal For now, and mostly for the sake of efficiency, we are not checking
-   ///           the results of these drawing functions.  None of the methods these
-   ///           functions call/use return any error messages, so (right now)
-   ///           they return `void`.
-   paintKeys( pUpdateRect );
-
-   hr = spRenderTarget->EndDraw();
-   CHECK_HR( "Failed to end drawing operations on the render target " );
-
-   return TRUE;
-}
-
-
-/// Make a D2D1_RECT_F rectangle and ensure that the new rectangle needs to
-/// be updated.
-///
-/// @return
-BOOL makeFloatRect( _Out_ D2D1_RECT_F* rect_F, _In_ const RECT* updateRect, _In_ const LONG left, _In_ const LONG top, _In_ const LONG right, _In_ const LONG bottom ) {
-   if ( updateRect->left >= right )
+   if ( pUpdateRect->left >= right )  /// Fail fast if the rectangle is outside the update region
+      return FALSE; 
+   if ( pUpdateRect->right <= left )
       return FALSE;
-   if ( updateRect->right <= left )
+   if ( pUpdateRect->top >= bottom )
       return FALSE;
-   if ( updateRect->top >= bottom )
-      return FALSE;
-   if ( updateRect->bottom <= top )
+   if ( pUpdateRect->bottom <= top )
       return FALSE;
 
-   rect_F->left = static_cast<FLOAT>( left );
-   rect_F->top = static_cast<FLOAT>( top );
-   rect_F->right = static_cast<FLOAT>( right );
-   rect_F->bottom = static_cast<FLOAT>( bottom );
+   // At this point, the rectangle is inside the update region
+   pRect_F->left = static_cast<FLOAT>( left );
+   pRect_F->top = static_cast<FLOAT>( top );
+   pRect_F->right = static_cast<FLOAT>( right );
+   pRect_F->bottom = static_cast<FLOAT>( bottom );
+
+   // LOG_TRACE( "Drawing rectangle:  left=%ld  top=%ld  right=%ld  bottom=%ld", left, top, right, bottom );
 
    return TRUE;
 }
@@ -438,9 +400,10 @@ BOOL makeFloatRect( _Out_ D2D1_RECT_F* rect_F, _In_ const RECT* updateRect, _In_
 /// If a DTMF tone is detected for this frequency, then paint it using the
 /// highlighted font.  Otherwise, use the normal foreground font.
 ///
-/// @param pUpdateRect Indicates the row to paint
-/// @return `true` if successful.  `false` if there were problems.
-inline void paintRowFreqs( _In_ const RECT* pUpdateRect ) {
+/// This function won't update content that's outside pUpdateRect
+///
+/// @param pUpdateRect The rectangle to update (from WM_PAINT)
+static inline void paintRowFreqs( _In_ const RECT* pUpdateRect ) {
    _ASSERTE( spRenderTarget      != NULL );
    _ASSERTE( spBrushHighlight    != NULL );
    _ASSERTE( spBrushForeground   != NULL );
@@ -463,7 +426,7 @@ inline void paintRowFreqs( _In_ const RECT* pUpdateRect ) {
       D2D1_RECT_F freqTextRect;
       UINT32      cTextLength;
 
-      if ( makeFloatRect( &freqTextRect, pUpdateRect, COL0 - 78, pKey->ly, COL0 - 32, pKey->ly + BOX_HEIGHT ) ) {
+      if ( makeFloatRect( &freqTextRect, pUpdateRect, COL0 - 78, pKey->y, COL0 - 32, pKey->y + BOX_HEIGHT ) ) {
          // Get text length
          cTextLength = (UINT32) wcslen( gDtmfTones[ iFreq ].label );
 
@@ -473,20 +436,20 @@ inline void paintRowFreqs( _In_ const RECT* pUpdateRect ) {
             spFreqTextFormat,          // Text format
             freqTextRect,	            // The region of the window where the text will be rendered
             pBrush                     // The brush used to draw the text
-         );                            // No return value (for error checking)
+         );                            // No return value to check for erors
       }
 
-      if ( makeFloatRect( &freqTextRect, pUpdateRect, COL0 - 32, pKey->ly - 4, COL0 - 12, pKey->ly + BOX_HEIGHT - 4 ) ) {
+      if ( makeFloatRect( &freqTextRect, pUpdateRect, COL0 - 32, pKey->y - 4, COL0 - 12, pKey->y + BOX_HEIGHT - 4 ) ) {
          const wchar_t* wszText = L"Hz";		        // String to render
          cTextLength = (UINT32) wcslen( wszText );	  // Get text length
 
          spRenderTarget->DrawText(
-            wszText,                  // Text to render
-            cTextLength,              // Text length
-            spLettersTextFormat,      // Text format
-            freqTextRect,	           // The region of the window where the text will be rendered
-            pBrush                    // The brush used to draw the text
-         );                           // No return value (for error checking)
+            wszText,              // Text to render
+            cTextLength,          // Text length
+            spLettersTextFormat,  // Text format
+            freqTextRect,	       // The region of the window where the text will be rendered
+            pBrush                // The brush used to draw the text
+         );                       // No return value to check for erors
       }
    }
 }
@@ -499,8 +462,8 @@ inline void paintRowFreqs( _In_ const RECT* pUpdateRect ) {
 ///
 /// This function won't update content that's outside pUpdateRect
 ///
-/// @param pUpdateRect The window rectangle to update
-inline void paintColFreqs( _In_ const RECT* pUpdateRect ) {
+/// @param pUpdateRect The rectangle to update (from WM_PAINT)
+static inline void paintColFreqs( _In_ const RECT* pUpdateRect ) {
    _ASSERTE( spRenderTarget      != NULL );
    _ASSERTE( spBrushHighlight    != NULL );
    _ASSERTE( spBrushForeground   != NULL );
@@ -523,32 +486,30 @@ inline void paintColFreqs( _In_ const RECT* pUpdateRect ) {
       D2D1_RECT_F freqTextRect;
       UINT32      cTextLength;
 
-      if ( makeFloatRect( &freqTextRect, pUpdateRect, pKey->lx - 16, ROW0 - 48, pKey->lx + BOX_WIDTH - 16, ROW0 ) ) {
+      if ( makeFloatRect( &freqTextRect, pUpdateRect, pKey->x - 16, ROW0 - 48, pKey->x + BOX_WIDTH - 16, ROW0 ) ) {
          // Get text length
          cTextLength = (UINT32) wcslen( gDtmfTones[ iFreq ].label );
 
          spRenderTarget->DrawText(
             gDtmfTones[ iFreq ].label, // Text to render
-            cTextLength,              // Text length
-            spFreqTextFormat,         // Text format
-            freqTextRect,	           // The region of the window where the text will be rendered
-            pBrush                    // The brush used to draw the text
-         );
-         // No return value (for error checking)
+            cTextLength,               // Text length
+            spFreqTextFormat,          // Text format
+            freqTextRect,	            // The region of the window where the text will be rendered
+            pBrush                     // The brush used to draw the text
+         );                            // No return value to check for erors
       }
 
-      if ( makeFloatRect( &freqTextRect, pUpdateRect, pKey->lx + 47, ROW0 - 36, pKey->lx + 71, ROW0 - 20 ) ) {
+      if ( makeFloatRect( &freqTextRect, pUpdateRect, pKey->x + 47, ROW0 - 36, pKey->x + 71, ROW0 - 20 ) ) {
          const wchar_t* wszText = L"Hz";		        // String to render
          cTextLength = (UINT32) wcslen( wszText );	  // Get text length
 
          spRenderTarget->DrawText(
-            wszText,                  // Text to render
-            cTextLength,              // Text length
-            spLettersTextFormat,      // Text format
-            freqTextRect,	           // The region of the window where the text will be rendered
-            pBrush                    // The brush used to draw the text
-         );
-         // No return value (for error checking)
+            wszText,              // Text to render
+            cTextLength,          // Text length
+            spLettersTextFormat,  // Text format
+            freqTextRect,	       // The region of the window where the text will be rendered
+            pBrush                // The brush used to draw the text
+         );                       // No return value to check for erors
       }
    }
 }
@@ -560,9 +521,10 @@ inline void paintColFreqs( _In_ const RECT* pUpdateRect ) {
 /// If a DTMF tone is detected for this combination of frequencies, then paint
 /// it using the highlighted font.  Otherwise, use the normal foreground font.
 ///
-/// @param index Indicates the key to paint
-/// @return `true` if successful.  `false` if there were problems.
-inline void paintKeys( _In_ const RECT* pUpdateRect ) {
+/// This function won't update content that's outside pUpdateRect
+///
+/// @param pUpdateRect The rectangle to update (from WM_PAINT)
+static inline void paintKeys( _In_ const RECT* pUpdateRect ) {
    _ASSERTE( spRenderTarget      != NULL );
    _ASSERTE( spBrushHighlight    != NULL );
    _ASSERTE( spBrushForeground   != NULL );
@@ -583,32 +545,32 @@ inline void paintKeys( _In_ const RECT* pUpdateRect ) {
       UINT32 cTextLength;
 
       /// Draw the box around the keypad
-      if ( makeFloatRect( &drawingRect, pUpdateRect, keypad[ index ].lx, keypad[ index ].ly, keypad[ index ].lx + BOX_WIDTH, keypad[ index ].ly + BOX_HEIGHT ) ) {
+      if ( makeFloatRect( &drawingRect, pUpdateRect, keypad[ index ].x, keypad[ index ].y, keypad[ index ].x + BOX_WIDTH, keypad[ index ].y + BOX_HEIGHT ) ) {
          spRenderTarget->DrawRoundedRectangle(
             D2D1::RoundedRect( drawingRect, 8.0f, 8.0f ),  // const D2D1_ROUNDED_RECT
             pBrush,     // Brush
             2.f ) ;     // Stroke width
-            // No return value (for error checking)
+            // No return value to check for erors
       }
 
 
       /// Draw the large digit (label)
-      if ( makeFloatRect( &drawingRect, pUpdateRect, keypad[ index ].lx, keypad[ index ].ly + 24, keypad[ index ].lx + BOX_WIDTH, keypad[ index ].ly + BOX_HEIGHT -6 ) ) {
+      if ( makeFloatRect( &drawingRect, pUpdateRect, keypad[ index ].x, keypad[ index ].y + 24, keypad[ index ].x + BOX_WIDTH, keypad[ index ].y + BOX_HEIGHT -6 ) ) {
          // Get text length
          cTextLength = (UINT32) wcslen( keypad[ index ].digit );
 
          spRenderTarget->DrawText(
             keypad[ index ].digit, // Text to render
-            cTextLength,         // Text length
-            spDigitTextFormat,   // Text format
-            drawingRect,	      // The region of the window where the text will be rendered
-            pBrush               // The brush used to draw the text
-         );                      // No return value (for error checking)
+            cTextLength,           // Text length
+            spDigitTextFormat,     // Text format
+            drawingRect,	        // The region of the window where the text will be rendered
+            pBrush                 // The brush used to draw the text
+         );                        // No return value to check for erors
       }
 
 
       /// Draw the letters above the digits
-      if ( makeFloatRect( &drawingRect, pUpdateRect, keypad[ index ].lx, keypad[ index ].ly + 6, keypad[ index ].lx + BOX_WIDTH, keypad[ index ].ly + 6 + 16 ) ) {
+      if ( makeFloatRect( &drawingRect, pUpdateRect, keypad[ index ].x, keypad[ index ].y + 6, keypad[ index ].x + BOX_WIDTH, keypad[ index ].y + 6 + 16 ) ) {
          cTextLength = (UINT32) wcslen( keypad[ index ].letters );	  // Get text length
 
          if ( cTextLength > 0 ) {
@@ -618,8 +580,56 @@ inline void paintKeys( _In_ const RECT* pUpdateRect ) {
                spLettersTextFormat,      // Text format
                drawingRect,              // The region of the window where the text will be rendered
                pBrush                    // The brush used to draw the text
-            );                           // No return value (for error checking)
+            );                           // No return value to check for erors
          }
       }
    }
+}
+
+
+/// Paint the main window containing the DTMF keypad
+///
+/// @see  http://www.catch22.net/tuts/win32/flicker-free-drawing#
+///
+/// @param pUpdateRect The rectangle to update (from WM_PAINT)
+/// @return `true` if successful.  `false` if there were problems.
+BOOL mvcViewPaintWindow( _In_ const RECT* pUpdateRect ) {
+   HRESULT hr;  // HRESULT result
+
+   _ASSERTE( spRenderTarget != NULL );
+   _ASSERTE( pUpdateRect != NULL );
+
+   // LOG_TRACE( "Update region:  (%d, %d) to (%d, %d)", pUpdateRect->left, pUpdateRect->top, pUpdateRect->right, pUpdateRect->bottom );
+
+   spRenderTarget->BeginDraw();          // No return value to check for errors
+
+   /// Paint the background color into the update region.
+   _ASSERTE( spBrushBackground != NULL );
+
+   D2D1_RECT_F updateRect_F = D2D1::RectF(
+      static_cast<FLOAT>( pUpdateRect->left ),
+      static_cast<FLOAT>( pUpdateRect->top ),
+      static_cast<FLOAT>( pUpdateRect->right ),
+      static_cast<FLOAT>( pUpdateRect->bottom )
+   );                                     // No return value to check for erors
+
+   spRenderTarget->FillRectangle(
+      updateRect_F,         // The rectangle to fill
+      spBrushBackground     // The background brush
+   );                                     // No return value to check for erors
+
+   /// Draw the main window... starting with the column and row labels
+   ///
+   /// @internal For now, and mostly for the sake of efficiency, we are not checking
+   ///           the results of these drawing functions.  None of the methods these
+   ///           functions call/use return any error messages, so (right now)
+   ///           they return `void`.
+   paintColFreqs( pUpdateRect );
+   paintRowFreqs( pUpdateRect );
+   paintKeys( pUpdateRect );
+
+   hr = spRenderTarget->EndDraw();
+   CHECK_HR( "Failed to end drawing operations on the render target " );
+
+   return TRUE;
 }

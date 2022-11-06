@@ -162,10 +162,6 @@ int APIENTRY wWinMain(
 
    /// Initialize Win32 message loop
    ShowWindow( ghMainWindow, nCmdShow );   // It's OK to ignore the result of this
-   if ( !UpdateWindow( ghMainWindow ) ) {
-      LOG_FATAL( "Failed to do the initial window update.  Exiting." );
-      return FALSE;
-   }
 
    HACCEL hAccelTable = LoadAccelerators( hInstance, MAKEINTRESOURCE( IDC_DTMFDECODER ) );
    if ( hAccelTable == NULL ) {
