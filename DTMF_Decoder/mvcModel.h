@@ -61,7 +61,7 @@ extern dtmfTones_t gDtmfTones[ NUMBER_OF_DTMF_TONES ];
 /// then we need to invalidate that region of the display.
 inline void mvcModelToggleToneDetectedStatus(
    _In_ const size_t toneIndex,
-   _In_ const BOOL  detectedStatus ) {
+   _In_ const bool   detectedStatus ) {
 
    _ASSERTE( toneIndex < NUMBER_OF_DTMF_TONES );
 
