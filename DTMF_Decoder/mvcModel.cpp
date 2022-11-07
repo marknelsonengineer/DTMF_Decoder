@@ -74,6 +74,8 @@ BOOL pcmSetQueueSize( _In_ const size_t size ) {
 
    _ASSERTE( gPcmQueue != NULL );
    _ASSERTE( gstQueueSize != 0 );
+   _ASSERTE( gPcmQueue[ 0 ] == 0 );
+   _ASSERTE( gPcmQueue[ gstQueueSize - 1 ] == 0 );
 
    return TRUE;
 }
@@ -82,6 +84,8 @@ BOOL pcmSetQueueSize( _In_ const size_t size ) {
 void pcmReleaseQueue() {
    if ( gPcmQueue == NULL )
       return;
+
+   SecureZeroMemory( gPcmQueue, gstQueueSize );  // Zero out memory before releasing it.
 
    _ASSERTE( _CrtCheckMemory() );  // Check memory and see if there's a problem
 

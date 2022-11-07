@@ -103,7 +103,7 @@ static IAudioCaptureClient* spCaptureClient = NULL; ///< The audio capture clien
 
 
 #ifdef MONITOR_PCM_AUDIO
-   #define MONITOR_INTERVAL_SECONDS (4)   /**< The monitoring interval.  Set to 0 to disable monitoring */
+   #define MONITOR_INTERVAL_SECONDS (4)          /**< The monitoring interval.  Set to 0 to disable monitoring */
    static UINT64 suFramesToMonitor = 0;          ///< set #sbMonitor when the current frameIndex is > #suStartOfMonitor + #suFramesToMonitor
    static UINT64 suStartOfMonitor  = UINT64_MAX; ///< The frameIndex position of the start time of the monitor
    static BOOL   sbMonitor         = false;      ///< Briefly set to 1 to output monitored data

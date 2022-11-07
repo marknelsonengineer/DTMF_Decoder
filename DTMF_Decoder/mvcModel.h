@@ -128,7 +128,7 @@ extern HWND ghMainWindow;
 extern "C" BYTE*  gPcmQueue;
 
 
-/// Points to a relative offset within #gPcmQueue of the next available byte for
+/// A relative offset within #gPcmQueue of the next available byte for
 /// writing.  `0` is the first available byte in the queue.  This value should
 /// never be `>=` #gstQueueSize.
 ///
@@ -173,12 +173,12 @@ inline void pcmEnqueue( _In_ const BYTE data ) {
 
    gPcmQueue[ gstQueueHead++ ] = data ;
 
-   if ( gstQueueHead >= gstQueueSize ) {     // More efficient than `gstQueueHead %= gstQueueSize`
+   if ( gstQueueHead >= gstQueueSize ) {  // More efficient than `gstQueueHead %= gstQueueSize`
       gstQueueHead = 0;
    }
 
-   // _ASSERTE( _CrtCheckMemory() );   // Asserts removed for performance
-}                                      // It's checked at the end, though
+   _ASSERTE( _CrtCheckMemory() );
+}
 
 
 /// Release the memory allocated to #gPcmQueue

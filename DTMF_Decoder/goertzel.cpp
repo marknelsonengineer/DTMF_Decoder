@@ -76,7 +76,7 @@ void goertzel_magnitude(
    _In_     const UINT8        index,
    _Inout_        dtmfTones_t* toneStruct ) {
 
-   _ASSERTE( gstQueueHead != NULL );
+   _ASSERTE( gstQueueHead < gstQueueSize );
    _ASSERTE( gstQueueSize > 0 );
 
    float real, imag;
@@ -84,7 +84,7 @@ void goertzel_magnitude(
    float q1 = 0;
    float q2 = 0;
 
-   size_t queueRead = gstQueueHead;  // Thread safe method to point to the next available byte for reading
+   size_t queueRead = gstQueueHead;  // Thread safe way to point to the next available byte for reading
 
    for ( size_t i = 0; i < gstQueueSize; i++ ) {
       float q0 = toneStruct->coeff * q1 - q2 + ( (float) gPcmQueue[ queueRead++ ] );
