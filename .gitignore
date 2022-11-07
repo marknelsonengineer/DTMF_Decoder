@@ -21,8 +21,8 @@ mono_crash.*
 [Dd]ebugPublic/
 [Rr]elease/
 [Rr]eleases/
-/[Pp]rofie
-/DTMF_Decoder/[Pp]rofie
+/[Pp]rofile
+/DTMF_Decoder/Profile
 x64/
 x86/
 [Ww][Ii][Nn]32/
