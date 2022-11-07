@@ -241,6 +241,9 @@ LRESULT CALLBACK WndProc( HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam 
             PAINTSTRUCT ps;
             HDC hdc = BeginPaint( hWnd, &ps );
 
+            (void) hdc;  // Suppress a compiler warning that hdc
+                         // is not checked after this.  No code is generated.
+
             // Add any drawing code here...
             br = mvcViewPaintWindow( &updateRect );
             WARN_BR( "Failed to paint window.  Investigate!!" );

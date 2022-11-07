@@ -6,7 +6,8 @@ Doxygen is the de facto standard tool for generating documentation from annotate
 Doxygen's website is:  https://www.doxygen.nl
 
 #### Notes:
-   - I prefer compile my own version of Doxygen
+   - I prefer compile my own version of Doxygen (on Linux).  I installed it from
+     a Setup file on Windows.
    - We use [DOT](https://graphviz.org ) and [DIA](http://dia-installer.de)
 
 #### To integrate Doxygen with Visual Studio

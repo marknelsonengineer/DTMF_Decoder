@@ -365,7 +365,7 @@ BOOL mvcViewCleanupResources() {
 /// @param pRect_F      Pointer to the floating-point rectangle structure that
 ///                     will be populated **if** the rectangle needs updating.
 ///                     If the rectangle does not need updating, this structure
-///                     does not change.
+///                     contains all zeros.
 /// @param pUpdateRect  The rectangle that needs to be refreshed (from WM_PAINT)
 /// @param left         The rectangle that's being made
 /// @param top          The rectangle that's being made
@@ -381,6 +381,11 @@ static inline BOOL makeFloatRect(
    _In_  const LONG   top,
    _In_  const LONG   right,
    _In_  const LONG   bottom ) {
+
+   pRect_F->left   = 0.0;  // This is inefficient, but it suppresses a compiler
+   pRect_F->top    = 0.0;  // warning and is a good practice.
+   pRect_F->right  = 0.0;
+   pRect_F->bottom = 0.0;
 
    if ( pUpdateRect->left >= right )  /// Fail fast if the rectangle is outside the update region
       return FALSE;

@@ -138,6 +138,9 @@ void logA(
    bufCharsRemaining -= numCharsWritten;
    pBufferHead       += numCharsWritten;
 
+   (void) pBufferHead;  // Suppress a compiler warning that pBufferHead
+                     // is not checked after this.  No code is generated.
+
    // Commented out below because I trust vsprintf_s
    // buffer.sBuf[ bufCharsRemaining - 1 ] = '\0';  // Null terminate the buffer (just to be sure)
 
@@ -215,6 +218,9 @@ void logW(
    numCharsWritten = swprintf_s( pBufferHead, bufCharsRemaining, L"\n" );
    bufCharsRemaining -= numCharsWritten;
    pBufferHead       += numCharsWritten;
+
+   (void) pBufferHead;  // Suppress a compiler warning that pBufferHead
+                        // is not checked after this.  No code is generated.
 
 /// If we overrun the buffer and violate the stack guard, then fail fast by
 /// throwing an `_ASSERT`.
