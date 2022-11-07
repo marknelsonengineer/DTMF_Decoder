@@ -1,10 +1,11 @@
-# References
+References
+==========
 
 The Windows API is quite complex.  Here's all of the API functions I needed to
 research to write DTMF_Decoder.
 
 
-### Generic Win32
+## Generic Win32
 | API                    | Link                                                                                         |
 |------------------------|----------------------------------------------------------------------------------------------|
 | `CreateWindowW`        | https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindoww         |
@@ -28,7 +29,7 @@ research to write DTMF_Decoder.
 | `DestroyWindow`        | https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-destroywindow         |
 
 
-### COM
+## COM
 | API                 | Link                                                                                          |
 |---------------------|-----------------------------------------------------------------------------------------------|
 | `CoCreateInstance`  | https://learn.microsoft.com/en-us/windows/win32/api/combaseapi/nf-combaseapi-cocreateinstance |
@@ -39,7 +40,7 @@ research to write DTMF_Decoder.
 | `IUnknown::Release` | https://learn.microsoft.com/en-us/windows/win32/api/unknwn/nf-unknwn-iunknown-release         |
 
 
-### GDI & Direct2D
+## GDI & Direct2D
 | API                                         | Link                                                                                                                                                                                                        |
 |---------------------------------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | `BeginPaint` (GDI)                          | https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-beginpaint                                                                                                                           |
@@ -60,7 +61,7 @@ research to write DTMF_Decoder.
 | `ID2D1RenderTarget::EndDraw`                | https://learn.microsoft.com/en-us/windows/win32/api/d2d1/nf-d2d1-id2d1rendertarget-enddraw                                                                                                                  |
 
 
-### Audio
+## Audio
 | API                                            | Link                                                                                                                           |
 |------------------------------------------------|--------------------------------------------------------------------------------------------------------------------------------|
 | `IMMDevice`                                    | https://learn.microsoft.com/en-us/windows/win32/api/mmdeviceapi/nn-mmdeviceapi-immdevice                                       |
@@ -91,7 +92,7 @@ research to write DTMF_Decoder.
 | `IAudioClient::Reset`                          | https://learn.microsoft.com/en-us/windows/win32/api/audioclient/nf-audioclient-iaudioclient-reset                              |
 
 
-### Debugging & Instrumentation
+## Debugging & Instrumentation
 | API                  | Link                                                                                                                           |
 |----------------------|--------------------------------------------------------------------------------------------------------------------------------|
 | `_ASSERTE`           | https://learn.microsoft.com/en-us/cpp/c-runtime-library/reference/assert-asserte-assert-expr-macros?view=msvc-170              |
@@ -110,7 +111,7 @@ research to write DTMF_Decoder.
 | `PgoAutoSweep`       | https://learn.microsoft.com/en-us/cpp/build/pgoautosweep                                                                          |
 
 
-### CRT & Memory management
+## CRT & Memory management
 | API                | Link                                                                                         |
 |--------------------|----------------------------------------------------------------------------------------------|
 | `_malloc_dbg`      | https://learn.microsoft.com/en-us/cpp/c-runtime-library/reference/malloc-dbg                 |
@@ -119,7 +120,7 @@ research to write DTMF_Decoder.
 | `_CrtCheckMemory`  | https://learn.microsoft.com/en-us/cpp/c-runtime-library/reference/crtcheckmemory             |
 
 
-### Threads & synchronization
+## Threads & synchronization
 | API                      | Link                                                                                                    |
 |--------------------------|---------------------------------------------------------------------------------------------------------|
 | `CreateThread`           | https://learn.microsoft.com/en-us/windows/win32/api/processthreadsapi/nf-processthreadsapi-createthread |
@@ -132,14 +133,14 @@ research to write DTMF_Decoder.
 | `ExitThread`             | https://learn.microsoft.com/en-us/windows/win32/api/processthreadsapi/nf-processthreadsapi-exitthread   |
 
 
-### Pragmas
+## Pragmas
 | API                            | Link                                                                           |
 |--------------------------------|--------------------------------------------------------------------------------|
 | `#pragma message`              | https://learn.microsoft.com/en-us/cpp/preprocessor/message?view=msvc-170       |
 | `#pragma comment(lib, "avrt")` | https://learn.microsoft.com/en-us/cpp/preprocessor/comment-c-cpp?view=msvc-170 |
 
 
-### Math
+## Math
 | API                 | Link                                                                                 |
 |---------------------|--------------------------------------------------------------------------------------|
 | `_USE_MATH_DEFINES` | https://learn.microsoft.com/en-us/cpp/c-runtime-library/math-constants?view=msvc-170 |

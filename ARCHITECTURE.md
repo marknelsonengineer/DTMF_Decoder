@@ -1,4 +1,5 @@
-# Architecture
+Architecture
+============
 
 The overall architecture of DTMF Decoder is fairly straightforward.
 
@@ -69,6 +70,6 @@ much faster if I had to do it again.  I've written a guide to the API calls I
 use [here](REFERENCES.md).  I read every one of these to write this program.
 
 
-### DTMF Decoder's Call Graph
+## DTMF Decoder's Call Graph
 
 ![DTMF Decoder's Call Graph](./images/Call_Graph.svg)
