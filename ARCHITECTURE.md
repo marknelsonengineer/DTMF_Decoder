@@ -10,7 +10,7 @@ for selecting an audio device).  Then, it starts to listen to audio frames.
 
 The most efficient way to listen to audio is to register a callback function 
 that gets called when the OS has a batch of audio frames to process.  So,
-we spin up one audio capture thread, wait for audio, process the frames and
+we spin up an audio capture thread, wait for audio, process the frames and
 then release the buffer.
 
 We use a [Goertzel Algorithm](https://en.wikipedia.org/wiki/Goertzel_algorithm)
@@ -24,7 +24,23 @@ it signals all 8 threads to run in parallel and when **all** of the Goertzel
 work threads finish, it signals the Audio Capture thread to continue 
 processing.
 
-For performance, I also hand-coded an x86-64 Goertzel algorithm in Assembly
+When a frequency surpasses a set threshold, the row or column frequency labels
+are redrawn (in a highlighted color).  If both a DTMF row *and* column are 
+"on", then the key "lights up" as well.  Super simple.
+
+Per [Raymond Chen](https://devblogs.microsoft.com/oldnewthing/author/oldnewthing)'s 
+book [The Old New Thing](https://www.amazon.com/Old-New-Thing-Development-Throughout/dp/0321440307/)
+I should trust the Window's Update mechanism and repaint the display on the 
+main thread in WM_PAINT.  To that end, when each Goertzel thread finishes its
+calculations, it checks to see if the state has changed.  If so, it invalidates
+a rectangle (a full row or column) on the display.  Later on, the main application
+message loop will get a WM_PAINT message and the screen will repaint.
+
+Each element that gets drawn on the screen checks an "update rectangle".  If 
+the element is in the update rectangle, it gets drawn.  If not, then it must
+not need to be updated.  This is the Win32 way of drawing.
+
+For performance, I hand-coded an x86-64 Goertzel algorithm in Assembly
 Language.  C is very "chatty" with memory, and this algorithm takes advantage
 of:  
   - Out-of-order processing
@@ -32,14 +48,6 @@ of:
 
 The x86-32 bit version of the program uses a traditional C-based Goertzel 
 algorithm, for a reference design and comparison.
-
-When a frequency surpasses a set threshold, the row or column frequency labels
-are redrawn (in a highlighted color).  If both a DTMF row *and* column are 
-"on", then the key "lights up" as well.  Super simple.
-
-To reduce flicker, I only redraw the window when a state changes.  Someday, I'd
-like to just redraw the content that changed rather than the whole screen, but 
-that issue is logged in GitHub, so I can let it go for now.
 
 When you are running DTMF Decoder in a VM, it's still subject to the whims
 of the hypervisor's scheduler.  Therefore, you may get frames with
@@ -51,14 +59,14 @@ DTMF Decoder has a good, simple logging mechanism.  It logs everything to
 DebugView.  Logs to WARN, ERROR and FATAL will also popup a Dialog Box.  That's
 it for a user interface.
 
-So, it's a very simple program that took ~70 hours to write (4,200 minutes). 
-There's 2,887 lines of code, so I'm averaging about 90-seconds per line.  Not bad, per [The Mythical Man Month](https://en.wikipedia.org/wiki/The_Mythical_Man-Month)
+So, it's a very simple program that took ~80 hours to write (4,800 minutes). 
+There's ~3,000 lines of code, so I'm averaging about 96-seconds per line.  Not 
+bad, per [The Mythical Man Month](https://en.wikipedia.org/wiki/The_Mythical_Man-Month)
 but still, not great.
 
 That said, it's been forever since I've written in Win32 and I'd write this
 much faster if I had to do it again.  I've written a guide to the API calls I 
 use [here](REFERENCES.md).  I read every one of these to write this program.
-
 
 
 ### DTMF Decoder's Call Graph
