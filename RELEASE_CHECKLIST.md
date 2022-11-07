@@ -17,6 +17,9 @@ This checklist is for a Visual Studio Win32 C Windows program
 - Last looks
     - Read through all of the `@todo`s
     - Do a `Rebuild Project` without any warnings
+    - Update the version number in:
+      - Doxygen
+      - Release > Linker > General > Version
     - Run Code Analysis without any warnings
     - Run [DOT Online](https://dreampuf.github.io/GraphvizOnline) to regenerate 
       the call diagram
@@ -43,23 +46,38 @@ This checklist is for a Visual Studio Win32 C Windows program
 ## Profile Guided Optimization
 Checkout [Profile-guided optimizations](https://learn.microsoft.com/en-us/cpp/build/profile-guided-optimizations?view=msvc-170) 
 
-Uncomment the 2 instances of:  `PgoAutoSweep( APP_NAME_W );` in `DTMF_Decoder.cpp`
+Target a build for the **Profile** configuration
+  - Note:  This has been set with the following options:
+    - C/C++ > Command Line > `/D PROFILE_GUIDED_OPTIMIZATION`
+    - Linker > Optimization > Profile Guided Database > `$(OutDir)$(ProjectName)_$(PlatformTarget).pgd`
+    - Linker > Optimization > Link Time Code Generation > Profile Guided Optimization - Instrument
+    - Linker > Command Line > > `/genprofile:exact pgobootrun.lib`
 
-Target a build for the **x64 Release** version
+Rebuild an executable as Profile - x64
 
-When generating a profile, add `/genprofile:exact pgobootrun.lib` to Liker > Command Line > Additional Options:
+From a PowerShell window, cd to the executable and run it
 
-Rebuild the x64 Release version
+Open a Developer PowerShell, `cd` to the `%(SolutionDir)\x64\Profile` folder and 
+run it from there.
 
-Open a Developer PowerShell, cd to the x64/Release folder
-
-Run DTMF Decoder and decode the following digits:  1 5 9 D * 8 6 A 2 6 C 4 8 # 0 7 4 2 3 B C # 
+Run DTMF Decoder and decode the following digits:  `1 5 9 D * 8 6 A 2 6 C 4 8 # 0 7 4 2 3 B C #` 
 
 Note that several new *.pgc files are created.
 
-Run `pgomgr /merge *.pgc .\DTMF_Decoder_x64_Release.pgd` to merge the files
-Checkout the profile database with:  `pgrmgr /summary .\DTMF_Decoder_x64_Release.pgd` and `pgomgr /summary /detail .\DTMF_Decoder_x64_Release.pgd`
+Now, copy the profile-generated files `*.pgd` and `*.pgc` files to `$(SolutionDir)\Optimizer`
 
-Now, copy `DTMF_Decoder_x64_Release.pgd` and the `.pgc` files to ./Optimizer
+Target a build for the **Release** configuration
+  - Note:  This has been set with the following options:
+    - Linker > General > Suppress Startup Banner > No
+    - Linker > Optimization > Profile Guided Database > `$(OutDir)$(ProjectName)_$(PlatformTarget).pgd`
+    - Linker > Optimization > Link Time Code Generation > Program Guided Optimization - Optimize
+    - Linker > Command Line > `/USEPROFILE:AGGRESSIVE`
+    - Build Events > Pre-Build Event
+      - Command line:  `copy $(SolutionDir)\Optimizer\* $(OutDir)`
+      - Description:  `Copy PGO Instrumentation Files`
 
-Finally, add `/USEPROFILE:AGGRESSIVE /USEPROFILE:PGD="$(SolutionDir)Optimizer\DTMF_Decoder_x64_Release.pgd" ` to the Linker Options
+Clean the solution
+
+Rebuild the solution as **Release**
+
+Checkout the Release's profile database with:  `pgrmgr /summary .\DTMF_Decoder_x64_Release.pgd` and `pgomgr /summary /detail .\DTMF_Decoder_x64_Release.pgd`
