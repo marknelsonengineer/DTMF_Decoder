@@ -27,17 +27,17 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "images", "images", "{921F6D
 		images\Call_Graph.dot = images\Call_Graph.dot
 		images\Call_Graph.dot.orig = images\Call_Graph.dot.orig
 		images\Call_Graph.svg = images\Call_Graph.svg
-		images\dia.png = images\dia.png
-		images\dot.png = images\dot.png
 		images\DTMF_Decoder_iOS.PNG = images\DTMF_Decoder_iOS.PNG
 		images\DTMF_Decoder_logo.png = images\DTMF_Decoder_logo.png
 		images\DTMF_Decoder_Windows.jpg = images\DTMF_Decoder_Windows.jpg
 		images\logo_doxygen.png = images\logo_doxygen.png
+		images\logo_dia.png = images\logo_dia.png
+		images\logo_dot.png = images\logo_dot.png
 		images\logo_ghidra.png = images\logo_ghidra.png
 		images\logo_git.png = images\logo_git.png
 		images\logo_github.png = images\logo_github.png
 		images\logo_sysinternals.png = images\logo_sysinternals.png
-		images\Visual_Studio_Logo.png = images\Visual_Studio_Logo.png
+		images\logo_Visual_Studio.png = images\logo_Visual_Studio.png
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Optimizer", "Optimizer", "{BC73996E-58A7-4251-B0D1-C40E45E6F9F7}"
