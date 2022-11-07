@@ -69,10 +69,12 @@ extern "C" float fScaleFactor = 0;  ///< Set in goertzel_init() and used in goer
 /// The original version of this algorithm came from:
 /// @see https://github.com/Harvie/Programs/blob/master/c/goertzel/goertzel.c
 ///
+/// Inlined for performance reasons.
+///
 /// @param index       The index into the DTMF tones array
 /// @param toneStruct  A pointer to #gDtmfTones (so it doesn't have to
 ///                    re-compute the index each time
-void goertzel_magnitude(
+__forceinline static void goertzel_magnitude(
    _In_     const UINT8        index,
    _Inout_        dtmfTones_t* toneStruct ) {
 

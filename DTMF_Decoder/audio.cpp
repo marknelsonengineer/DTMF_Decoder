@@ -128,10 +128,12 @@ static audio_format_t sAudioFormat = UNKNOWN_AUDIO_FORMAT;
 /// Process the audio frameIndex, converting it into #PCM_8, adding the sample to
 /// #gPcmQueue and monitoring the values (if desired)
 ///
+/// The function is inlined for performane reasons.
+///
 /// @param pData      Pointer to the head of the audio bufer
 /// @param frameIndex The frameIndex number to process
 /// @return `true` if successful.  `false` if there were problems.
-BOOL processAudioFrame(
+__forceinline static BOOL processAudioFrame(
    _In_     const BYTE*    pData,
    _In_     const UINT32   frameIndex ) {
 
@@ -207,8 +209,10 @@ BOOL processAudioFrame(
 /// If I did process discontinuous frames, I'd have the right frequency, but
 /// I'd introduce phasing issues which could distort our results.
 ///
+/// The function is inlined for performane reasons.
+///
 /// It's normal for the first buffer to have DATA_DISCONTINUITY set
-void audioCapture() {
+__forceinline static void audioCapture() {
    HRESULT hr;  // HRESULT result
    BOOL    br;  // BOOL result
 
@@ -416,7 +420,7 @@ DWORD WINAPI audioCaptureThread( LPVOID Context ) {
     Valid bits per sample=32
     Extended wave format is IEEE Float
 @endverbatim */
-BOOL audioPrintWaveFormat( _In_ const WAVEFORMATEX* pFmt ) {
+static BOOL audioPrintWaveFormat( _In_ const WAVEFORMATEX* pFmt ) {
    _ASSERTE( pFmt != NULL );
 
    if ( pFmt->wFormatTag == WAVE_FORMAT_EXTENSIBLE ) {

@@ -59,7 +59,9 @@ extern dtmfTones_t gDtmfTones[ NUMBER_OF_DTMF_TONES ];
 
 /// Determine if the state of a DTMF tone detection has changed.  If it has,
 /// then we need to invalidate that region of the display.
-inline void mvcModelToggleToneDetectedStatus(
+///
+/// The function is inlined for performane reasons.
+__forceinline void mvcModelToggleToneDetectedStatus(
    _In_ const size_t toneIndex,
    _In_ const bool   detectedStatus ) {
 
@@ -166,8 +168,10 @@ extern BOOL pcmSetQueueSize( _In_ const size_t size );
 
 /// Enqueue a byte of PCM data to `gPcmQueue`
 ///
+/// The function is inlined for performane reasons.
+///
 /// Delcared `inline` for performance reasons
-inline void pcmEnqueue( _In_ const BYTE data ) {
+__forceinline void pcmEnqueue( _In_ const BYTE data ) {
    _ASSERTE( gPcmQueue != NULL );
    _ASSERTE( gstQueueHead < gstQueueSize );
 

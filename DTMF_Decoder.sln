@@ -30,9 +30,9 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "images", "images", "{921F6D
 		images\DTMF_Decoder_iOS.PNG = images\DTMF_Decoder_iOS.PNG
 		images\DTMF_Decoder_logo.png = images\DTMF_Decoder_logo.png
 		images\DTMF_Decoder_Windows.jpg = images\DTMF_Decoder_Windows.jpg
-		images\logo_doxygen.png = images\logo_doxygen.png
 		images\logo_dia.png = images\logo_dia.png
 		images\logo_dot.png = images\logo_dot.png
+		images\logo_doxygen.png = images\logo_doxygen.png
 		images\logo_ghidra.png = images\logo_ghidra.png
 		images\logo_git.png = images\logo_git.png
 		images\logo_github.png = images\logo_github.png
@@ -71,8 +71,8 @@ Global
 		{88C083F3-3F8B-44E6-803A-8D898826EB22}.Profile|x64.Build.0 = Profile|x64
 		{88C083F3-3F8B-44E6-803A-8D898826EB22}.Profile|x86.ActiveCfg = Profile|Win32
 		{88C083F3-3F8B-44E6-803A-8D898826EB22}.Profile|x86.Build.0 = Profile|Win32
-		{88C083F3-3F8B-44E6-803A-8D898826EB22}.Release|x64.ActiveCfg = Profile|x64
-		{88C083F3-3F8B-44E6-803A-8D898826EB22}.Release|x64.Build.0 = Profile|x64
+		{88C083F3-3F8B-44E6-803A-8D898826EB22}.Release|x64.ActiveCfg = Release|x64
+		{88C083F3-3F8B-44E6-803A-8D898826EB22}.Release|x64.Build.0 = Release|x64
 		{88C083F3-3F8B-44E6-803A-8D898826EB22}.Release|x86.ActiveCfg = Release|Win32
 		{88C083F3-3F8B-44E6-803A-8D898826EB22}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection

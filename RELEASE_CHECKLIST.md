@@ -8,6 +8,7 @@ This checklist is for a Visual Studio Win32 C Windows program
     - Ensure all parameters are validated with `_ASSERTE`
     - Ensure all parameters have [SAL](https://learn.microsoft.com/en-us/cpp/code-quality/using-sal-annotations-to-reduce-c-cpp-code-defects?view=msvc-170) annotations
     - Look for `const`-able parameters
+    - Look for file-local functions that should be declared `static`
     - Is everything documented?
     - No Code Analysis or Clang-Tidy warnings
 

@@ -362,6 +362,8 @@ BOOL mvcViewCleanupResources() {
 /// @see https://stackoverflow.com/questions/306316/determine-if-two-rectangles-overlap-each-other
 /// @see https://silentmatt.com/rectangle-intersection/
 ///
+/// The function is inlined for performane reasons.
+///
 /// @param pRect_F      Pointer to the floating-point rectangle structure that
 ///                     will be populated **if** the rectangle needs updating.
 ///                     If the rectangle does not need updating, this structure
@@ -374,7 +376,7 @@ BOOL mvcViewCleanupResources() {
 /// @return `TRUE` if the rectangle that's being made has any overlap with
 ///         pUpdateRect.  `FALSE` if the rectangle that's being made is outside
 ///         of pUpdateRect (which probably means it doesn't need to be redrawn).
-static inline BOOL makeFloatRect(
+static __forceinline BOOL makeFloatRect(
    _Out_ D2D1_RECT_F* pRect_F,
    _In_  const RECT*  pUpdateRect,
    _In_  const LONG   left,
@@ -413,10 +415,12 @@ static inline BOOL makeFloatRect(
 /// If a DTMF tone is detected for this frequency, then paint it using the
 /// highlighted font.  Otherwise, use the normal foreground font.
 ///
-/// This function won't update content that's outside pUpdateRect
+/// This function won't update content that's outside pUpdateRect.
+///
+/// The function is inlined for performane reasons.
 ///
 /// @param pUpdateRect The rectangle to update (from WM_PAINT)
-static inline void paintRowFreqs( _In_ const RECT* pUpdateRect ) {
+static __forceinline void paintRowFreqs( _In_ const RECT* pUpdateRect ) {
    _ASSERTE( spRenderTarget      != NULL );
    _ASSERTE( spBrushHighlight    != NULL );
    _ASSERTE( spBrushForeground   != NULL );
@@ -473,10 +477,12 @@ static inline void paintRowFreqs( _In_ const RECT* pUpdateRect ) {
 /// If a DTMF tone is detected for this frequency, then paint it using the
 /// highlighted font.  Otherwise, use the normal foreground font.
 ///
-/// This function won't update content that's outside pUpdateRect
+/// This function won't update content that's outside pUpdateRect.
+///
+/// The function is inlined for performane reasons.
 ///
 /// @param pUpdateRect The rectangle to update (from WM_PAINT)
-static inline void paintColFreqs( _In_ const RECT* pUpdateRect ) {
+static __forceinline void paintColFreqs( _In_ const RECT* pUpdateRect ) {
    _ASSERTE( spRenderTarget      != NULL );
    _ASSERTE( spBrushHighlight    != NULL );
    _ASSERTE( spBrushForeground   != NULL );
@@ -534,10 +540,12 @@ static inline void paintColFreqs( _In_ const RECT* pUpdateRect ) {
 /// If a DTMF tone is detected for this combination of frequencies, then paint
 /// it using the highlighted font.  Otherwise, use the normal foreground font.
 ///
-/// This function won't update content that's outside pUpdateRect
+/// This function won't update content that's outside pUpdateRect.
+///
+/// The function is inlined for performane reasons.
 ///
 /// @param pUpdateRect The rectangle to update (from WM_PAINT)
-static inline void paintKeys( _In_ const RECT* pUpdateRect ) {
+static __forceinline void paintKeys( _In_ const RECT* pUpdateRect ) {
    _ASSERTE( spRenderTarget      != NULL );
    _ASSERTE( spBrushHighlight    != NULL );
    _ASSERTE( spBrushForeground   != NULL );
