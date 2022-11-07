@@ -42,7 +42,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "images", "images", "{921F6D
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Optimizer", "Optimizer", "{BC73996E-58A7-4251-B0D1-C40E45E6F9F7}"
 	ProjectSection(SolutionItems) = preProject
-		Optimizer\DTMF_Decoder_x64_Release.pgd = Optimizer\DTMF_Decoder_x64_Release.pgd
+		Optimizer\DTMF_Decoder_x64!1.pgc = Optimizer\DTMF_Decoder_x64!1.pgc
+		Optimizer\DTMF_Decoder_x64.pgd = Optimizer\DTMF_Decoder_x64.pgd
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "bin", "bin", "{25A6EA22-3B53-42D0-BB5E-17607AEAF458}"

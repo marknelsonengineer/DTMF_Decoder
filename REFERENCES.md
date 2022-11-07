@@ -108,7 +108,6 @@ research to write DTMF_Decoder.
 | `OutputDebugStringW` | https://learn.microsoft.com/en-us/windows/win32/api/debugapi/nf-debugapi-outputdebugstringw                                       |
 | `MessageBoxW`        | https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-messageboxw                                                |
 | `MessageBeep`        | https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-messagebeep                                                |
-| `PgoAutoSweep`       | https://learn.microsoft.com/en-us/cpp/build/pgoautosweep                                                                          |
 
 
 ## CRT & Memory management

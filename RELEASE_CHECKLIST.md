@@ -48,7 +48,7 @@ Checkout [Profile-guided optimizations](https://learn.microsoft.com/en-us/cpp/bu
 
 Target a build for the **Profile** configuration
   - Note:  This has been set with the following options:
-    - C/C++ > Command Line > `/D PROFILE_GUIDED_OPTIMIZATION`
+    - C/C++ > Command Line > `/D PROFILE_GUIDED_OPTIMIZATION` (Note: This is not currently used)
     - Linker > Optimization > Profile Guided Database > `$(OutDir)$(ProjectName)_$(PlatformTarget).pgd`
     - Linker > Optimization > Link Time Code Generation > Profile Guided Optimization - Instrument
     - Linker > Command Line > > `/genprofile:exact pgobootrun.lib`

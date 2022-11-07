@@ -32,7 +32,6 @@
 /// @see https://learn.microsoft.com/en-us/windows/win32/api/synchapi/nf-synchapi-setevent
 /// @see https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-postquitmessage
 /// @see https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-enddialog
-/// @see https://learn.microsoft.com/en-us/cpp/build/pgoautosweep
 ///
 /// @file    DTMF_Decoder.cpp
 /// @version 1.0
@@ -171,10 +170,6 @@ int APIENTRY wWinMain(
       return FALSE;
    }
 
-   #ifdef PROFILE_GUIDED_OPTIMIZATION
-      PgoAutoSweep( APP_NAME_W );  /// Generate Profile-Guided Optimizations (PGO) after initializtion
-   #endif
-
    LOG_INFO( "All global resources were successfully initialized" );
 
 
@@ -195,10 +190,6 @@ int APIENTRY wWinMain(
    CHECK_BR( "There was a problem cleaning up the audio resources.  Ending program." )
 
    CoUninitialize();  /// Unwind COM
-
-   #ifdef PROFILE_GUIDED_OPTIMIZATION
-      PgoAutoSweep( APP_NAME_W );  /// Generate Profile-Guided Optimizations (PGO) at the end
-   #endif
 
    LOG_INFO( "All global resources were cleaned up.  Ending program." );
 
