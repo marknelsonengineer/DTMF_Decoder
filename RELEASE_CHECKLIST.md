@@ -17,6 +17,7 @@ This checklist is for a Visual Studio Win32 C Windows program
 - Last looks
     - Read through all of the `@todo`s
     - Do a `Rebuild Project` without any warnings
+    - Run Code Analysis without any warnings
     - Run [DOT Online](https://dreampuf.github.io/GraphvizOnline) to regenerate 
       the call diagram
       - Reconfigure Doxygen so it does NOT clean DOT files
@@ -39,7 +40,7 @@ This checklist is for a Visual Studio Win32 C Windows program
     - Push the Doxygen documentation to UH
     - Sync the repo with GitHub
 
-### Profile Guided Optimization
+## Profile Guided Optimization
 Checkout [Profile-guided optimizations](https://learn.microsoft.com/en-us/cpp/build/profile-guided-optimizations?view=msvc-170) 
 
 Uncomment the 2 instances of:  `PgoAutoSweep( APP_NAME_W );` in `DTMF_Decoder.cpp`

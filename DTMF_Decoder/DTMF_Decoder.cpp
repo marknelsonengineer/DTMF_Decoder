@@ -105,7 +105,7 @@ int APIENTRY wWinMain(
 
    /// Register the Windows Class
    WNDCLASSEXW wcex;
-   SecureZeroMemory( &wcex, sizeof( wcex ) );
+   ZeroMemory( &wcex, sizeof( wcex ) );
 
    wcex.cbSize = sizeof( WNDCLASSEX );
    wcex.style = CS_HREDRAW | CS_VREDRAW;
@@ -171,14 +171,16 @@ int APIENTRY wWinMain(
       return FALSE;
    }
 
-   // PgoAutoSweep( APP_NAME_W );  /// Generate Profile-Guided Optimizations (PGO) after initializtion
+   #ifdef PROFILE_GUIDED_OPTIMIZATION
+      PgoAutoSweep( APP_NAME_W );  /// Generate Profile-Guided Optimizations (PGO) after initializtion
+   #endif
+
    LOG_INFO( "All global resources were successfully initialized" );
 
 
    /// Main message loop
    MSG msg;
-   SecureZeroMemory( &msg, sizeof( msg ) );
-
+   ZeroMemory( &msg, sizeof( msg ) );
 
    while ( GetMessage( &msg, nullptr, 0, 0 ) ) {
       if ( !TranslateAccelerator( msg.hwnd, hAccelTable, &msg ) ) {
@@ -194,7 +196,10 @@ int APIENTRY wWinMain(
 
    CoUninitialize();  /// Unwind COM
 
-   // PgoAutoSweep( APP_NAME_W );  /// Generate Profile-Guided Optimizations (PGO) at the end
+   #ifdef PROFILE_GUIDED_OPTIMIZATION
+      PgoAutoSweep( APP_NAME_W );  /// Generate Profile-Guided Optimizations (PGO) at the end
+   #endif
+
    LOG_INFO( "All global resources were cleaned up.  Ending program." );
 
    return (int) msg.wParam;

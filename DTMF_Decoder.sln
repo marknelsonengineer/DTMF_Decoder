@@ -49,6 +49,8 @@ Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
 		Debug|x86 = Debug|x86
+		Generate Profile|x64 = Generate Profile|x64
+		Generate Profile|x86 = Generate Profile|x86
 		Release|x64 = Release|x64
 		Release|x86 = Release|x86
 	EndGlobalSection
@@ -57,6 +59,10 @@ Global
 		{88C083F3-3F8B-44E6-803A-8D898826EB22}.Debug|x64.Build.0 = Debug|x64
 		{88C083F3-3F8B-44E6-803A-8D898826EB22}.Debug|x86.ActiveCfg = Debug|Win32
 		{88C083F3-3F8B-44E6-803A-8D898826EB22}.Debug|x86.Build.0 = Debug|Win32
+		{88C083F3-3F8B-44E6-803A-8D898826EB22}.Generate Profile|x64.ActiveCfg = Generate Profile|x64
+		{88C083F3-3F8B-44E6-803A-8D898826EB22}.Generate Profile|x64.Build.0 = Generate Profile|x64
+		{88C083F3-3F8B-44E6-803A-8D898826EB22}.Generate Profile|x86.ActiveCfg = Generate Profile|Win32
+		{88C083F3-3F8B-44E6-803A-8D898826EB22}.Generate Profile|x86.Build.0 = Generate Profile|Win32
 		{88C083F3-3F8B-44E6-803A-8D898826EB22}.Release|x64.ActiveCfg = Release|x64
 		{88C083F3-3F8B-44E6-803A-8D898826EB22}.Release|x64.Build.0 = Release|x64
 		{88C083F3-3F8B-44E6-803A-8D898826EB22}.Release|x86.ActiveCfg = Release|Win32
