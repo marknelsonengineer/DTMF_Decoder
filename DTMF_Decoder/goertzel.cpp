@@ -132,7 +132,7 @@ DWORD WINAPI goertzelWorkThread( _In_ LPVOID pContext ) {
    /// Note:  Uses the exported &gdwMmcssTaskIndex that was originally set in audio.cpp
    ///
    /// @see https://learn.microsoft.com/en-us/windows/win32/api/avrt/nf-avrt-avsetmmthreadcharacteristicsa
-   mmcssHandle = AvSetMmThreadCharacteristics( L"Capture", &gdwMmcssTaskIndex );
+   mmcssHandle = AvSetMmThreadCharacteristicsW( L"Capture", &gdwMmcssTaskIndex );
    if ( mmcssHandle == NULL ) {
       LOG_WARN( "Failed to set MMCSS on Goertzel work thread.  Continuing." );
    }

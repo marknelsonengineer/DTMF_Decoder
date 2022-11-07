@@ -914,7 +914,8 @@ INPUT                  = Z:/Src/VisualStudio/DTMF_Decoder/DTMF_Decoder \
                          Z:/Src/VisualStudio/DTMF_Decoder/REFERENCES.md \
                          ARCHITECTURE.md \
                          STATISTICS.md \
-                         RELEASE_CHECKLIST.md
+                         RELEASE_CHECKLIST.md \
+                         DOXYGEN.md
 
 # This tag can be used to specify the character encoding of the source files
 # that doxygen parses. Internally doxygen uses the UTF-8 encoding. Doxygen uses
@@ -1234,7 +1235,7 @@ VERBATIM_HEADERS       = YES
 # generated with the -Duse_libclang=ON option for CMake.
 # The default value is: NO.
 
-CLANG_ASSISTED_PARSING = NO
+CLANG_ASSISTED_PARSING = YES
 
 # If the CLANG_ASSISTED_PARSING tag is set to YES and the CLANG_ADD_INC_PATHS
 # tag is set to YES then doxygen will add the directory of each input to the
@@ -1250,7 +1251,7 @@ CLANG_ADD_INC_PATHS    = YES
 # specified with INPUT and INCLUDE_PATH.
 # This tag requires that the tag CLANG_ASSISTED_PARSING is set to YES.
 
-CLANG_OPTIONS          =
+CLANG_OPTIONS          = "-Wno-#pragma-messages"
 
 # If clang assisted parsing is enabled you can provide the clang parser with the
 # path to the directory containing a file called compile_commands.json. This

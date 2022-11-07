@@ -143,7 +143,7 @@ BOOL processAudioFrame(
 
    switch ( sAudioFormat ) {
       case IEEE_FLOAT_32: {
-            float* fSample = (float*) ( pData + ( frameIndex * spMixFormat->nBlockAlign ) );  // This is from +1 to -1
+            float* fSample = (float*) ( pData + ( (size_t) frameIndex * spMixFormat->nBlockAlign ) );  // This is from +1 to -1
 
             INT8 signedSample = (INT8) ( *fSample * (float) PCM_8_BIT_SILENCE );  // This is +127 to -127
             if ( signedSample >= 0 ) {
@@ -154,7 +154,7 @@ BOOL processAudioFrame(
             break;
          }
       case PCM_8:
-         ch1Sample = *( pData + ( frameIndex * spMixFormat->nBlockAlign ) );
+         ch1Sample = *( pData + ( (size_t) frameIndex * spMixFormat->nBlockAlign ) );
          break;
       default:
          _ASSERT_EXPR( FALSE, "Unknown audio format" );
@@ -352,14 +352,14 @@ DWORD WINAPI audioCaptureThread( LPVOID Context ) {
 
    /// Set the multimedia class scheduler service, which will set the CPU
    /// priority for this thread
-   mmcssHandle = AvSetMmThreadCharacteristics( L"Capture", &gdwMmcssTaskIndex );
+   mmcssHandle = AvSetMmThreadCharacteristicsW( L"Capture", &gdwMmcssTaskIndex );
    if ( mmcssHandle == NULL ) {
       LOG_WARN( "Failed to set MMCSS on the audio capture thread.  Continuing." );
    }
    LOG_TRACE( "Set MMCSS on the audio capture thread." );
 
    #ifdef MONITOR_PCM_AUDIO
-      suFramesToMonitor = MONITOR_INTERVAL_SECONDS * spMixFormat->nSamplesPerSec;
+      suFramesToMonitor = (UINT64) MONITOR_INTERVAL_SECONDS * spMixFormat->nSamplesPerSec;
    #endif
 
    /// Audio capture loop
@@ -629,7 +629,7 @@ BOOL audioInit() {
 
 
    /// Initialize the DTMF buffer
-   br = pcmSetQueueSize( spMixFormat->nSamplesPerSec / 1000 * SIZE_OF_QUEUE_IN_MS );
+   br = pcmSetQueueSize( (size_t) spMixFormat->nSamplesPerSec / 1000 * SIZE_OF_QUEUE_IN_MS );
    CHECK_BR( "Failed to allocate PCM queue" );
 
    LOG_INFO( "%s:  Queue size=%zu bytes or %d ms", __FUNCTION__, gstQueueSize, SIZE_OF_QUEUE_IN_MS );
