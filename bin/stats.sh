@@ -5,7 +5,7 @@
 ##          DTMF_Decoder - EE 469 - Fall 2022
 ##
 ##  A Windows Desktop C program that decodes DTMF tones
-## 
+##
 ### Generate a STATISTICS.md file
 ###
 ### @see https://shields.io
@@ -25,6 +25,7 @@
 ALL_FILES=$(mktemp -q /tmp/stats.XXXXXX || exit 1)
 WORKING_FILES=$(mktemp -q /tmp/stats.XXXXXX || exit 1)
 REMAINING_FILES=$(mktemp -q /tmp/stats.XXXXXX || exit 1)
+
 
 # Trap to clean up temporary files
 trap 'rm -f -- "$ALL_FILES" "$WORKING_FILES" "$REMAINING_FILES"' EXIT
@@ -123,10 +124,10 @@ function print_file_statistics {
 
    extract_working_files "\.md$"
    processTextFiles '.md' `cat $WORKING_FILES`
-   
+
    extract_working_files "\.svg$|\.png$|\.jpg$|\.jpeg$|\.ico$"
    processDataFiles 'Images' `cat $WORKING_FILES`
-   
+
    processDataFiles 'Other Files' `cat $ALL_FILES`
 }
 
@@ -173,15 +174,15 @@ function print_shields_io_tags {
 	issue2="![GitHub closed issues](https://img.shields.io/github/issues-closed-raw/${GITHUB_USERNAME}/${GITHUB_REPO}?style=${STYLE})"
 	social1="![GitHub forks](https://img.shields.io/github/forks/${GITHUB_USERNAME}/${GITHUB_REPO}?style=${STYLE})"
 	social2="![GitHub Repo stars](https://img.shields.io/github/stars/${GITHUB_USERNAME}/${GITHUB_REPO}?style=${STYLE})"
-	
+
 	printf "\n"
-	printf "#### GitHub Statistics\n"
-	
+	printf "## GitHub Statistics\n"
+
 	print_number_of_commits
-	
+
    printf "| Repository                            | Commits                     | Issues                    | Social                      |\n"
    printf "|---------------------------------------|-----------------------------|---------------------------|-----------------------------|\n"
-	printf "|${repo1} <br/> ${repo2} <br/> ${repo3} | ${commit1} <br/> ${commit2} | ${issue1} <br/> ${issue2} | ${social1} <br/> ${social2} |\n"
+   printf "|${repo1} <br/> ${repo2} <br/> ${repo3} | ${commit1} <br/> ${commit2} | ${issue1} <br/> ${issue2} | ${social1} <br/> ${social2} |\n"
 }
 
 
@@ -189,14 +190,14 @@ function print_tags {
 # Use the following to get the tag/release history
 # $ git tag --sort=v:refname --format="%(tag)|%(contents)|%(creator)"
 	printf "\n"
-	printf "#### Tags\n"
-	
+	printf "## Tags\n"
+
 	printf "| Tag | Date | Author |\n"
 	printf "|-----|------|--------|\n"
-	git for-each-ref --sort=creatordate --format '%(refname:strip=2)|%(creatordate)|%(authorname)' refs/tags
-	
+	git for-each-ref --sort=creatordate --format '|%(refname:strip=2)|%(creatordate)|%(authorname)|' refs/tags
+
 	printf "\n"
-} 
+}
 
 
 print_title
