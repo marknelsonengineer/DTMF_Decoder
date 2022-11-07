@@ -77,35 +77,38 @@ const int giWindowWidth  = COL0 + ( BOX_WIDTH  * 4 ) + ( GAP_WIDTH  * 3 ) + BOX_
 const int giWindowHeight = ROW0 + ( BOX_HEIGHT * 4 ) + ( GAP_HEIGHT * 3 ) + BOX_HEIGHT + 50;  // The title is 25px and the menu is 25px
 
 /// Holds the location and display data for each key (button) on the keypad
+///
+/// The order of the fields in the `struct` were suggested by clang-tidy
+/// (to minimize padding)
 typedef struct {
-   WCHAR  digit[2];   ///< The digit to print
-   size_t row;        ///< Row index into gDtmfTones
-   size_t column;     ///< Column index into gDtmfTones
-   WCHAR  letters[5]; ///< The letters above the digit
-   LONG   x;          ///< The upper-left corner of the digit's box
-   LONG   y;          ///< The upper-left corner of the digit's box
+   size_t row;          ///< Row index into gDtmfTones
+   size_t column;       ///< Column index into gDtmfTones
+   LONG   x;            ///< The upper-left corner of the digit's box
+   LONG   y;            ///< The upper-left corner of the digit's box
+   WCHAR  digit[ 2 ];   ///< The digit to print
+   WCHAR  letters[ 5 ]; ///< The letters above the digit
 } keypad_t;
 
 
 /// An array of information (location and display data) for each key (button)
 /// on the keypad
 static keypad_t keypad[ 16 ] = {
-   {L"1", 0, 4,     L"", COL0, ROW0 },
-   {L"2", 0, 5,  L"ABC", COL1, ROW0 },
-   {L"3", 0, 6,  L"DEF", COL2, ROW0 },
-   {L"A", 0, 7,     L"", COL3, ROW0 },
-   {L"4", 1, 4,  L"GHI", COL0, ROW1 },
-   {L"5", 1, 5,  L"JKL", COL1, ROW1 },
-   {L"6", 1, 6,  L"MNO", COL2, ROW1 },
-   {L"B", 1, 7,     L"", COL3, ROW1 },
-   {L"7", 2, 4, L"PQRS", COL0, ROW2 },
-   {L"8", 2, 5,  L"TUV", COL1, ROW2 },
-   {L"9", 2, 6, L"WXYZ", COL2, ROW2 },
-   {L"C", 2, 7,     L"", COL3, ROW2 },
-   {L"*", 3, 4,     L"", COL0, ROW3 },
-   {L"0", 3, 5,     L"", COL1, ROW3 },
-   {L"#", 3, 6,     L"", COL2, ROW3 },
-   {L"D", 3, 7,     L"", COL3, ROW3 }
+   {0, 4, COL0, ROW0, L"1",     L"" },
+   {0, 5, COL1, ROW0, L"2",  L"ABC" },
+   {0, 6, COL2, ROW0, L"3",  L"DEF" },
+   {0, 7, COL3, ROW0, L"A",     L"" },
+   {1, 4, COL0, ROW1, L"4",  L"GHI" },
+   {1, 5, COL1, ROW1, L"5",  L"JKL" },
+   {1, 6, COL2, ROW1, L"6",  L"MNO" },
+   {1, 7, COL3, ROW1, L"B",     L"" },
+   {2, 4, COL0, ROW2, L"7", L"PQRS" },
+   {2, 5, COL1, ROW2, L"8",  L"TUV" },
+   {2, 6, COL2, ROW2, L"9", L"WXYZ" },
+   {2, 7, COL3, ROW2, L"C",     L"" },
+   {3, 4, COL0, ROW3, L"*",     L"" },
+   {3, 5, COL1, ROW3, L"0",     L"" },
+   {3, 6, COL2, ROW3, L"#",     L"" },
+   {3, 7, COL3, ROW3, L"D",     L"" }
 };
 
 
