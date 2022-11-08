@@ -35,14 +35,12 @@ This checklist is for a Visual Studio Win32 C Windows program
       - Reconfigure Doxygen so it cleans DOT files (this significantly reduces
         the number of files we host at UH Unix)
     - Push the project into Github and Tag the release
-    - Regenerate the statistics:
+    - Regenerate the statistics by clicking the Stats button or running:
 
-          wsl
-          $ cd ~/src/VisualStudio/DTMF_Decoder
-          $ ./bin/stats.sh | tee STATISTICS.md
+          wsl --cd ~/src/VisualStudio/DTMF_Decoder --exec ./bin/stats.sh
 
     - Regenerate the Doxygen documentation
-    - Push the Doxygen documentation to UH
+    - Push the Doxygen documentation to UH from WSL's `bash` `cd $(SolutionDir)` `./bin/sync.sh`
     - Sync the repo with GitHub
 
 ## Profile Guided Optimization
