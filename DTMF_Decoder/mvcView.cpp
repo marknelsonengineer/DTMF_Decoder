@@ -321,8 +321,9 @@ static __forceinline BOOL makeFloatRect(
 ///
 /// The function is inlined for performane reasons.
 ///
+/// @param index The row to update
 /// @param pUpdateRect The rectangle to update (from WM_PAINT)
-static __forceinline void paintRowFreqs( _In_ const RECT* pUpdateRect ) {
+static __forceinline void paintRowFreqs( _In_ const size_t index, _In_ const RECT* pUpdateRect ) {
    _ASSERTE( spRenderTarget      != NULL );
    _ASSERTE( spBrushHighlight    != NULL );
    _ASSERTE( spBrushForeground   != NULL );
@@ -330,46 +331,44 @@ static __forceinline void paintRowFreqs( _In_ const RECT* pUpdateRect ) {
    _ASSERTE( spFreqTextFormat    != NULL );
    _ASSERTE( pUpdateRect         != NULL );
 
-   for ( size_t index = 0 ; index < 4 ; index++ ) {
-      keypad_t* pKey = &keypad[ ( 4 * index ) + index ];  // The diaganol DTMF digits 1, 5, 9 and D
-      size_t iFreq = pKey->row;
+   keypad_t* pKey = &keypad[ ( 4 * index ) + index ];  // The diaganol DTMF digits 1, 5, 9 and D
+   size_t iFreq = pKey->row;
 
-      ID2D1SolidColorBrush* pBrush;
+   ID2D1SolidColorBrush* pBrush;
 
-      if ( gDtmfTones[ iFreq ].detected == TRUE ) {
-         pBrush = spBrushHighlight;
-      } else {
-         pBrush = spBrushForeground;
-      }
+   if ( gDtmfTones[ iFreq ].detected == TRUE ) {
+      pBrush = spBrushHighlight;
+   } else {
+      pBrush = spBrushForeground;
+   }
 
-      D2D1_RECT_F freqTextRect;
-      UINT32      cTextLength;
+   D2D1_RECT_F freqTextRect;
+   UINT32      cTextLength;
 
-      if ( makeFloatRect( &freqTextRect, pUpdateRect, COL0 - 78, pKey->y, COL0 - 32, pKey->y + BOX_HEIGHT ) ) {
-         // Get text length
-         cTextLength = (UINT32) wcslen( gDtmfTones[ iFreq ].label );
+   if ( makeFloatRect( &freqTextRect, pUpdateRect, COL0 - 78, pKey->y, COL0 - 32, pKey->y + BOX_HEIGHT ) ) {
+      // Get text length
+      cTextLength = (UINT32) wcslen( gDtmfTones[ iFreq ].label );
 
-         spRenderTarget->DrawText(
-            gDtmfTones[ iFreq ].label, // Text to render
-            cTextLength,               // Text length
-            spFreqTextFormat,          // Text format
-            freqTextRect,	            // The region of the window where the text will be rendered
-            pBrush                     // The brush used to draw the text
-         );                            // No return value to check for erors
-      }
+      spRenderTarget->DrawText(
+         gDtmfTones[ iFreq ].label, // Text to render
+         cTextLength,               // Text length
+         spFreqTextFormat,          // Text format
+         freqTextRect,	            // The region of the window where the text will be rendered
+         pBrush                     // The brush used to draw the text
+      );                            // No return value to check for erors
+   }
 
-      if ( makeFloatRect( &freqTextRect, pUpdateRect, COL0 - 32, pKey->y - 4, COL0 - 12, pKey->y + BOX_HEIGHT - 4 ) ) {
-         const wchar_t* wszText = L"Hz";		        // String to render
-         cTextLength = (UINT32) wcslen( wszText );	  // Get text length
+   if ( makeFloatRect( &freqTextRect, pUpdateRect, COL0 - 32, pKey->y - 4, COL0 - 12, pKey->y + BOX_HEIGHT - 4 ) ) {
+      const wchar_t* wszText = L"Hz";		        // String to render
+      cTextLength = (UINT32) wcslen( wszText );	  // Get text length
 
-         spRenderTarget->DrawText(
-            wszText,              // Text to render
-            cTextLength,          // Text length
-            spLettersTextFormat,  // Text format
-            freqTextRect,	       // The region of the window where the text will be rendered
-            pBrush                // The brush used to draw the text
-         );                       // No return value to check for erors
-      }
+      spRenderTarget->DrawText(
+         wszText,              // Text to render
+         cTextLength,          // Text length
+         spLettersTextFormat,  // Text format
+         freqTextRect,	       // The region of the window where the text will be rendered
+         pBrush                // The brush used to draw the text
+      );                       // No return value to check for erors
    }
 }
 
@@ -383,8 +382,9 @@ static __forceinline void paintRowFreqs( _In_ const RECT* pUpdateRect ) {
 ///
 /// The function is inlined for performane reasons.
 ///
+/// @param index The column to update
 /// @param pUpdateRect The rectangle to update (from WM_PAINT)
-static __forceinline void paintColFreqs( _In_ const RECT* pUpdateRect ) {
+static __forceinline void paintColFreqs( _In_ const size_t index, _In_ const RECT* pUpdateRect ) {
    _ASSERTE( spRenderTarget      != NULL );
    _ASSERTE( spBrushHighlight    != NULL );
    _ASSERTE( spBrushForeground   != NULL );
@@ -392,46 +392,44 @@ static __forceinline void paintColFreqs( _In_ const RECT* pUpdateRect ) {
    _ASSERTE( spFreqTextFormat    != NULL );
    _ASSERTE( pUpdateRect         != NULL );
 
-   for ( size_t index = 0 ; index < 4 ; index++ ) {
-      keypad_t* pKey = &keypad[ ( 4 * index ) + index ];  // The diaganol DTMF digits 1, 5, 9 and D
-      size_t iFreq = pKey->column;
+   keypad_t* pKey = &keypad[ ( 4 * index ) + index ];  // The diaganol DTMF digits 1, 5, 9 and D
+   size_t iFreq = pKey->column;
 
-      ID2D1SolidColorBrush* pBrush;
+   ID2D1SolidColorBrush* pBrush;
 
-      if ( gDtmfTones[ iFreq ].detected == TRUE ) {
-         pBrush = spBrushHighlight;
-      } else {
-         pBrush = spBrushForeground;
-      }
+   if ( gDtmfTones[ iFreq ].detected == TRUE ) {
+      pBrush = spBrushHighlight;
+   } else {
+      pBrush = spBrushForeground;
+   }
 
-      D2D1_RECT_F freqTextRect;
-      UINT32      cTextLength;
+   D2D1_RECT_F freqTextRect;
+   UINT32      cTextLength;
 
-      if ( makeFloatRect( &freqTextRect, pUpdateRect, pKey->x - 16, ROW0 - 48, pKey->x + BOX_WIDTH - 16, ROW0 ) ) {
-         // Get text length
-         cTextLength = (UINT32) wcslen( gDtmfTones[ iFreq ].label );
+   if ( makeFloatRect( &freqTextRect, pUpdateRect, pKey->x - 16, ROW0 - 48, pKey->x + BOX_WIDTH - 16, ROW0 ) ) {
+      // Get text length
+      cTextLength = (UINT32) wcslen( gDtmfTones[ iFreq ].label );
 
-         spRenderTarget->DrawText(
-            gDtmfTones[ iFreq ].label, // Text to render
-            cTextLength,               // Text length
-            spFreqTextFormat,          // Text format
-            freqTextRect,	            // The region of the window where the text will be rendered
-            pBrush                     // The brush used to draw the text
-         );                            // No return value to check for erors
-      }
+      spRenderTarget->DrawText(
+         gDtmfTones[ iFreq ].label, // Text to render
+         cTextLength,               // Text length
+         spFreqTextFormat,          // Text format
+         freqTextRect,	            // The region of the window where the text will be rendered
+         pBrush                     // The brush used to draw the text
+      );                            // No return value to check for erors
+   }
 
-      if ( makeFloatRect( &freqTextRect, pUpdateRect, pKey->x + 47, ROW0 - 36, pKey->x + 71, ROW0 - 20 ) ) {
-         const wchar_t* wszText = L"Hz";		        // String to render
-         cTextLength = (UINT32) wcslen( wszText );	  // Get text length
+   if ( makeFloatRect( &freqTextRect, pUpdateRect, pKey->x + 47, ROW0 - 36, pKey->x + 71, ROW0 - 20 ) ) {
+      const wchar_t* wszText = L"Hz";		        // String to render
+      cTextLength = (UINT32) wcslen( wszText );	  // Get text length
 
-         spRenderTarget->DrawText(
-            wszText,              // Text to render
-            cTextLength,          // Text length
-            spLettersTextFormat,  // Text format
-            freqTextRect,	       // The region of the window where the text will be rendered
-            pBrush                // The brush used to draw the text
-         );                       // No return value to check for erors
-      }
+      spRenderTarget->DrawText(
+         wszText,              // Text to render
+         cTextLength,          // Text length
+         spLettersTextFormat,  // Text format
+         freqTextRect,	       // The region of the window where the text will be rendered
+         pBrush                // The brush used to draw the text
+      );                       // No return value to check for erors
    }
 }
 
@@ -446,8 +444,9 @@ static __forceinline void paintColFreqs( _In_ const RECT* pUpdateRect ) {
 ///
 /// The function is inlined for performane reasons.
 ///
+/// @param index The key to repaint
 /// @param pUpdateRect The rectangle to update (from WM_PAINT)
-static __forceinline void paintKeys( _In_ const RECT* pUpdateRect ) {
+static __forceinline void paintKeys( _In_ const size_t index, _In_ const RECT* pUpdateRect ) {
    _ASSERTE( spRenderTarget      != NULL );
    _ASSERTE( spBrushHighlight    != NULL );
    _ASSERTE( spBrushForeground   != NULL );
@@ -455,56 +454,54 @@ static __forceinline void paintKeys( _In_ const RECT* pUpdateRect ) {
    _ASSERTE( spLettersTextFormat != NULL );
    _ASSERTE( pUpdateRect         != NULL );
 
-   for ( size_t index = 0 ; index < 16 ; index++ ) {
-      ID2D1SolidColorBrush* pBrush;
+   ID2D1SolidColorBrush* pBrush;
 
-      if ( gDtmfTones[ keypad[ index ].row ].detected == TRUE && gDtmfTones[ keypad[ index ].column ].detected == TRUE ) {
-         pBrush = spBrushHighlight;
-      } else {
-         pBrush = spBrushForeground;
-      }
+   if ( gDtmfTones[ keypad[ index ].row ].detected == TRUE && gDtmfTones[ keypad[ index ].column ].detected == TRUE ) {
+      pBrush = spBrushHighlight;
+   } else {
+      pBrush = spBrushForeground;
+   }
 
-      D2D1_RECT_F drawingRect;
-      UINT32 cTextLength;
+   D2D1_RECT_F drawingRect;
+   UINT32 cTextLength;
 
-      /// Draw the box around the keypad
-      if ( makeFloatRect( &drawingRect, pUpdateRect, keypad[ index ].x, keypad[ index ].y, keypad[ index ].x + BOX_WIDTH, keypad[ index ].y + BOX_HEIGHT ) ) {
-         spRenderTarget->DrawRoundedRectangle(
-            D2D1::RoundedRect( drawingRect, 8.0f, 8.0f ),  // const D2D1_ROUNDED_RECT
-            pBrush,     // Brush
-            2.f ) ;     // Stroke width
-            // No return value to check for erors
-      }
+   /// Draw the box around the keypad
+   if ( makeFloatRect( &drawingRect, pUpdateRect, keypad[ index ].x, keypad[ index ].y, keypad[ index ].x + BOX_WIDTH, keypad[ index ].y + BOX_HEIGHT ) ) {
+      spRenderTarget->DrawRoundedRectangle(
+         D2D1::RoundedRect( drawingRect, 8.0f, 8.0f ),  // const D2D1_ROUNDED_RECT
+         pBrush,     // Brush
+         2.f ) ;     // Stroke width
+         // No return value to check for erors
+   }
 
 
-      /// Draw the large digit (label)
-      if ( makeFloatRect( &drawingRect, pUpdateRect, keypad[ index ].x, keypad[ index ].y + 24, keypad[ index ].x + BOX_WIDTH, keypad[ index ].y + BOX_HEIGHT -6 ) ) {
-         // Get text length
-         cTextLength = (UINT32) wcslen( keypad[ index ].digit );
+   /// Draw the large digit (label)
+   if ( makeFloatRect( &drawingRect, pUpdateRect, keypad[ index ].x, keypad[ index ].y + 24, keypad[ index ].x + BOX_WIDTH, keypad[ index ].y + BOX_HEIGHT -6 ) ) {
+      // Get text length
+      cTextLength = (UINT32) wcslen( keypad[ index ].digit );
 
+      spRenderTarget->DrawText(
+         keypad[ index ].digit, // Text to render
+         cTextLength,           // Text length
+         spDigitTextFormat,     // Text format
+         drawingRect,	        // The region of the window where the text will be rendered
+         pBrush                 // The brush used to draw the text
+      );                        // No return value to check for erors
+   }
+
+
+   /// Draw the letters above the digits
+   if ( makeFloatRect( &drawingRect, pUpdateRect, keypad[ index ].x, keypad[ index ].y + 6, keypad[ index ].x + BOX_WIDTH, keypad[ index ].y + 6 + 16 ) ) {
+      cTextLength = (UINT32) wcslen( keypad[ index ].letters );	  // Get text length
+
+      if ( cTextLength > 0 ) {
          spRenderTarget->DrawText(
-            keypad[ index ].digit, // Text to render
-            cTextLength,           // Text length
-            spDigitTextFormat,     // Text format
-            drawingRect,	        // The region of the window where the text will be rendered
-            pBrush                 // The brush used to draw the text
-         );                        // No return value to check for erors
-      }
-
-
-      /// Draw the letters above the digits
-      if ( makeFloatRect( &drawingRect, pUpdateRect, keypad[ index ].x, keypad[ index ].y + 6, keypad[ index ].x + BOX_WIDTH, keypad[ index ].y + 6 + 16 ) ) {
-         cTextLength = (UINT32) wcslen( keypad[ index ].letters );	  // Get text length
-
-         if ( cTextLength > 0 ) {
-            spRenderTarget->DrawText(
-               keypad[ index ].letters,  // Text to render
-               cTextLength,              // Text length
-               spLettersTextFormat,      // Text format
-               drawingRect,              // The region of the window where the text will be rendered
-               pBrush                    // The brush used to draw the text
-            );                           // No return value to check for erors
-         }
+            keypad[ index ].letters,  // Text to render
+            cTextLength,              // Text length
+            spLettersTextFormat,      // Text format
+            drawingRect,              // The region of the window where the text will be rendered
+            pBrush                    // The brush used to draw the text
+         );                           // No return value to check for erors
       }
    }
 }
@@ -543,13 +540,30 @@ BOOL mvcViewPaintWindow( _In_ const RECT* pUpdateRect ) {
 
    /// Draw the main window... starting with the column and row labels
    ///
+   /// Loops are unrolled for performance.
+   ///
    /// @internal For now, and mostly for the sake of efficiency, we are not checking
    ///           the results of these drawing functions.  None of the methods these
    ///           functions call/use return any error messages, so (right now)
    ///           they return `void`.
-   paintColFreqs( pUpdateRect );
-   paintRowFreqs( pUpdateRect );
-   paintKeys( pUpdateRect );
+   paintColFreqs( 0, pUpdateRect );
+   paintColFreqs( 1, pUpdateRect );
+   paintColFreqs( 2, pUpdateRect );
+   paintColFreqs( 3, pUpdateRect );
+
+   paintRowFreqs( 0, pUpdateRect );
+   paintRowFreqs( 1, pUpdateRect );
+   paintRowFreqs( 2, pUpdateRect );
+   paintRowFreqs( 3, pUpdateRect );
+
+   paintKeys(  0, pUpdateRect );  paintKeys(  1, pUpdateRect );
+   paintKeys(  2, pUpdateRect );  paintKeys(  3, pUpdateRect );
+   paintKeys(  4, pUpdateRect );  paintKeys(  5, pUpdateRect );
+   paintKeys(  6, pUpdateRect );  paintKeys(  7, pUpdateRect );
+   paintKeys(  8, pUpdateRect );  paintKeys(  9, pUpdateRect );
+   paintKeys( 10, pUpdateRect );  paintKeys( 11, pUpdateRect );
+   paintKeys( 12, pUpdateRect );  paintKeys( 13, pUpdateRect );
+   paintKeys( 14, pUpdateRect );  paintKeys( 15, pUpdateRect );
 
    hr = spRenderTarget->EndDraw();
    CHECK_HR( "Failed to end drawing operations on the render target " );
