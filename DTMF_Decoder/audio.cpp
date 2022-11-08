@@ -8,48 +8,61 @@
 ///
 /// @see https://learn.microsoft.com/en-us/windows/win32/api/_coreaudio/
 ///
-/// @see https://learn.microsoft.com/en-us/windows/win32/api/mmdeviceapi/nn-mmdeviceapi-immdevice
-/// @see https://learn.microsoft.com/en-us/windows/win32/api/audioclient/nn-audioclient-iaudioclient
-/// @see https://learn.microsoft.com/en-us/windows/win32/api/audioclient/nf-audioclient-iaudioclient-initialize
-/// @see https://learn.microsoft.com/en-us/windows/win32/api/audioclient/nf-audioclient-iaudioclient-getbuffersize
-/// @see https://learn.microsoft.com/en-us/windows/win32/api/propsys/nn-propsys-ipropertystore
-/// @see https://learn.microsoft.com/en-us/windows/win32/api/mmeapi/ns-mmeapi-waveformatex
-/// @see https://learn.microsoft.com/en-us/windows/win32/api/mmreg/ns-mmreg-waveformatextensible
-/// @see https://learn.microsoft.com/en-us/windows/win32/api/audioclient/nn-audioclient-iaudiocaptureclient
-///
-/// @see https://learn.microsoft.com/en-us/windows/win32/api/audioclient/nf-audioclient-iaudiocaptureclient-getbuffer
-/// @see https://learn.microsoft.com/en-us/windows/win32/api/audioclient/nf-audioclient-iaudiocaptureclient-releasebuffer
-/// @see https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-sendmessage
-/// @see https://learn.microsoft.com/en-us/windows/win32/api/combaseapi/nf-combaseapi-coinitializeex
-/// @see https://learn.microsoft.com/en-us/windows/win32/api/processthreadsapi/nf-processthreadsapi-exitthread
-/// @see https://learn.microsoft.com/en-us/windows/win32/api/combaseapi/nf-combaseapi-couninitialize
-/// @see https://learn.microsoft.com/en-us/windows/win32/api/combaseapi/nf-combaseapi-cocreateinstance
-/// @see https://learn.microsoft.com/en-us/windows/win32/api/mmdeviceapi/nf-mmdeviceapi-immdeviceenumerator-getdefaultaudioendpoint
-/// @see https://learn.microsoft.com/en-us/windows/win32/api/mmdeviceapi/nf-mmdeviceapi-immdevice-getid
-/// @see https://learn.microsoft.com/en-us/windows/win32/api/mmdeviceapi/nf-mmdeviceapi-immdevice-getstate
-/// @see https://learn.microsoft.com/en-us/windows/win32/api/mmdeviceapi/nf-mmdeviceapi-immdevice-openpropertystore
-/// @see https://learn.microsoft.com/en-us/windows/win32/api/propidl/nf-propidl-propvariantinit
-/// @see https://learn.microsoft.com/en-us/previous-versions/windows/desktop/legacy/bb761473(v=vs.85)
-/// @see https://learn.microsoft.com/en-us/windows/win32/api/mmdeviceapi/nf-mmdeviceapi-immdevice-activate
-/// @see https://learn.microsoft.com/en-us/windows/win32/api/audioclient/nf-audioclient-iaudioclient-getmixformat
-/// @see https://learn.microsoft.com/en-us/windows/win32/api/audioclient/nf-audioclient-iaudioclient-isformatsupported
-/// @see https://learn.microsoft.com/en-us/windows/win32/api/audioclient/nf-audioclient-iaudioclient-initialize
-/// @see https://learn.microsoft.com/en-us/windows/win32/api/audioclient/nf-audioclient-iaudioclient-getbuffersize
-/// @see https://learn.microsoft.com/en-us/windows/win32/api/audioclient/nf-audioclient-iaudioclient-getdeviceperiod
-/// @see https://learn.microsoft.com/en-us/windows/win32/api/synchapi/nf-synchapi-createeventexa
-/// @see https://learn.microsoft.com/en-us/windows/win32/api/audioclient/nf-audioclient-iaudioclient-seteventhandle
-/// @see https://learn.microsoft.com/en-us/windows/win32/api/audioclient/nf-audioclient-iaudioclient-getservice
-/// @see https://learn.microsoft.com/en-us/windows/win32/api/processthreadsapi/nf-processthreadsapi-createthread
-/// @see https://learn.microsoft.com/en-us/windows/win32/api/audioclient/nf-audioclient-iaudioclient-start
-/// @see https://learn.microsoft.com/en-us/windows/win32/api/audioclient/nf-audioclient-iaudioclient-stop
-/// @see https://learn.microsoft.com/en-us/windows/win32/api/unknwn/nf-unknwn-iunknown-release
-/// @see https://learn.microsoft.com/en-us/windows/win32/api/audioclient/nf-audioclient-iaudioclient-reset
-/// @see https://learn.microsoft.com/en-us/windows/win32/api/combaseapi/nf-combaseapi-propvariantclear
-/// @see https://learn.microsoft.com/en-us/windows/win32/api/combaseapi/nf-combaseapi-cotaskmemfree
-/// @see https://learn.microsoft.com/en-us/windows/win32/api/avrt/nf-avrt-avsetmmthreadcharacteristicsa
-/// @see https://learn.microsoft.com/en-us/windows/win32/api/synchapi/nf-synchapi-waitforsingleobject
-/// @see https://learn.microsoft.com/en-us/windows/win32/api/avrt/nf-avrt-avrevertmmthreadcharacteristics
-/// @see https://learn.microsoft.com/en-us/windows/win32/api/handleapi/nf-handleapi-closehandle
+/// ## Audio API
+/// | API                                            | Link                                                                                                                           |
+/// |------------------------------------------------|--------------------------------------------------------------------------------------------------------------------------------|
+/// | `IMMDevice`                                    | https://learn.microsoft.com/en-us/windows/win32/api/mmdeviceapi/nn-mmdeviceapi-immdevice                                       |
+/// | `IAudioClient`                                 | https://learn.microsoft.com/en-us/windows/win32/api/audioclient/nn-audioclient-iaudioclient                                    |
+/// | `IAudioCaptureClient`                          | https://learn.microsoft.com/en-us/windows/win32/api/audioclient/nn-audioclient-iaudiocaptureclient                             |
+/// | `WAVEFORMATEX`                                 | https://learn.microsoft.com/en-us/windows/win32/api/mmeapi/ns-mmeapi-waveformatex                                              |
+/// | `WAVEFORMATEXTENSIBLE`                         | https://learn.microsoft.com/en-us/windows/win32/api/mmreg/ns-mmreg-waveformatextensible                                        |
+/// | `IPropertyStore`                               | https://learn.microsoft.com/en-us/windows/win32/api/propsys/nn-propsys-ipropertystore                                          |
+/// | `IMMDeviceEnumerator::GetDefaultAudioEndpoint` | https://learn.microsoft.com/en-us/windows/win32/api/mmdeviceapi/nf-mmdeviceapi-immdeviceenumerator-getdefaultaudioendpoint     |
+/// | `IMMDevice::GetId`                             | https://learn.microsoft.com/en-us/windows/win32/api/mmdeviceapi/nf-mmdeviceapi-immdevice-getid                                 |
+/// | `IMMDevice::GetState`                          | https://learn.microsoft.com/en-us/windows/win32/api/mmdeviceapi/nf-mmdeviceapi-immdevice-getstate                              |
+/// | `IMMDevice::OpenPropertyStore`                 | https://learn.microsoft.com/en-us/windows/win32/api/mmdeviceapi/nf-mmdeviceapi-immdevice-openpropertystore                     |
+/// | `PropVariantInit`                              | https://learn.microsoft.com/en-us/windows/win32/api/propidl/nf-propidl-propvariantinit                                         |
+/// | `IPropertyStore::GetValue`                     | https://learn.microsoft.com/en-us/previous-versions/windows/desktop/legacy/bb761473(v=vs.85)                                   |
+/// | `IAudioClient::GetMixFormat`                   | https://learn.microsoft.com/en-us/windows/win32/api/audioclient/nf-audioclient-iaudioclient-getmixformat                       |
+/// | `IAudioClient::IsFormatSupported`              | https://learn.microsoft.com/en-us/windows/win32/api/audioclient/nf-audioclient-iaudioclient-isformatsupported                  |
+/// | `IAudioClient::Initialize`                     | https://learn.microsoft.com/en-us/windows/win32/api/audioclient/nf-audioclient-iaudioclient-initialize                         |
+/// | `IMMDevice::Activate`                          | https://learn.microsoft.com/en-us/windows/win32/api/mmdeviceapi/nf-mmdeviceapi-immdevice-activate                              |
+/// | `IAudioClient::GetBufferSize`                  | https://learn.microsoft.com/en-us/windows/win32/api/audioclient/nf-audioclient-iaudioclient-getbuffersize                      |
+/// | `IAudioClient::GetDevicePeriod`                | https://learn.microsoft.com/en-us/windows/win32/api/audioclient/nf-audioclient-iaudioclient-getdeviceperiod                    |
+/// | `IAudioClient::GetService`                     | https://learn.microsoft.com/en-us/windows/win32/api/audioclient/nf-audioclient-iaudioclient-getservice                         |
+/// | `IAudioClient::SetEventHandle`                 | https://learn.microsoft.com/en-us/windows/win32/api/audioclient/nf-audioclient-iaudioclient-seteventhandle                     |
+/// | `IAudioClient::Start`                          | https://learn.microsoft.com/en-us/windows/win32/api/audioclient/nf-audioclient-iaudioclient-start                              |
+/// | `AvSetMmThreadCharacteristics`                 | https://learn.microsoft.com/en-us/windows/win32/api/avrt/nf-avrt-avsetmmthreadcharacteristicsa                                 |
+/// | `AvRevertMmThreadCharacteristics`              | https://learn.microsoft.com/en-us/windows/win32/api/avrt/nf-avrt-avrevertmmthreadcharacteristics                               |
+/// | `IAudioCaptureClient::GetBuffer`               | https://learn.microsoft.com/en-us/windows/win32/api/audioclient/nf-audioclient-iaudiocaptureclient-getbuffer                   |
+/// | `IAudioCaptureClient::ReleaseBuffer`           | https://learn.microsoft.com/en-us/windows/win32/api/audioclient/nf-audioclient-iaudiocaptureclient-releasebuffer               |
+/// | `IAudioClient::Stop`                           | https://learn.microsoft.com/en-us/windows/win32/api/audioclient/nf-audioclient-iaudioclient-stop                               |
+/// | `IAudioClient::Reset`                          | https://learn.microsoft.com/en-us/windows/win32/api/audioclient/nf-audioclient-iaudioclient-reset                              |
+/// 
+/// ## COM API
+/// | API                 | Link                                                                                          |
+/// |---------------------|-----------------------------------------------------------------------------------------------|
+/// | `CoInitializeEx`    | https://learn.microsoft.com/en-us/windows/win32/api/combaseapi/nf-combaseapi-coinitializeex   |
+/// | `CoUninitialize`    | https://learn.microsoft.com/en-us/windows/win32/api/combaseapi/nf-combaseapi-couninitialize   |
+/// | `CoCreateInstance`  | https://learn.microsoft.com/en-us/windows/win32/api/combaseapi/nf-combaseapi-cocreateinstance |
+/// | `IUnknown::Release` | https://learn.microsoft.com/en-us/windows/win32/api/unknwn/nf-unknwn-iunknown-release         |
+/// | `PropVariantClear`  | https://learn.microsoft.com/en-us/windows/win32/api/combaseapi/nf-combaseapi-propvariantclear |
+/// | `CoTaskMemFree`     | https://learn.microsoft.com/en-us/windows/win32/api/combaseapi/nf-combaseapi-cotaskmemfree    |
+/// 
+/// ## Threads & Aynchronization API
+/// | API                      | Link                                                                                                    |
+/// |--------------------------|---------------------------------------------------------------------------------------------------------|
+/// | `CreateThread`           | https://learn.microsoft.com/en-us/windows/win32/api/processthreadsapi/nf-processthreadsapi-createthread |
+/// | `CreateEventA`           | https://learn.microsoft.com/en-us/windows/win32/api/synchapi/nf-synchapi-createeventa                   |
+/// | `ThreadProc`             | https://learn.microsoft.com/en-us/previous-versions/windows/desktop/legacy/ms686736(v=vs.85)            |
+/// | `WaitForSingleObject`    | https://learn.microsoft.com/en-us/windows/win32/api/synchapi/nf-synchapi-waitforsingleobject            |
+/// | `ExitThread`             | https://learn.microsoft.com/en-us/windows/win32/api/processthreadsapi/nf-processthreadsapi-exitthread   |
+/// 
+/// ## Generic Win32 API
+/// | API                    | Link                                                                                         |
+/// |------------------------|----------------------------------------------------------------------------------------------|
+/// | `SendMessage`          | https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-sendmessage           |
+/// | `CloseHandle`          | https://learn.microsoft.com/en-us/windows/win32/api/handleapi/nf-handleapi-closehandle       |
 ///
 /// @todo Watch the program with Process Monitor and make sure it's not
 ///       over-spinning any threads.  So far, it looks very good.

@@ -8,30 +8,34 @@
 ///
 /// @see https://learn.microsoft.com/en-us/windows/win32/learnwin32/winmain--the-application-entry-point
 /// @see https://learn.microsoft.com/en-us/windows/win32/api/winuser/nc-winuser-wndproc
+/// @see https://learn.microsoft.com/en-us/windows/win32/winmsg/using-messages-and-message-queues
 ///
-/// @see https://learn.microsoft.com/en-us/windows/win32/api/combaseapi/nf-combaseapi-coinitializeex
-/// @see https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-loadstringw
-/// @see https://learn.microsoft.com/en-us/previous-versions/windows/desktop/legacy/aa366877(v=vs.85)
-/// @see https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-registerclassexw
-/// @see https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindoww
-/// @see https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-showwindow
-/// @see https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-updatewindow
-/// @see https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-loadacceleratorsa
-/// @see https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-getmessage
-/// @see https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-translateacceleratora
-/// @see https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-translatemessage
-/// @see https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-dispatchmessage
-/// @see https://learn.microsoft.com/en-us/windows/win32/api/combaseapi/nf-combaseapi-couninitialize
-/// @see https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-dialogboxa
-/// @see https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-makeintresourcea
-/// @see https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-destroywindow
-/// @see https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-defwindowproca
-/// @see https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-beginpaint
-/// @see https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-endpaint
-/// @see https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-sendmessage
-/// @see https://learn.microsoft.com/en-us/windows/win32/api/synchapi/nf-synchapi-setevent
-/// @see https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-postquitmessage
-/// @see https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-enddialog
+/// ## APIs Used
+/// | API                    | Link                                                                                         |
+/// |------------------------|----------------------------------------------------------------------------------------------|
+/// | `CoInitializeEx`       | https://learn.microsoft.com/en-us/windows/win32/api/combaseapi/nf-combaseapi-coinitializeex  |
+/// | `CoUninitialize`       | https://learn.microsoft.com/en-us/windows/win32/api/combaseapi/nf-combaseapi-couninitialize  |
+/// | `LoadStringW`          | https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-loadstringw           |
+/// | `CreateWindowW`        | https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindoww         |
+/// | `RegisterClassExW`     | https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-registerclassexw      |
+/// | `ShowWindow`           | https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-showwindow            |
+/// | `UpdateWindow`         | https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-updatewindow          |
+/// | `DefWindowProc`        | https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-defwindowproca        |
+/// | `GetMessage`           | https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-getmessage            |
+/// | `DispatchMessage`      | https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-dispatchmessage       |
+/// | `LoadAccelerators`     | https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-loadacceleratorsa     |
+/// | `MAKEINTRESOURCE`      | https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-makeintresourcea      |
+/// | `SendMessage`          | https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-sendmessage           |
+/// | `TranslateAccelerator` | https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-translateacceleratora |
+/// | `TranslateMessage`     | https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-translatemessage      |
+/// | `DialogBox`            | https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-dialogboxa            |
+/// | `DestroyWindow`        | https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-destroywindow         |
+/// | `PostQuitMessage`      | https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-postquitmessage       |
+/// | `EndDialog`            | https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-enddialog             |
+/// | `BeginPaint` (GDI)     | https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-beginpaint            |
+/// | `EndPaint` (GDI)       | https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-endpaint              |
+/// | `SecureZeroMemory`     | https://learn.microsoft.com/en-us/previous-versions/windows/desktop/legacy/aa366877(v=vs.85) |
+/// | `SetEvent`             | https://learn.microsoft.com/en-us/windows/win32/api/synchapi/nf-synchapi-setevent            |
 ///
 /// @file    DTMF_Decoder.cpp
 /// @version 1.0

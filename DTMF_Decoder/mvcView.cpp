@@ -9,24 +9,26 @@
 ///
 /// @see http://www.catch22.net/tuts/win32/flicker-free-drawing
 ///
-/// @see https://learn.microsoft.com/en-us/windows/win32/api/d2d1/nf-d2d1-d2d1createfactory-r1
-/// @see https://learn.microsoft.com/en-us/windows/win32/api/dwrite/nf-dwrite-dwritecreatefactory
-/// @see https://learn.microsoft.com/en-us/windows/win32/api/dwrite/nf-dwrite-idwritefactory-createtextformat
-/// @see https://learn.microsoft.com/en-us/windows/win32/api/dwrite/nf-dwrite-idwritetextformat-setwordwrapping
-/// @see https://learn.microsoft.com/en-us/windows/win32/api/dwrite/nf-dwrite-idwritetextformat-settextalignment
-/// @see https://learn.microsoft.com/en-us/windows/win32/api/dwrite/nf-dwrite-idwritetextformat-setparagraphalignment
-/// @see https://learn.microsoft.com/en-us/windows/win32/api/d2d1/nf-d2d1-id2d1factory-createhwndrendertarget(constd2d1_render_target_properties__constd2d1_hwnd_render_target_properties__id2d1hwndrendertarget)
-/// @see https://learn.microsoft.com/en-us/windows/win32/api/d2d1/nf-d2d1-id2d1rendertarget-createsolidcolorbrush(constd2d1_color_f__id2d1solidcolorbrush)
-/// @see https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-invalidaterect
-/// @see https://learn.microsoft.com/en-us/windows/win32/api/unknwn/nf-unknwn-iunknown-release
-/// @see https://learn.microsoft.com/en-us/windows/win32/api/d2d1/nf-d2d1-id2d1rendertarget-begindraw
-/// @see https://learn.microsoft.com/en-us/windows/win32/api/d2d1/nf-d2d1-id2d1rendertarget-enddraw
-/// @see https://learn.microsoft.com/en-us/windows/win32/direct2d/id2d1rendertarget-clear
-/// @see https://learn.microsoft.com/en-us/windows/win32/api/d2d1/nf-d2d1-id2d1rendertarget-drawtext(constwchar_uint32_idwritetextformat_constd2d1_rect_f__id2d1brush_d2d1_draw_text_options_dwrite_measuring_mode)
-/// @see https://learn.microsoft.com/en-us/windows/win32/api/d2d1helper/nf-d2d1helper-rectf
-/// @see https://learn.microsoft.com/en-us/dotnet/api/system.windows.media.drawingcontext.drawroundedrectangle?view=windowsdesktop-6.0
-///
-/// @see https://en.cppreference.com/w/c/string/wide/wcslen
+/// ## GDI & Direct2D API
+/// | API                                         | Link                                                                                                                                                                                                        |
+/// |---------------------------------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+/// | `D2D1CreateFactory`                         | https://learn.microsoft.com/en-us/windows/win32/api/d2d1/nf-d2d1-d2d1createfactory-r1                                                                                                                       |
+/// | `DWriteCreateFactory`                       | https://learn.microsoft.com/en-us/windows/win32/api/dwrite/nf-dwrite-dwritecreatefactory                                                                                                                    |
+/// | `ID2D1RenderTarget::CreateHwndRenderTarget` | https://learn.microsoft.com/en-us/windows/win32/api/d2d1/nf-d2d1-id2d1factory-createhwndrendertarget(constd2d1_render_target_properties__constd2d1_hwnd_render_target_properties__id2d1hwndrendertarget)    |
+/// | `ID2D1RenderTarget::BeginDraw`              | https://learn.microsoft.com/en-us/windows/win32/api/d2d1/nf-d2d1-id2d1rendertarget-begindraw                                                                                                                |
+/// | `D2D1::RectF`                               | https://learn.microsoft.com/en-us/windows/win32/api/d2d1helper/nf-d2d1helper-rectf                                                                                                                          |
+/// | `ID2D1RenderTarget::Clear`                  | https://learn.microsoft.com/en-us/windows/win32/direct2d/id2d1rendertarget-clear                                                                                                                            |
+/// | `ID2D1RenderTarget::CreateSolidColorBrush`  | https://learn.microsoft.com/en-us/windows/win32/api/d2d1/nf-d2d1-id2d1rendertarget-createsolidcolorbrush(constd2d1_color_f__id2d1solidcolorbrush)                                                           |
+/// | `IDWriteFactory::CreateTextFormat`          | https://learn.microsoft.com/en-us/windows/win32/api/dwrite/nf-dwrite-idwritefactory-createtextformat                                                                                                        |
+/// | `DrawRoundedRectangle`                      | https://learn.microsoft.com/en-us/dotnet/api/system.windows.media.drawingcontext.drawroundedrectangle                                                                                                       |
+/// | `ID2D1RenderTarget::DrawText`               | https://learn.microsoft.com/en-us/windows/win32/api/d2d1/nf-d2d1-id2d1rendertarget-drawtext(constwchar_uint32_idwritetextformat_constd2d1_rect_f__id2d1brush_d2d1_draw_text_options_dwrite_measuring_mode)  |
+/// | `IDWriteTextFormat::SetParagraphAlignment`  | https://learn.microsoft.com/en-us/windows/win32/api/dwrite/nf-dwrite-idwritetextformat-setparagraphalignment                                                                                                |
+/// | `IDWriteTextFormat::SetTextAlignment`       | https://learn.microsoft.com/en-us/windows/win32/api/dwrite/nf-dwrite-idwritetextformat-settextalignment                                                                                                     |
+/// | `IDWriteTextFormat::SetWordWrapping`        | https://learn.microsoft.com/en-us/windows/win32/api/dwrite/nf-dwrite-idwritetextformat-setwordwrapping                                                                                                      |
+/// | `ID2D1RenderTarget::EndDraw`                | https://learn.microsoft.com/en-us/windows/win32/api/d2d1/nf-d2d1-id2d1rendertarget-enddraw                                                                                                                  |
+/// | `InvalidateRect`                            | https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-invalidaterect                                                                                                                       |
+/// | `IUnknown::Release`                         | https://learn.microsoft.com/en-us/windows/win32/api/unknwn/nf-unknwn-iunknown-release                                                                                                                       |
+/// | `wcslen`                                    | https://en.cppreference.com/w/c/string/wide/wcslen                                                                                                                                                          |
 ///
 /// @file    mvcView.cpp
 /// @version 2.0

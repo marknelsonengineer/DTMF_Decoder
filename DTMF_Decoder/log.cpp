@@ -16,7 +16,7 @@
 ///   - Append a \n because that's how the Windws debugger likes to print
 ///     output
 ///
-/// ### APIs Used
+/// ## APIs Used
 /// | API                  | Link                                                                                                                              |
 /// |--------------------- | ----------------------------------------------------------------------------------------------------------------------------------|
 /// | `va_arg`             | https://learn.microsoft.com/en-us/cpp/c-runtime-library/reference/va-arg-va-copy-va-end-va-start?view=msvc-170                    |

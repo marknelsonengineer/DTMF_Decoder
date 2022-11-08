@@ -6,10 +6,13 @@
 //
 /// The model holds the state between the various modules
 ///
-/// @see https://learn.microsoft.com/en-us/cpp/c-runtime-library/reference/malloc-dbg                
-/// @see https://learn.microsoft.com/en-us/previous-versions/windows/desktop/legacy/aa366877(v=vs.85)
-/// @see https://learn.microsoft.com/en-us/cpp/c-runtime-library/reference/free-dbg                  
-/// @see https://learn.microsoft.com/en-us/cpp/c-runtime-library/reference/crtcheckmemory            
+/// ## APIs Used
+/// | API                | Link                                                                                         |
+/// |--------------------|----------------------------------------------------------------------------------------------|
+/// | `_malloc_dbg`      | https://learn.microsoft.com/en-us/cpp/c-runtime-library/reference/malloc-dbg                 |
+/// | `SecureZeroMemory` | https://learn.microsoft.com/en-us/previous-versions/windows/desktop/legacy/aa366877(v=vs.85) |
+/// | `_free_dbg`        | https://learn.microsoft.com/en-us/cpp/c-runtime-library/reference/free-dbg                   |
+/// | `_CrtCheckMemory`  | https://learn.microsoft.com/en-us/cpp/c-runtime-library/reference/crtcheckmemory             |
 ///
 /// @file    mvcModel.cpp
 /// @version 1.0

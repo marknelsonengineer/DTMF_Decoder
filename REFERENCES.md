@@ -5,7 +5,7 @@ The Windows API is quite complex.  Here's all of the API functions I needed to
 research to write DTMF_Decoder.
 
 
-## Generic Win32
+## Generic Win32 API
 | API                    | Link                                                                                         |
 |------------------------|----------------------------------------------------------------------------------------------|
 | `CreateWindowW`        | https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindoww         |
@@ -29,7 +29,7 @@ research to write DTMF_Decoder.
 | `DestroyWindow`        | https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-destroywindow         |
 
 
-## COM
+## COM API
 | API                 | Link                                                                                          |
 |---------------------|-----------------------------------------------------------------------------------------------|
 | `CoCreateInstance`  | https://learn.microsoft.com/en-us/windows/win32/api/combaseapi/nf-combaseapi-cocreateinstance |
@@ -40,7 +40,7 @@ research to write DTMF_Decoder.
 | `IUnknown::Release` | https://learn.microsoft.com/en-us/windows/win32/api/unknwn/nf-unknwn-iunknown-release         |
 
 
-## GDI & Direct2D
+## GDI & Direct2D API
 | API                                         | Link                                                                                                                                                                                                        |
 |---------------------------------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | `BeginPaint` (GDI)                          | https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-beginpaint                                                                                                                           |
@@ -59,9 +59,9 @@ research to write DTMF_Decoder.
 | `IDWriteTextFormat::SetTextAlignment`       | https://learn.microsoft.com/en-us/windows/win32/api/dwrite/nf-dwrite-idwritetextformat-settextalignment                                                                                                     |
 | `IDWriteTextFormat::SetWordWrapping`        | https://learn.microsoft.com/en-us/windows/win32/api/dwrite/nf-dwrite-idwritetextformat-setwordwrapping                                                                                                      |
 | `ID2D1RenderTarget::EndDraw`                | https://learn.microsoft.com/en-us/windows/win32/api/d2d1/nf-d2d1-id2d1rendertarget-enddraw                                                                                                                  |
+| `InvalidateRect`                            | https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-invalidaterect                                                                                                                       |
 
-
-## Audio
+## Audio API
 | API                                            | Link                                                                                                                           |
 |------------------------------------------------|--------------------------------------------------------------------------------------------------------------------------------|
 | `IMMDevice`                                    | https://learn.microsoft.com/en-us/windows/win32/api/mmdeviceapi/nn-mmdeviceapi-immdevice                                       |
@@ -69,6 +69,7 @@ research to write DTMF_Decoder.
 | `IAudioCaptureClient`                          | https://learn.microsoft.com/en-us/windows/win32/api/audioclient/nn-audioclient-iaudiocaptureclient                             |
 | `WAVEFORMATEX`                                 | https://learn.microsoft.com/en-us/windows/win32/api/mmeapi/ns-mmeapi-waveformatex                                              |
 | `WAVEFORMATEXTENSIBLE`                         | https://learn.microsoft.com/en-us/windows/win32/api/mmreg/ns-mmreg-waveformatextensible                                        |
+| `IPropertyStore`                               | https://learn.microsoft.com/en-us/windows/win32/api/propsys/nn-propsys-ipropertystore                                          |
 | `IMMDeviceEnumerator::GetDefaultAudioEndpoint` | https://learn.microsoft.com/en-us/windows/win32/api/mmdeviceapi/nf-mmdeviceapi-immdeviceenumerator-getdefaultaudioendpoint     |
 | `IMMDevice::GetId`                             | https://learn.microsoft.com/en-us/windows/win32/api/mmdeviceapi/nf-mmdeviceapi-immdevice-getid                                 |
 | `IMMDevice::GetState`                          | https://learn.microsoft.com/en-us/windows/win32/api/mmdeviceapi/nf-mmdeviceapi-immdevice-getstate                              |
@@ -92,7 +93,7 @@ research to write DTMF_Decoder.
 | `IAudioClient::Reset`                          | https://learn.microsoft.com/en-us/windows/win32/api/audioclient/nf-audioclient-iaudioclient-reset                              |
 
 
-## Debugging & Instrumentation
+## Debugging & Instrumentation API
 | API                  | Link                                                                                                                           |
 |----------------------|--------------------------------------------------------------------------------------------------------------------------------|
 | `_ASSERTE`           | https://learn.microsoft.com/en-us/cpp/c-runtime-library/reference/assert-asserte-assert-expr-macros?view=msvc-170              |
@@ -110,22 +111,23 @@ research to write DTMF_Decoder.
 | `MessageBeep`        | https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-messagebeep                                                |
 
 
-## CRT & Memory management
+## CRT & Memory Management API
 | API                | Link                                                                                         |
 |--------------------|----------------------------------------------------------------------------------------------|
 | `_malloc_dbg`      | https://learn.microsoft.com/en-us/cpp/c-runtime-library/reference/malloc-dbg                 |
 | `SecureZeroMemory` | https://learn.microsoft.com/en-us/previous-versions/windows/desktop/legacy/aa366877(v=vs.85) |
+| `ZeroMemory`       | https://learn.microsoft.com/en-us/previous-versions/windows/desktop/legacy/aa366920(v=vs.85) |
 | `_free_dbg`        | https://learn.microsoft.com/en-us/cpp/c-runtime-library/reference/free-dbg                   |
 | `_CrtCheckMemory`  | https://learn.microsoft.com/en-us/cpp/c-runtime-library/reference/crtcheckmemory             |
 
 
-## Threads & synchronization
+## Threads & Synchronization API
 | API                      | Link                                                                                                    |
 |--------------------------|---------------------------------------------------------------------------------------------------------|
 | `CreateThread`           | https://learn.microsoft.com/en-us/windows/win32/api/processthreadsapi/nf-processthreadsapi-createthread |
 | `CreateEventA`           | https://learn.microsoft.com/en-us/windows/win32/api/synchapi/nf-synchapi-createeventa                   |
 | `CreateEventEx`          | https://learn.microsoft.com/en-us/windows/win32/api/synchapi/nf-synchapi-createeventexa                 |
-| `ThreadProc`             | https://learn.microsoft.com/en-us/previous-versions/windows/desktop/legacy/ms686736(v=vs.85) |
+| `ThreadProc`             | https://learn.microsoft.com/en-us/previous-versions/windows/desktop/legacy/ms686736(v=vs.85)            |
 | `SetEvent`               | https://learn.microsoft.com/en-us/windows/win32/api/synchapi/nf-synchapi-setevent                       |
 | `WaitForSingleObject`    | https://learn.microsoft.com/en-us/windows/win32/api/synchapi/nf-synchapi-waitforsingleobject            |
 | `WaitForMultipleObjects` | https://learn.microsoft.com/en-us/windows/win32/api/synchapi/nf-synchapi-waitformultipleobjects         |

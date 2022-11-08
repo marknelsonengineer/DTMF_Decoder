@@ -10,19 +10,33 @@
 /// @see https://github.com/Harvie/Programs/blob/master/c/goertzel/goertzel.c
 /// @see https://en.wikipedia.org/wiki/Goertzel_algorithm
 ///
-/// @see https://learn.microsoft.com/en-us/cpp/c-runtime-library/math-constants?view=msvc-170
-/// @see https://learn.microsoft.com/en-us/cpp/preprocessor/message?view=msvc-170
-/// @see https://learn.microsoft.com/en-us/windows/win32/api/avrt/nf-avrt-avsetmmthreadcharacteristicsa
-/// @see https://learn.microsoft.com/en-us/windows/win32/api/synchapi/nf-synchapi-waitforsingleobject
-/// @see https://learn.microsoft.com/en-us/windows/win32/api/synchapi/nf-synchapi-setevent
-/// @see https://learn.microsoft.com/en-us/windows/win32/api/avrt/nf-avrt-avrevertmmthreadcharacteristics
-/// @see https://learn.microsoft.com/en-us/windows/win32/api/synchapi/nf-synchapi-createeventa
-/// @see https://learn.microsoft.com/en-us/windows/win32/api/handleapi/nf-handleapi-closehandle
-/// @see https://learn.microsoft.com/en-us/windows/win32/api/synchapi/nf-synchapi-waitformultipleobjects
+/// ## Math APIs
+/// | API                               | Link                                                                                             |
+/// |-----------------------------------|--------------------------------------------------------------------------------------------------|
+/// | `_USE_MATH_DEFINES`               | https://learn.microsoft.com/en-us/cpp/c-runtime-library/math-constants?view=msvc-170             |
+/// | `sinf`                            | https://en.cppreference.com/w/c/numeric/math/sin                                                 |
+/// | `cosf`                            | https://en.cppreference.com/w/c/numeric/math/cos                                                 |
+/// | `sqrtf`                           | https://en.cppreference.com/w/c/numeric/math/sqrt                                                |
 ///
-/// @see https://en.cppreference.com/w/c/numeric/math/sqrt
-/// @see https://en.cppreference.com/w/c/numeric/math/sin
-/// @see https://en.cppreference.com/w/c/numeric/math/cos
+/// ## Threads & Synchronization API
+/// | API                               | Link                                                                                             |
+/// |-----------------------------------|--------------------------------------------------------------------------------------------------|
+/// | `SetEvent`                        | https://learn.microsoft.com/en-us/windows/win32/api/synchapi/nf-synchapi-setevent                |
+/// | `WaitForSingleObject`             | https://learn.microsoft.com/en-us/windows/win32/api/synchapi/nf-synchapi-waitforsingleobject     |
+/// | `WaitForMultipleObjects`          | https://learn.microsoft.com/en-us/windows/win32/api/synchapi/nf-synchapi-waitformultipleobjects  |
+/// | `CreateEventA`                    | https://learn.microsoft.com/en-us/windows/win32/api/synchapi/nf-synchapi-createeventa            |
+///
+/// ## Audio API
+/// | API                               | Link                                                                                             |
+/// |-----------------------------------|--------------------------------------------------------------------------------------------------|
+/// | `AvSetMmThreadCharacteristics`    | https://learn.microsoft.com/en-us/windows/win32/api/avrt/nf-avrt-avsetmmthreadcharacteristicsa   |
+/// | `AvRevertMmThreadCharacteristics` | https://learn.microsoft.com/en-us/windows/win32/api/avrt/nf-avrt-avrevertmmthreadcharacteristics |
+///
+/// ## Other API Calls
+/// | API                               | Link                                                                                             |
+/// |-----------------------------------|--------------------------------------------------------------------------------------------------|
+/// | `CloseHandle`                     | https://learn.microsoft.com/en-us/windows/win32/api/handleapi/nf-handleapi-closehandle           |
+/// | `#pragma message`                 | https://learn.microsoft.com/en-us/cpp/preprocessor/message?view=msvc-170                         |
 ///
 /// @file    goertzel.cpp
 /// @version 1.0
