@@ -6,6 +6,7 @@ import datetime
 VERSION_HEADER_FILE = "./DTMF_Decoder/version.h"
 DOXYGEN_CONFIG_FILE = "./Doxyfile"
 RESOURCE_FILE       = "./DTMF_Decoder/DTMF_Decoder.rc"
+VCXPROJ_FILE        = "./DTMF_Decoder/DTMF_Decoder.vcxproj"
 
 major_version = 0
 minor_version = 0
@@ -100,7 +101,7 @@ def updateDoxygenConfigVersion( sKey:str, sFilename:str, sVersion:str ):
          j += 1
 
 
-def updateResourceFileConfigVersion( sKeyX:str, sFilename:str, sVersion:str ):
+def updateResourceFileConfigVersion( sFilename:str, sVersion:str ):
    li = []
 
    with open( sFilename, "r", encoding='utf-16-le') as versionFile:
@@ -146,10 +147,28 @@ def updateResourceFileConfigVersion( sKeyX:str, sFilename:str, sVersion:str ):
          j += 1
 
 
+def updateVcxprojVersion( sKey:str, sFilename:str, sVersion:str ):
+   li = []
+
+   with open( sFilename, "rt") as versionFile:
+      for aLine in versionFile:
+         i1 = aLine.find( sKey )
+         if i1 != -1:
+            li.append( aLine[0:i1] + sKey + sVersion + "</Version>" + '\n' )
+         else:
+            li.append( aLine )
+
+   j = 0
+   with open( sFilename, "wt" ) as versionFile:
+      while j < len(li):
+         versionFile.write( li[j] )
+         j += 1
+
+
 updateVersion( "#define VERSION_BUILD", VERSION_HEADER_FILE )
 full_version = getFullVersion()
 updateDoxygenConfigVersion( "PROJECT_NUMBER", DOXYGEN_CONFIG_FILE, full_version )
-updateResourceFileConfigVersion( "VALUE \"FileVersion\",", RESOURCE_FILE, full_version )
-# updateResourceFileConfigVersion( "VALUE \"ProductVersion\",", RESOURCE_FILE, full_version )
+updateResourceFileConfigVersion( RESOURCE_FILE, full_version )
+updateVcxprojVersion( "<Version>", VCXPROJ_FILE, full_version )
 
 print( full_version )
