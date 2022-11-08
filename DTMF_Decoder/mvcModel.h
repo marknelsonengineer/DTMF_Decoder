@@ -57,32 +57,6 @@ typedef struct {
 extern dtmfTones_t gDtmfTones[ NUMBER_OF_DTMF_TONES ];
 
 
-/// Determine if the state of a DTMF tone detection has changed.  If it has,
-/// then we need to invalidate that region of the display.
-///
-/// The function is inlined for performane reasons.
-__forceinline void mvcModelToggleToneDetectedStatus(
-   _In_ const size_t toneIndex,
-   _In_ const bool   detectedStatus ) {
-
-   _ASSERTE( toneIndex < NUMBER_OF_DTMF_TONES );
-
-   if ( gDtmfTones[ toneIndex ].detected != detectedStatus ) {
-      gDtmfTones[ toneIndex ].detected = detectedStatus;
-
-      BOOL br;  // BOOL result
-
-      if ( ( toneIndex & 0b1100 ) == 0 ) {  // If toneIndex is between 0 and 3
-         br = mvcInvalidateRow( toneIndex );
-      } else {
-         br = mvcInvalidateColumn( toneIndex - 4 );  // toneIndex is between 4 and 7,
-      }                                              // which turns into columns 0 through 3
-
-      WARN_BR( "Failed to invalidate region of screen" );
-   }
-}
-
-
 /// When `true`, #audioCaptureThread and #goertzelWorkThread event blocking
 /// loops will continue to run.
 ///
@@ -199,3 +173,115 @@ extern DWORD gdwMmcssTaskIndex;
 ///
 /// @see https://learn.microsoft.com/en-us/windows/win32/api/audioclient/nf-audioclient-iaudioclient-seteventhandle
 extern HANDLE ghAudioSamplesReadyEvent;
+
+
+/// Invalidate just the row (not the whole screen)
+///
+/// Inlined for performance.
+///
+/// @param row Index of the row... 0 through 3.
+///
+/// @return `true` if successful.  `false` if there was a problem.
+__forceinline BOOL mvcInvalidateRow( _In_ const size_t row ) {
+   _ASSERTE( row <= 3 );
+   _ASSERTE( ghMainWindow != NULL );
+
+   BOOL br;            // BOOL result
+   RECT rectToRedraw;  // The rectangle to redraw
+
+   rectToRedraw.left = 0;
+   rectToRedraw.right = giWindowWidth;
+
+   switch ( row ) {
+      case 0:
+         rectToRedraw.top = ROW0;
+         rectToRedraw.bottom = ROW0 + BOX_HEIGHT;
+         break;
+      case 1:
+         rectToRedraw.top = ROW1;
+         rectToRedraw.bottom = ROW1 + BOX_HEIGHT;
+         break;
+      case 2:
+         rectToRedraw.top = ROW2;
+         rectToRedraw.bottom = ROW2 + BOX_HEIGHT;
+         break;
+      case 3:
+         rectToRedraw.top = ROW3;
+         rectToRedraw.bottom = ROW3 + BOX_HEIGHT;
+         break;
+   }
+
+   br = InvalidateRect( ghMainWindow, &rectToRedraw, FALSE );
+   CHECK_BR( "Failed to invalidate rectangle" );
+
+   return TRUE;
+}
+
+
+/// Invalidate the column (not the whole screen)
+///
+/// Inlined for performance.
+///
+/// @param column Index of the column... 0 through 3.
+///
+/// @return `true` if successful.  `false` if there was a problem.
+__forceinline BOOL mvcInvalidateColumn( _In_ const size_t column ) {
+   _ASSERTE( column <= 3 );
+   _ASSERTE( ghMainWindow != NULL );
+
+   BOOL br;            // BOOL result
+   RECT rectToRedraw;  // The rectangle to redraw
+
+   rectToRedraw.top = 0;
+   rectToRedraw.bottom = giWindowHeight;
+
+   switch ( column ) {
+      case 0:
+         rectToRedraw.left = COL0 - 16;
+         rectToRedraw.right = COL0 + 71;
+         break;
+      case 1:
+         rectToRedraw.left = COL1 - 16;
+         rectToRedraw.right = COL1 + 71;
+         break;
+      case 2:
+         rectToRedraw.left = COL2 - 16;
+         rectToRedraw.right = COL2 + 71;
+         break;
+      case 3:
+         rectToRedraw.left = COL3 - 16;
+         rectToRedraw.right = COL3 + 71;
+         break;
+   }
+
+   br = InvalidateRect( ghMainWindow, &rectToRedraw, FALSE );
+   CHECK_BR( "Failed to invalidate rectangle" );
+
+   return TRUE;
+}
+
+
+/// Determine if the state of a DTMF tone detection has changed.  If it has,
+/// then we need to invalidate that region of the display.
+///
+/// The function is inlined for performane reasons.
+__forceinline void mvcModelToggleToneDetectedStatus(
+   _In_ const size_t toneIndex,
+   _In_ const bool   detectedStatus ) {
+
+   _ASSERTE( toneIndex < NUMBER_OF_DTMF_TONES );
+
+   if ( gDtmfTones[ toneIndex ].detected != detectedStatus ) {
+      gDtmfTones[ toneIndex ].detected = detectedStatus;
+
+      BOOL br;  // BOOL result
+
+      if ( ( toneIndex & 0b1100 ) == 0 ) {  // If toneIndex is between 0 and 3
+         br = mvcInvalidateRow( toneIndex );
+      } else {
+         br = mvcInvalidateColumn( toneIndex - 4 );  // toneIndex is between 4 and 7,
+      }                                              // which turns into columns 0 through 3
+
+      WARN_BR( "Failed to invalidate region of screen" );
+   }
+}

@@ -57,22 +57,6 @@ static IDWriteTextFormat*     spDigitTextFormat   = NULL;  ///< The font for the
 static IDWriteTextFormat*     spLettersTextFormat = NULL;  ///< The font for the letters above the digits (and the `Hz` units)
 static IDWriteTextFormat*     spFreqTextFormat    = NULL;  ///< The font for the frequency
 
-#define BOX_WIDTH  (64)    /**< Width of each keypad button  */
-#define BOX_HEIGHT (64)    /**< Height of each keypad button */
-
-#define GAP_WIDTH  (16)    /**< Horizontal space between each keypad button */
-#define GAP_HEIGHT (16)    /**< Vertical space between each keypad button   */
-
-#define ROW0 (64)                                /**< Y-axis distance from the top for the 1st row */
-#define ROW1 (ROW0 + BOX_HEIGHT + GAP_HEIGHT)    /**< Y-axis distance from the top for the 2nd row */
-#define ROW2 (ROW1 + BOX_HEIGHT + GAP_HEIGHT)    /**< Y-axis distance from the top for the 3rd row */
-#define ROW3 (ROW2 + BOX_HEIGHT + GAP_HEIGHT)    /**< Y-axis distance from the top for the 4th row */
-
-#define COL0 (96)                                /**< X-axis distance from the left for the 1st column */
-#define COL1 (COL0 + BOX_WIDTH + GAP_WIDTH)      /**< X-axis distance from the left for the 2nd column */
-#define COL2 (COL1 + BOX_WIDTH + GAP_WIDTH)      /**< X-axis distance from the left for the 3rd column */
-#define COL3 (COL2 + BOX_WIDTH + GAP_WIDTH)      /**< X-axis distance from the left for the 4th column */
-
 const int giWindowWidth  = COL0 + ( BOX_WIDTH  * 4 ) + ( GAP_WIDTH  * 3 ) + BOX_WIDTH;
 const int giWindowHeight = ROW0 + ( BOX_HEIGHT * 4 ) + ( GAP_HEIGHT * 3 ) + BOX_HEIGHT + 50;  // The title is 25px and the menu is 25px
 
@@ -110,88 +94,6 @@ static keypad_t keypad[ 16 ] = {
    {3, 6, COL2, ROW3, L"#",     L"" },
    {3, 7, COL3, ROW3, L"D",     L"" }
 };
-
-
-/// Invalidate just the row (not the whole screen)
-///
-/// @param row Index of the row... 0 through 3.
-///
-/// @return `true` if successful.  `false` if there was a problem.
-BOOL mvcInvalidateRow( _In_ const size_t row ) {
-   _ASSERTE( row <= 3 );
-   _ASSERTE( ghMainWindow != NULL );
-
-   BOOL br;            // BOOL result
-   RECT rectToRedraw;  // The rectangle to redraw
-
-   rectToRedraw.left = 0;
-   rectToRedraw.right = giWindowWidth;
-
-   switch ( row ) {
-      case 0:
-         rectToRedraw.top    = ROW0;
-         rectToRedraw.bottom = ROW0 + BOX_HEIGHT;
-         break;
-      case 1:
-         rectToRedraw.top    = ROW1;
-         rectToRedraw.bottom = ROW1 + BOX_HEIGHT;
-         break;
-      case 2:
-         rectToRedraw.top    = ROW2;
-         rectToRedraw.bottom = ROW2 + BOX_HEIGHT;
-         break;
-      case 3:
-         rectToRedraw.top    = ROW3;
-         rectToRedraw.bottom = ROW3 + BOX_HEIGHT;
-         break;
-   }
-
-   br = InvalidateRect( ghMainWindow, &rectToRedraw, FALSE );
-   CHECK_BR( "Failed to invalidate rectangle" );
-
-   return TRUE;
-}
-
-
-/// Invalidate the column (not the whole screen)
-///
-/// @param column Index of the column... 0 through 3.
-///
-/// @return `true` if successful.  `false` if there was a problem.
-BOOL mvcInvalidateColumn( _In_ const size_t column ) {
-   _ASSERTE( column <= 3 );
-   _ASSERTE( ghMainWindow != NULL );
-
-   BOOL br;            // BOOL result
-   RECT rectToRedraw;  // The rectangle to redraw
-
-   rectToRedraw.top = 0;
-   rectToRedraw.bottom = giWindowHeight;
-
-   switch ( column ) {
-      case 0:
-         rectToRedraw.left  = COL0 - 16;
-         rectToRedraw.right = COL0 + 71;
-         break;
-      case 1:
-         rectToRedraw.left  = COL1 - 16;
-         rectToRedraw.right = COL1 + 71;
-         break;
-      case 2:
-         rectToRedraw.left  = COL2 - 16;
-         rectToRedraw.right = COL2 + 71;
-         break;
-      case 3:
-         rectToRedraw.left  = COL3 - 16;
-         rectToRedraw.right = COL3 + 71;
-         break;
-   }
-
-   br = InvalidateRect( ghMainWindow, &rectToRedraw, FALSE );
-   CHECK_BR( "Failed to invalidate rectangle" );
-
-   return TRUE;
-}
 
 
 /// Initialize all of the resources needed to draw the main window
