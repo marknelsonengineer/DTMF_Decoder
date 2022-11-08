@@ -44,8 +44,8 @@
 #include "goertzel.h"     // For yo bad self
 
 
-static HANDLE shStartDFTevent[ NUMBER_OF_DTMF_TONES ];  ///< Handles to events
-static HANDLE shDoneDFTevent[ NUMBER_OF_DTMF_TONES ];   ///< Handles to events
+       HANDLE ghStartDFTevent[ NUMBER_OF_DTMF_TONES ];  ///< Handles to events.  External to support inlining.
+       HANDLE ghDoneDFTevent[ NUMBER_OF_DTMF_TONES ];   ///< Handles to events.  External to support inlining.
 static HANDLE shWorkThreads[ NUMBER_OF_DTMF_TONES ];    ///< The worker threads
 
 extern "C" float fScaleFactor = 0;  ///< Set in goertzel_init() and used in goertzel_magnitude()
@@ -121,8 +121,8 @@ DWORD WINAPI goertzelWorkThread( _In_ LPVOID pContext ) {
    size_t index = iIndex;          // But we use it as an index into an array, so convert to size_t
 
    _ASSERTE( iIndex < NUMBER_OF_DTMF_TONES );
-   _ASSERTE( shStartDFTevent[ index ] != NULL );
-   _ASSERTE( shDoneDFTevent[ index ]  != NULL );
+   _ASSERTE( ghStartDFTevent[ index ] != NULL );
+   _ASSERTE( ghDoneDFTevent[ index ]  != NULL );
 
    LOG_TRACE( "Start Goertzel DFT thread index=%zu", index );
 
@@ -144,8 +144,8 @@ DWORD WINAPI goertzelWorkThread( _In_ LPVOID pContext ) {
    while ( gbIsRunning ) {
       DWORD dwWaitResult;
 
-      /// Wait for this thread's #shStartDFTevent to be signalled
-      dwWaitResult = WaitForSingleObject( shStartDFTevent[index], INFINITE);
+      /// Wait for this thread's #ghStartDFTevent to be signalled
+      dwWaitResult = WaitForSingleObject( ghStartDFTevent[index], INFINITE);
       if ( dwWaitResult == WAIT_OBJECT_0 ) {
          if ( gbIsRunning ) {
             #ifdef _WIN64
@@ -160,7 +160,7 @@ DWORD WINAPI goertzelWorkThread( _In_ LPVOID pContext ) {
                mvcModelToggleToneDetectedStatus( index, false );
             }
 
-            SetEvent( shDoneDFTevent[ index ] );
+            SetEvent( ghDoneDFTevent[ index ] );
          }
       } else if ( dwWaitResult == WAIT_FAILED ) {
          LOG_FATAL( "WaitForSingleObject in Goertzel thread failed.  Exiting.  Investigate!" );
@@ -217,14 +217,14 @@ BOOL goertzel_init( _In_ const int iSampleRate ) {
 
    /// Create the events for synchronizing the threads
    for ( int i = 0 ; i < NUMBER_OF_DTMF_TONES ; i++ ) {
-      shStartDFTevent[ i ] = CreateEventA( NULL, FALSE, FALSE, NULL );
-      if ( shStartDFTevent[ i ] == NULL ) {
+      ghStartDFTevent[ i ] = CreateEventA( NULL, FALSE, FALSE, NULL );
+      if ( ghStartDFTevent[ i ] == NULL ) {
          LOG_ERROR( "Failed to create a startDFTevent event handle" );
          return FALSE;
       }
 
-      shDoneDFTevent[ i ] = CreateEventA( NULL, FALSE, FALSE, NULL );
-      if ( shDoneDFTevent[ i ] == NULL ) {
+      ghDoneDFTevent[ i ] = CreateEventA( NULL, FALSE, FALSE, NULL );
+      if ( ghDoneDFTevent[ i ] == NULL ) {
          LOG_ERROR( "Failed to create a doneDFTevent event handle" );
          return FALSE;
       }
@@ -253,10 +253,10 @@ BOOL goertzel_end() {
 
    for ( int i = 0 ; i < NUMBER_OF_DTMF_TONES ; i++ ) {
       // Trigger all of the threads to run... and spin their loops
-      br = SetEvent( shStartDFTevent[ i ] );
+      br = SetEvent( ghStartDFTevent[ i ] );
       CHECK_BR( "Failed to signal a startDFTevent" );
 
-      br = SetEvent( shDoneDFTevent[ i ] );
+      br = SetEvent( ghDoneDFTevent[ i ] );
       CHECK_BR( "Failed to signal a doneDFTevent" );
    }
 
@@ -273,39 +273,14 @@ BOOL goertzel_cleanup() {
    for ( int i = 0 ; i < NUMBER_OF_DTMF_TONES ; i++ ) {
       shWorkThreads[ i ] = NULL;
 
-      br = CloseHandle( shStartDFTevent[ i ] );
+      br = CloseHandle( ghStartDFTevent[ i ] );
       CHECK_BR( "Failed to close startDFTevent handle" );
-      shStartDFTevent[ i ] = NULL;
+      ghStartDFTevent[ i ] = NULL;
 
-      CloseHandle( shDoneDFTevent[ i ] );
+      CloseHandle( ghDoneDFTevent[ i ] );
       CHECK_BR( "Failed to close doneDFTevent handle" );
-      shDoneDFTevent[ i ] = NULL;
+      ghDoneDFTevent[ i ] = NULL;
    }
-
-   return TRUE;
-}
-
-
-/// Signal the 8 Goertzel worker threads, then wait for them to finish their
-/// analysis
-///
-/// @return `true` if successful.  `false` if there was a problem.
-BOOL goertzel_compute_dtmf_tones() {
-   BOOL    br;            // BOOL result
-   DWORD   dwWaitResult;  // Result from WaitForMultipleObjects
-
-   for ( UINT8 i = 0 ; i < NUMBER_OF_DTMF_TONES ; i++ ) {
-      /// Start each of the worker threads
-      br = SetEvent( shStartDFTevent[i] );
-      CHECK_BR( "Failed to start a DFT worker thread" );
-   }
-
-   /// Wait for all of the worker threads to signal their shDoneDFTevent
-   dwWaitResult = WaitForMultipleObjects( NUMBER_OF_DTMF_TONES, shDoneDFTevent, TRUE, INFINITE );
-
-   /// For performance reasons, I'm asserting the result of the `WaitForMultipleObjects`.
-   /// I don't want to compute this in the Release version for each audio buffer run.
-   _ASSERTE( dwWaitResult >= WAIT_OBJECT_0 && dwWaitResult <= WAIT_OBJECT_0 + NUMBER_OF_DTMF_TONES - 1 );
 
    return TRUE;
 }

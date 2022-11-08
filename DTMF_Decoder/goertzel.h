@@ -28,8 +28,35 @@
 
 extern BOOL goertzel_init( _In_ const int SAMPLING_RATE_IN );
 
-extern BOOL goertzel_compute_dtmf_tones();
-
 extern BOOL goertzel_end();
 
 extern BOOL goertzel_cleanup();
+
+extern HANDLE ghStartDFTevent[ NUMBER_OF_DTMF_TONES ];
+extern HANDLE ghDoneDFTevent[ NUMBER_OF_DTMF_TONES ];
+
+/// Signal the 8 Goertzel worker threads, then wait for them to finish their
+/// analysis
+///
+/// Inlined for performance
+///
+/// @return `true` if successful.  `false` if there was a problem.
+__forceinline BOOL goertzel_compute_dtmf_tones() {
+   BOOL    br;            // BOOL result
+   DWORD   dwWaitResult;  // Result from WaitForMultipleObjects
+
+   for ( UINT8 i = 0 ; i < NUMBER_OF_DTMF_TONES ; i++ ) {
+      /// Start each of the worker threads
+      br = SetEvent( ghStartDFTevent[ i ] );
+      CHECK_BR( "Failed to start a DFT worker thread" );
+   }
+
+   /// Wait for all of the worker threads to signal their ghDoneDFTevent
+   dwWaitResult = WaitForMultipleObjects( NUMBER_OF_DTMF_TONES, ghDoneDFTevent, TRUE, INFINITE );
+
+   /// For performance reasons, I'm asserting the result of the `WaitForMultipleObjects`.
+   /// I don't want to compute this in the Release version for each audio buffer run.
+   _ASSERTE( dwWaitResult >= WAIT_OBJECT_0 && dwWaitResult <= WAIT_OBJECT_0 + NUMBER_OF_DTMF_TONES - 1 );
+
+   return TRUE;
+}
