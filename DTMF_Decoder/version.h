@@ -9,10 +9,7 @@
 /// @see https://stackoverflow.com/questions/59692711/auto-increment-fileversion-build-nr-in-visual-studio-2019
 ///
 /// @file    version.h
-/// @version 1.0
-///
 /// @author  Mark Nelson <marknels@hawaii.edu>
-/// @date    7_Nov_2022
 ///////////////////////////////////////////////////////////////////////////////
 
 #pragma once
@@ -27,7 +24,7 @@
 #define VERSION_PATCH    0
 
 /// Monotonic counter that tracks the number of compilations
-#define VERSION_BUILD 1051
+#define VERSION_BUILD 1052
 
 /// C preprocesor trick that converts values into strings at compile time
 /// @see https://stackoverflow.com/questions/12844364/stringify-c-preprocess

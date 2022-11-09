@@ -39,10 +39,7 @@
 /// | `#pragma message`                 | https://learn.microsoft.com/en-us/cpp/preprocessor/message?view=msvc-170                         |
 ///
 /// @file    goertzel.cpp
-/// @version 1.0
-///
 /// @author  Mark Nelson <marknels@hawaii.edu>
-/// @date    10_Oct_2022
 ///////////////////////////////////////////////////////////////////////////////
 
 #include "framework.h"    // Standard system include files

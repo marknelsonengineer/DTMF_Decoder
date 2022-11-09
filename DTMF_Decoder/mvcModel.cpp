@@ -15,10 +15,7 @@
 /// | `_CrtCheckMemory`  | https://learn.microsoft.com/en-us/cpp/c-runtime-library/reference/crtcheckmemory             |
 ///
 /// @file    mvcModel.cpp
-/// @version 1.0
-///
 /// @author  Mark Nelson <marknels@hawaii.edu>
-/// @date    10_Oct_2022
 ///////////////////////////////////////////////////////////////////////////////
 
 #include "framework.h"    // Standard system include files

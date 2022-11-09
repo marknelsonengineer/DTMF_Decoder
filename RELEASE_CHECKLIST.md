@@ -3,6 +3,12 @@ Release Checklist
 
 This checklist is for a Visual Studio Win32 C Windows program
 
+I have removed `@date` and `@version` from all of the source files.  There was
+a time when that information (if kept up-to-date) was very useful.  However, 
+in the era of Git, the information doesn't make sense to keep inside the source
+file anymore.  It's available via the Git repo, which is the single version of
+truth.
+
 - For each source file:
     - Cleanup `#include` files
     - Ensure all parameters are validated with `_ASSERTE`

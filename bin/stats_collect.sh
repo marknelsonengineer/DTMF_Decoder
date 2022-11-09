@@ -14,10 +14,7 @@
 ### @todo gcc -fpreprocessed does not work on the mac
 ###
 ### @file    stats_collect.sh
-### @version 2.0
-###
 ### @author  Mark Nelson <marknels@hawaii.edu>
-### @date    4_Nov_2022
 ###############################################################################
 
 

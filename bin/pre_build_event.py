@@ -7,10 +7,7 @@
 ## Script a number of activities before the build runs
 ##
 ## @file    pre_build_event.py
-## @version 1.0
-##
 ## @author  Mark Nelson <marknels@hawaii.edu>
-## @date    9_Nov_2022
 ###############################################################################
 
 import os

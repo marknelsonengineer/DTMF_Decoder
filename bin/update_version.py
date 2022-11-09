@@ -18,10 +18,7 @@
 ## @see https://stackoverflow.com/questions/59692711/auto-increment-fileversion-build-nr-in-visual-studio-2019
 ##
 ## @file    update_version.py
-## @version 1.0
-##
 ## @author  Mark Nelson <marknels@hawaii.edu>
-## @date    8_Nov_2022
 ###############################################################################
 
 import datetime

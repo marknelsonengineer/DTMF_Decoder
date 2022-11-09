@@ -7,10 +7,7 @@
 /// Generic Windows logging utility
 ///
 /// @file    log.h
-/// @version 1.0
-///
 /// @author  Mark Nelson <marknels@hawaii.edu>
-/// @date    29_Oct_2022
 ///////////////////////////////////////////////////////////////////////////////
 
 #pragma once

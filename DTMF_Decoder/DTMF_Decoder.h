@@ -5,10 +5,7 @@
 /// A Windows Desktop C program that decodes DTMF tones
 ///
 /// @file    DTMF_Decoder.h
-/// @version 1.0
-///
 /// @author  Mark Nelson <marknels@hawaii.edu>
-/// @date    10_Oct_2022
 ///////////////////////////////////////////////////////////////////////////////
 
 #pragma once

@@ -9,10 +9,7 @@
 ### Generate a STATISTICS.md file
 ###
 ### @file    stats.sh
-### @version 2.0
-###
 ### @author  Mark Nelson <marknels@hawaii.edu>
-### @date    7_Nov_2022
 ###############################################################################
 
 ./bin/stats_collect.sh | tee STATISTICS.md

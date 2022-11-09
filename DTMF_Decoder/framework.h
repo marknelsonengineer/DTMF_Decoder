@@ -7,10 +7,7 @@
 /// Include file for standard system include files or project specific include files
 ///
 /// @file    framework.h
-/// @version 1.0
-///
 /// @author  Mark Nelson <marknels@hawaii.edu>
-/// @date    10_Oct_2022
 ///////////////////////////////////////////////////////////////////////////////
 
 #pragma once

@@ -11,10 +11,7 @@
 ;/// @see https://en.wikipedia.org/wiki/Goertzel_algorithm
 ;///
 ;/// @file    goertzel.asm
-;/// @version 1.0
-;///
 ;/// @author  Mark Nelson <marknels@hawaii.edu>
-;/// @date    25_Oct_2022
 ;///////////////////////////////////////////////////////////////////////////////
 
 

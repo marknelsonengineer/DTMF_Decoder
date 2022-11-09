@@ -32,10 +32,7 @@
 /// | `MessageBeep`        | https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-messagebeep                                                |
 ///
 /// @file    log.cpp
-/// @version 1.1
-///
 /// @author  Mark Nelson <marknels@hawaii.edu>
-/// @date    29_Oct_2022
 ///////////////////////////////////////////////////////////////////////////////
 
 #include "framework.h"    // Standard system include files

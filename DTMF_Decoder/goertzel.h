@@ -11,10 +11,7 @@
 /// @see https://en.wikipedia.org/wiki/Goertzel_algorithm
 ///
 /// @file    goertzel.h
-/// @version 1.0
-///
 /// @author  Mark Nelson <marknels@hawaii.edu>
-/// @date    10_Oct_2022
 ///////////////////////////////////////////////////////////////////////////////
 
 #pragma once

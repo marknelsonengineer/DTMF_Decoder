@@ -31,10 +31,7 @@
 /// | `wcslen`                                    | https://en.cppreference.com/w/c/string/wide/wcslen                                                                                                                                                          |
 ///
 /// @file    mvcView.cpp
-/// @version 2.0
-///
 /// @author  Mark Nelson <marknels@hawaii.edu>
-/// @date    10_Oct_2022
 ///////////////////////////////////////////////////////////////////////////////
 
 #include "framework.h"    // Standard system include files

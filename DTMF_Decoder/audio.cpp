@@ -68,10 +68,7 @@
 ///       over-spinning any threads.  So far, it looks very good.
 ///
 /// @file    audio.cpp
-/// @version 1.0
-///
 /// @author  Mark Nelson <marknels@hawaii.edu>
-/// @date    10_Oct_2022
 ///////////////////////////////////////////////////////////////////////////////
 
 #include "framework.h"    // Standard system include files
