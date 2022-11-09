@@ -13,18 +13,28 @@
 ## @date    9_Nov_2022
 ###############################################################################
 
-import argparse
 import os
+import sys
+import glob
+import shutil
 
-print( "Starting " + os.path.basename(__file__) )
+# print( "Starting " + os.path.basename(__file__) )
 
-##\cond
-parser = argparse.ArgumentParser(prog='pre_build_event.py', description='Pre-Build Event script for Visual Studio.')
-parser.add_argument('Configuration')      # positional argument
-parser.add_argument('Platform')           # positional argument
-parser.add_argument('SolutionDir')        # positional argument
-parser.add_argument('OutDir')             # positional argument
-args = parser.parse_args()
-##\endcond
+Configuration = sys.argv[1]
+Platform      = sys.argv[2]
+SolutionDir   = sys.argv[3]
+OutDir        = sys.argv[4]
 
+# print( "Configuration: " + Configuration )
+# print( "Platform: "      + Platform )
+# print( "SolutionDir: "   + SolutionDir )
+# print( "OutDir: "        + OutDir )
 
+os.chdir( SolutionDir )
+
+os.system( "python3 " + SolutionDir + "bin/update_version.py" )
+
+if Configuration == "Release":
+    print( "Copying PGO instrumentation files")
+    for file in glob.glob( SolutionDir + "Optimizer/*" ):
+        shutil.copy( file, OutDir )

@@ -52,7 +52,7 @@ patch_version = 0
 build_version = 0
 
 
-print("Starting update_version.py")
+# print("Starting update_version.py")
 
 ##\cond
 parser = argparse.ArgumentParser(prog='update_version.py', description='Update version numbers for a Visual Studio project.')
@@ -73,16 +73,16 @@ args = parser.parse_args()
 ## `extractInt( "#define VERSION_MINOR", aLine)` would return `4` as an `int`.
 ##
 def extractInt( sKey:str, sLine:str ) -> int:
-	i = sLine.find( sKey )  # Find the leading string
+   i = sLine.find( sKey )  # Find the leading string
 
-	if( i == -1 ):          # If not found, return -1
-	   return -1
+   if( i == -1 ):          # If not found, return -1
+      return -1
 
-	i2 = i + len( sKey )    # Get the remaining part of the string
+   i2 = i + len( sKey )    # Get the remaining part of the string
 
-	i3 = int( sLine[i2:] )  # Convert it to an int
+   i3 = int( sLine[i2:] )  # Convert it to an int
 
-	return i3
+   return i3
 
 
 ## Get the full version number (as a string) from `version.h`
@@ -99,19 +99,19 @@ def getFullVersion() -> str:
          # print(myline)                   # and print the string.
          i = extractInt( "#define VERSION_MAJOR", aLine )
          if i != -1:
-         	major_version = i
+            major_version = i
 
          i = extractInt( "#define VERSION_MINOR", aLine )
          if i != -1:
-         	minor_version = i
+            minor_version = i
 
          i = extractInt( "#define VERSION_PATCH", aLine )
          if i != -1:
-         	patch_version = i
+            patch_version = i
 
          i = extractInt( "#define VERSION_BUILD", aLine )
          if i != -1:
-         	build_version = i
+            build_version = i
 
    full_version = str(major_version)         \
                 + "." + str( minor_version ) \
