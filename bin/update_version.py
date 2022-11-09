@@ -8,7 +8,7 @@
 #
 ## Increment the build number in versioh.h and other files
 ##
-## Usage:  Normally, this script just updates the `version.h` file.  However, 
+## Usage:  Normally, this script just updates the `version.h` file.  However,
 ##         if you run it with the `--all` command line option, it will update:
 ##         - version.h
 ##         - The VERSION object in resource.rc
@@ -28,28 +28,28 @@ import datetime
 import argparse
 
 ## Path to version.h in C
-VERSION_HEADER_FILE = "./DTMF_Decoder/version.h"            
+VERSION_HEADER_FILE = "./DTMF_Decoder/version.h"
 
 ## Path to the Doxygen configuration file
-DOXYGEN_CONFIG_FILE = "./Doxyfile"  
+DOXYGEN_CONFIG_FILE = "./Doxyfile"
 
-## Path to the program's resource file                        
-RESOURCE_FILE       = "./DTMF_Decoder/DTMF_Decoder.rc"  
+## Path to the program's resource file
+RESOURCE_FILE       = "./DTMF_Decoder/DTMF_Decoder.rc"
 
-## Path to the project's configuration file    
-VCXPROJ_FILE        = "./DTMF_Decoder/DTMF_Decoder.vcxproj" 
+## Path to the project's configuration file
+VCXPROJ_FILE        = "./DTMF_Decoder/DTMF_Decoder.vcxproj"
 
 ## Increments with major functional changes
-major_version = 0  
+major_version = 0
 
 ## Increments with minor functional changes and bugfixes
-minor_version = 0 
+minor_version = 0
 
-## Increments with bugfixes 
-patch_version = 0  
+## Increments with bugfixes
+patch_version = 0
 
 ## Monotonic counter that tracks the number of compilations
-build_version = 0  
+build_version = 0
 
 
 print("Starting update_version.py")
@@ -65,7 +65,7 @@ args = parser.parse_args()
 ## Extract an integer from a line in a file
 ##
 ## If the source file had a like like:
-## 
+##
 ## `#define VERSION_MINOR    4`
 ##
 ## then
@@ -93,7 +93,7 @@ def getFullVersion() -> str:
    global minor_version
    global patch_version
    global build_version
-   
+
    with open ( VERSION_HEADER_FILE, "rt" ) as versionFile:  # open for reading text
       for aLine in versionFile:              # For each line, read to a string,
          # print(myline)                   # and print the string.
@@ -124,7 +124,7 @@ def getFullVersion() -> str:
 ## Update the build line in `version.h`
 ##
 ## If the old build line was: `#define VERSION_BUILD 1045`
-## 
+##
 ## Then the new build line will be:  `#define VERSION_BUILD 1046`
 ##
 ## This routine rewrites `version.h`
@@ -152,7 +152,7 @@ def updateVersion( sKey:str, sFilename:str ):
 ## Update the PROJECT_NUMBER field in `Doxyfile`
 ##
 ## We expect the configuration like to look like this:
-## 
+##
 ## `PROJECT_NUMBER         = 1.4.0.1044`
 ##
 ## This routine rewrites `Doxyfile` updating the PROJECT_NUMBER to the current
@@ -217,10 +217,10 @@ def updateResourceFileConfigVersion( sFilename:str, sVersion:str ):
 
          sKey2 = "VALUE \"ProductVersion\","
          i2 = aLine.find( sKey2 )
-         
+
          sKey3 = "VALUE \"LegalCopyright\","
          i3 = aLine.find( sKey3 )
-         
+
          sKey4 = " FILEVERSION "
          i4 = aLine.find( sKey4 )
 
@@ -257,10 +257,12 @@ def updateResourceFileConfigVersion( sFilename:str, sVersion:str ):
 ## Update the `<Version>` key in a Visual Studio project configuration file
 ##
 ## We expect the configuration like to look like this:
-## 
-## `      <Version>1.4.0.1044</Version>`
 ##
-## This routine rewrites the XML config file updating `<Version>` to 
+## `      <Version>1.4</Version>`
+##
+## Note:  The PE File Format only accepts a major_version and minor_version.
+##
+## This routine rewrites the XML config file updating `<Version>` to
 ## the current version in multiple locations.
 ##
 ## This routine should only run when `update_version.py` is run with
@@ -272,7 +274,9 @@ def updateVcxprojVersion( sKey:str, sFilename:str, sVersion:str ):
       for aLine in versionFile:
          i1 = aLine.find( sKey )
          if i1 != -1:
-            li.append( aLine[0:i1] + sKey + sVersion + "</Version>" + '\n' )
+            li.append( aLine[0:i1] + sKey + str(major_version) \
+                                    + "." + str(minor_version) \
+                                    + "</Version>" + '\n' )
          else:
             li.append( aLine )
 
