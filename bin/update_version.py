@@ -1,22 +1,77 @@
 #! python3
-# @todo Header
+
+###############################################################################
+#          University of Hawaii, College of Engineering
+#          DTMF_Decoder - EE 469 - Fall 2022
+#
+#  A Windows Desktop C program that decodes DTMF tones
+#
+## Increment the build number in versioh.h and other files
+##
+## Usage:  Normally, this script just updates the `version.h` file.  However, 
+##         if you run it with the `--all` command line option, it will update:
+##         - version.h
+##         - The VERSION object in resource.rc
+##         - The Doxyfile
+##         - The Visual Studio project configuration file
+##
+## @see https://stackoverflow.com/questions/59692711/auto-increment-fileversion-build-nr-in-visual-studio-2019
+##
+## @file    update_version.py
+## @version 1.0
+##
+## @author  Mark Nelson <marknels@hawaii.edu>
+## @date    8_Nov_2022
+###############################################################################
 
 import datetime
+import argparse
 
-VERSION_HEADER_FILE = "./DTMF_Decoder/version.h"
-DOXYGEN_CONFIG_FILE = "./Doxyfile"
-RESOURCE_FILE       = "./DTMF_Decoder/DTMF_Decoder.rc"
-VCXPROJ_FILE        = "./DTMF_Decoder/DTMF_Decoder.vcxproj"
+## Path to version.h in C
+VERSION_HEADER_FILE = "./DTMF_Decoder/version.h"            
 
-major_version = 0
-minor_version = 0
-patch_version = 0
-build_version = 0
+## Path to the Doxygen configuration file
+DOXYGEN_CONFIG_FILE = "./Doxyfile"  
+
+## Path to the program's resource file                        
+RESOURCE_FILE       = "./DTMF_Decoder/DTMF_Decoder.rc"  
+
+## Path to the project's configuration file    
+VCXPROJ_FILE        = "./DTMF_Decoder/DTMF_Decoder.vcxproj" 
+
+## Increments with major functional changes
+major_version = 0  
+
+## Increments with minor functional changes and bugfixes
+minor_version = 0 
+
+## Increments with bugfixes 
+patch_version = 0  
+
+## Monotonic counter that tracks the number of compilations
+build_version = 0  
 
 
 print("Starting update_version.py")
 
+##\cond
+parser = argparse.ArgumentParser(prog='update_version.py', description='Update version numbers for a Visual Studio project.')
+parser.add_argument( '--all', action='store_true', help='Update all files (not just version.h)')
+args = parser.parse_args()
+# parser.print_help()
+##\endcond
 
+
+## Extract an integer from a line in a file
+##
+## If the source file had a like like:
+## 
+## `#define VERSION_MINOR    4`
+##
+## then
+##
+## `extractInt( "#define VERSION_MINOR", aLine)` would return `4` as an `int`.
+##
 def extractInt( sKey:str, sLine:str ) -> int:
 	i = sLine.find( sKey )  # Find the leading string
 
@@ -30,6 +85,9 @@ def extractInt( sKey:str, sLine:str ) -> int:
 	return i3
 
 
+## Get the full version number (as a string) from `version.h`
+##
+## @returns A string like `1.4.0.2202`
 def getFullVersion() -> str:
    global major_version
    global minor_version
@@ -63,6 +121,13 @@ def getFullVersion() -> str:
    return( full_version )
 
 
+## Update the build line in `version.h`
+##
+## If the old build line was: `#define VERSION_BUILD 1045`
+## 
+## Then the new build line will be:  `#define VERSION_BUILD 1046`
+##
+## This routine rewrites `version.h`
 def updateVersion( sKey:str, sFilename:str ):
    li = []
 
@@ -84,13 +149,24 @@ def updateVersion( sKey:str, sFilename:str ):
          j += 1
 
 
+## Update the PROJECT_NUMBER field in `Doxyfile`
+##
+## We expect the configuration like to look like this:
+## 
+## `PROJECT_NUMBER         = 1.4.0.1044`
+##
+## This routine rewrites `Doxyfile` updating the PROJECT_NUMBER to the current
+## version.
+##
+## This routine should only run when `update_version.py` is run with
+## the `--all` command line option.
 def updateDoxygenConfigVersion( sKey:str, sFilename:str, sVersion:str ):
    li = []
 
    with open( sFilename, "rt") as versionFile:
       for aLine in versionFile:
          if aLine.startswith( sKey ):
-            li.append( sKey + " = " + sVersion + '\n' + '\n' )
+            li.append( sKey + " = " + sVersion + '\n' )
          else:
             li.append( aLine )
 
@@ -101,6 +177,36 @@ def updateDoxygenConfigVersion( sKey:str, sFilename:str, sVersion:str ):
          j += 1
 
 
+## Update several fields in `Resource.rc`
+##
+## We expect the configuration like to look like this:
+##
+## @verbatim
+##    VS_VERSION_INFO VERSIONINFO
+##     FILEVERSION 1,4,0,1044
+##     PRODUCTVERSION 1,4,0,1044
+##    ...
+##            BEGIN
+##                VALUE "CompanyName", "Mark Nelson"
+##                VALUE "FileDescription", "A Windows desktop program that decodes DTMF tones"
+##                VALUE "FileVersion", "1.4.0.1044"
+##                VALUE "InternalName", "DTMF_Dec.exe"
+##                VALUE "LegalCopyright", "Copyright (C) 2022, Mark Nelson"
+##                VALUE "OriginalFilename", "DTMF_Dec.exe"
+##                VALUE "ProductName", "DTMF Decoder"
+##                VALUE "ProductVersion", "1.4.0.1044"
+##            END
+## @endverbatim
+##
+## This routine rewrites `Resource.rc` updating the following fields:
+##   - `FILEVERSION`
+##   - `PRODUCTVERSION`
+##   - `"FileVersion"`
+##   - `"ProductVersion"`
+##   - `"LegalCopyright"`
+##
+## This routine should only run when `update_version.py` is run with
+## the `--all` command line option.
 def updateResourceFileConfigVersion( sFilename:str, sVersion:str ):
    li = []
 
@@ -147,6 +253,18 @@ def updateResourceFileConfigVersion( sFilename:str, sVersion:str ):
          j += 1
 
 
+
+## Update the `<Version>` key in a Visual Studio project configuration file
+##
+## We expect the configuration like to look like this:
+## 
+## `      <Version>1.4.0.1044</Version>`
+##
+## This routine rewrites the XML config file updating `<Version>` to 
+## the current version in multiple locations.
+##
+## This routine should only run when `update_version.py` is run with
+## the `--all` command line option.
 def updateVcxprojVersion( sKey:str, sFilename:str, sVersion:str ):
    li = []
 
@@ -165,10 +283,17 @@ def updateVcxprojVersion( sKey:str, sFilename:str, sVersion:str ):
          j += 1
 
 
+# The main body of the program
 updateVersion( "#define VERSION_BUILD", VERSION_HEADER_FILE )
-full_version = getFullVersion()
-updateDoxygenConfigVersion( "PROJECT_NUMBER", DOXYGEN_CONFIG_FILE, full_version )
-updateResourceFileConfigVersion( RESOURCE_FILE, full_version )
-updateVcxprojVersion( "<Version>", VCXPROJ_FILE, full_version )
 
-print( full_version )
+## Holds the full version as a string: `1.4.0.2022`
+full_version = getFullVersion()
+
+if args.all:
+   print( "Updating version in all files" )
+
+   updateDoxygenConfigVersion( "PROJECT_NUMBER", DOXYGEN_CONFIG_FILE, full_version )
+   updateResourceFileConfigVersion( RESOURCE_FILE, full_version )
+   updateVcxprojVersion( "<Version>", VCXPROJ_FILE, full_version )
+
+print( "Build: " + full_version )
