@@ -23,6 +23,7 @@ This checklist is for a Visual Studio Win32 C Windows program
       - Doxygen
       - Release > Linker > General > Version
       - Resource file > About dialog box
+      - Resource file > Version
     - Run [DOT Online](https://dreampuf.github.io/GraphvizOnline) to regenerate 
       the call diagram
       - Reconfigure Doxygen so it does NOT clean DOT files
