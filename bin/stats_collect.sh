@@ -33,7 +33,18 @@ trap 'rm -f -- "$ALL_FILES" "$WORKING_FILES" "$REMAINING_FILES"' EXIT
 
 function get_all_files {
 	# Put all of the source files in $ALL_FILES
-	find . ! -path "./Doxygen/*" ! -path "./x64/*" ! -path "*/.vs/*" ! -path "./.git/*" ! -path "*/Release/*" ! -path "*/Debug/*" ! -path "*/Profile/*" ! -path "./Ghidra/*" ! -name ".DS_Store" -type f > $ALL_FILES
+	find . ! -path "./Doxygen/*" \
+	       ! -path "./x64/*"     \
+		   ! -path "*/.vs/*"     \
+		   ! -path "./.git/*"    \
+		   ! -path "*/Release/*" \
+		   ! -path "*/Debug/*"   \
+		   ! -path "*/Analyze/*" \
+		   ! -path "*/Profile/*" \
+		   ! -path "./Ghidra/*"  \
+		   ! -name ".DS_Store"   \
+		   ! -name "Thumbs.db"   \
+		     -type f > $ALL_FILES
 }
 
 

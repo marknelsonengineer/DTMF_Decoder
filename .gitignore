@@ -21,8 +21,8 @@ mono_crash.*
 [Dd]ebugPublic/
 [Rr]elease/
 [Rr]eleases/
-/[Pp]rofile
-/DTMF_Decoder/Profile
+[Pp]rofile/
+[Aa]nalyze/
 x64/
 x86/
 [Ww][Ii][Nn]32/
@@ -370,4 +370,4 @@ FodyWeavers.xsd
 Ghidra/
 
 # Ignore cached images file
-Thumbs.db
+*Thumbs.db
