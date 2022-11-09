@@ -53,7 +53,7 @@
 #include "mvcView.h"      // For drawing the window
 #include "audio.h"        // For capturing audio
 #include "goertzel.h"     // For goertzel_end()
-#include "resource.h"     // For the resource definitions
+#include "Resource.h"     // For the resource definitions
 
 
 /// Defines the size of the wide-string buffer used to get strings from the
