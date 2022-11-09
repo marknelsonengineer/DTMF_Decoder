@@ -50,7 +50,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Optimizer", "Optimizer", "{
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "bin", "bin", "{25A6EA22-3B53-42D0-BB5E-17607AEAF458}"
 	ProjectSection(SolutionItems) = preProject
-		bin\Pre_Build_Event.ps1 = bin\Pre_Build_Event.ps1
 		bin\stats.sh = bin\stats.sh
 		bin\stats_collect.sh = bin\stats_collect.sh
 		bin\sync.sh = bin\sync.sh
