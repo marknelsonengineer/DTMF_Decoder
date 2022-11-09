@@ -373,8 +373,9 @@
     <ClInclude Include="log.h" />
     <ClInclude Include="mvcModel.h" />
     <ClInclude Include="mvcView.h" />
-    <ClInclude Include="Resource.h" />
+    <ClInclude Include="resource.h" />
     <ClInclude Include="targetver.h" />
+    <ClInclude Include="version.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="audio.cpp" />

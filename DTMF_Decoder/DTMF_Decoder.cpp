@@ -36,6 +36,7 @@
 /// | `EndPaint` (GDI)       | https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-endpaint              |
 /// | `SecureZeroMemory`     | https://learn.microsoft.com/en-us/previous-versions/windows/desktop/legacy/aa366877(v=vs.85) |
 /// | `SetEvent`             | https://learn.microsoft.com/en-us/windows/win32/api/synchapi/nf-synchapi-setevent            |
+/// | `SetDlgItemTextA`      | https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-setdlgitemtexta       |
 ///
 /// @file    DTMF_Decoder.cpp
 /// @version 1.0
@@ -53,7 +54,8 @@
 #include "mvcView.h"      // For drawing the window
 #include "audio.h"        // For capturing audio
 #include "goertzel.h"     // For goertzel_end()
-#include "Resource.h"     // For the resource definitions
+#include "resource.h"     // For the resource definitions
+#include "version.h"      // For the application's version strings
 
 
 /// Defines the size of the wide-string buffer used to get strings from the
@@ -328,6 +330,12 @@ INT_PTR CALLBACK About( HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam ) 
 
    switch ( message ) {
       case WM_INITDIALOG:
+         br = SetDlgItemTextA( hDlg, IDC_PROGRAM_NAME, APP_NAME ", " FULL_VERSION );
+         CHECK_BR( "Failed to set the name and version of the app")
+
+         br = SetDlgItemTextA( hDlg, IDC_DATE, "Built: " __DATE__ "" );
+         CHECK_BR( "Failed to set the build date of the app" );
+
          return (INT_PTR) TRUE;
 
       case WM_COMMAND:

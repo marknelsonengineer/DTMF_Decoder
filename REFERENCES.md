@@ -27,6 +27,7 @@ research to write DTMF_Decoder.
 | `CloseHandle`          | https://learn.microsoft.com/en-us/windows/win32/api/handleapi/nf-handleapi-closehandle       |
 | `EndDialog`            | https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-enddialog             |
 | `DestroyWindow`        | https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-destroywindow         |
+| `SetDlgItemTextA`      | https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-setdlgitemtexta       |
 
 
 ## COM API

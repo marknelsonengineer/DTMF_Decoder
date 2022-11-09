@@ -29,5 +29,15 @@
 /// Monotonic counter that tracks the number of compilations
 #define VERSION_BUILD 1045
 
+/// C preprocesor trick that converts values into strings at compile time
+/// @see https://stackoverflow.com/questions/12844364/stringify-c-preprocess
 #define stringify(a)  stringify_(a)
+
+/// Second step of the stringify process
 #define stringify_(a) #a
+
+/// The full version number as a string
+#define FULL_VERSION     stringify( VERSION_MAJOR ) \
+                     "." stringify( VERSION_MINOR ) \
+                     "." stringify( VERSION_PATCH ) \
+                     "." stringify( VERSION_BUILD )

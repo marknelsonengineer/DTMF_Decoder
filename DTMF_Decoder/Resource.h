@@ -14,10 +14,12 @@
 #define IDC_PROGRAM_NAME                1000
 #define IDC_AUTHOR                      1001
 #define IDC_COPYRIGHT                   1002
+#define IDC_DATE                        1002
+#define IDC_COPYRIGHT2                  1003
 #define IDC_STATIC                      -1
 
 // Next default values for new objects
-//
+// 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NO_MFC                     1
