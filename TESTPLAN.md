@@ -33,6 +33,9 @@ however it probably doesn't make sense to run it from Profile
 - Test the exit code:  Start Command Prompt and run the app with:  `start /wait .\DTMF_Decoder_x64_Debug.exe`
     then check the exit code with `echo Exit Code is %errorlevel%`
   - Change the default exit code in `mvcModel.cpp` and ensure the value is reported.
+  - Uncomment `logTest()` in DTMF_Decoder.cpp and make sure it's doing its thing.
+    - Uncomment 2 excessively long log tests at the end of `log.cpp` (one at a time)
+      and verify that they throw asserts.
 
 ## Documentation
 - Check the project's [GitHub page](https://github.com/marknelsonengineer/DTMF_Decoder) and make sure the home page looks good

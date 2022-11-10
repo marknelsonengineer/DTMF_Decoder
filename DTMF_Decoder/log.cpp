@@ -10,11 +10,39 @@
 ///   - Log to `OutputDebugString` with the flexibility of `printf`
 ///   - Both wide and narrow logging
 ///   - For log levels #LOG_LEVEL_FATAL, #LOG_LEVEL_ERROR and #LOG_LEVEL_WARN
-///     also show a Message Box
+///     also show a message box and beep
 ///   - Bounds checking on the string buffer
 ///   - Hold the buffer on the stack so it's both thread safe and re-entrant safe
 ///   - Append a \n because that's how the Windws debugger likes to print
 ///     output
+///
+/// #### The Parent Window
+/// A Windows logger is hard becausde `MessageBox` likes to have a handle to
+/// a parent window.  Sometimes, an application doesn't have a parent window
+/// because it either hasn't been created or it's been destroyed -- in which
+/// case, the parent `hWnd` is `NULL`.
+///
+/// Ideally, I'd like a standalone Windows logger to find its own main window,
+/// but Win32 doesn't have an API for that.  Another approach is for every
+/// #LOG_TRACE, #LOG_DEBUG, ... macro to pass an hWnd into it -- but this burdens
+/// the caller and I don't want to do that.
+///
+/// So, we have to set/initialize a Window when we start the logger and keep
+/// it updated as the program evolves.  There's a couple of ways to do this:
+///   1. Hold an hWnd in the logger and keep it up-to-date with `setWindow()`
+///   2. Hold a pointer to the application's `hWnd` and expect the application
+///      to keep it up-to-date.  DANGER:  The application's `hWnd` must be a
+///      global.  It can't be a local or a parameter.
+///
+/// I'm choosing Option 2 because:
+///   - It's simple and fire-and-forget.
+///   - Most Win32 apps keep a global hWnd.
+///   - It's always up-to-date:  When the global hWnd is set or cleared, so
+///     is the logger's hWnd.
+///
+/// The risk is that someone (me) will use this logger sometime in the future
+/// and initialize an hWnd pointer to a local or a parameter -- in which case
+/// very bad things happen.  C'est la vie.
 ///
 /// ## APIs Used
 /// | API                  | Link                                                                                                                              |
@@ -50,22 +78,31 @@
 #define STACK_GUARD 0xed539d63
 
 
-/// The handle to a window that will "own" the message box popups.
-static HWND shMainWindow = NULL;
+/// Pointer to an application's global windows handle.  This window will "own"
+/// the message box popups.
+static HWND* sphMainWindow = NULL;
 
 
 /// Initialize the logger
 ///
-/// Per Raymond Chen's book, all windows, including message boxes, should be owned by their
-/// calling window.  I don't want to pass an hWnd into each log (although, in the future
-/// that may be necessary).  So, I'll initialize the logger and set #shMainWindow.
+/// Per Raymond Chen's book, all windows, including message boxes, should be
+/// owned by their calling window.  I don't want to pass an hWnd into each log
+/// (although, in the future that may be necessary).  So, I'll initialize the
+/// logger and set #sphMainWindow to point to the app's windows handle, which
+/// I expect the app will keep up-to-date for me.
 ///
-/// @param hWindow The window that will own the log message boxes (usually the
-///                application's main window).
+/// @param phWindow The window that will own the log message boxes (usually the
+///                 application's main window).  **This must be a global variable.**
+///                 It is OK to set this to `NULL`
 ///
-/// @return `true` if successful.  `false` if there was a problem.
-BOOL logInit( _In_ const HWND hWindow ) {
-   shMainWindow = hWindow;
+/// @return `TRUE` if successful.  `FALSE` if there was a problem.
+BOOL logInit( _In_ HWND* phWindow ) {
+   if ( phWindow != NULL ) {     // Test to ensure that phWindow points to
+      HWND hWinTemp = *phWindow; // a valid address.  If it's invalid, this
+      _ASSERTE( TRUE );          // will segfault.
+   }
+
+   sphMainWindow = phWindow;
 
    return TRUE;
 }
@@ -73,9 +110,9 @@ BOOL logInit( _In_ const HWND hWindow ) {
 
 /// Cleanup the logger
 ///
-/// @return `true` if successful.  `false` if there was a problem.
+/// @return `TRUE` if successful.  `FALSE` if there was a problem.
 BOOL logCleanup() {
-   shMainWindow = NULL;  /// Set #shMainWindow to `NULL`
+   sphMainWindow = NULL;  /// Set #sphMainWindow to `NULL`
 
    return TRUE;
 }
@@ -136,7 +173,7 @@ void logA(
    pBufferHead       += numCharsWritten;
 
    (void) pBufferHead;  // Suppress a compiler warning that pBufferHead
-                     // is not checked after this.  No code is generated.
+                        // is not checked after this.  No code is generated.
 
    // Commented out below because I trust vsprintf_s
    // buffer.sBuf[ bufCharsRemaining - 1 ] = '\0';  // Null terminate the buffer (just to be sure)
@@ -151,13 +188,13 @@ void logA(
    OutputDebugStringA( buffer.sBuf );
 
    if ( logLevel == LOG_LEVEL_WARN ) {
-      MessageBoxA( shMainWindow, buffer.sBuf, appName, MB_OK | MB_ICONWARNING );
+      MessageBoxA( ( ( sphMainWindow == NULL ) ? NULL : *sphMainWindow ), buffer.sBuf, appName, MB_OK | MB_ICONWARNING );
    } else if ( logLevel == LOG_LEVEL_ERROR ) {
       MessageBeep( MB_ICONERROR );   // No need to check for a result code
-      MessageBoxA( shMainWindow, buffer.sBuf, appName, MB_OK | MB_ICONERROR );
+      MessageBoxA( ( ( sphMainWindow == NULL ) ? NULL : *sphMainWindow ), buffer.sBuf, appName, MB_OK | MB_ICONERROR );
    } else if ( logLevel == LOG_LEVEL_FATAL ) {
       MessageBeep( MB_ICONSTOP );    // No need to check for a result code
-      MessageBoxA( shMainWindow, buffer.sBuf, appName, MB_OK | MB_ICONSTOP );
+      MessageBoxA( ( ( sphMainWindow == NULL ) ? NULL : *sphMainWindow ), buffer.sBuf, appName, MB_OK | MB_ICONSTOP );
    }
 }
 
@@ -229,11 +266,11 @@ void logW(
    OutputDebugStringW( buffer.sBuf );
 
    if ( logLevel == LOG_LEVEL_WARN ) {
-      MessageBoxW( shMainWindow, buffer.sBuf, appName, MB_OK | MB_ICONWARNING );
+      MessageBoxW( ( ( sphMainWindow == NULL ) ? NULL : *sphMainWindow ), buffer.sBuf, appName, MB_OK | MB_ICONWARNING );
    } else if ( logLevel == LOG_LEVEL_ERROR ) {
-      MessageBoxW( shMainWindow, buffer.sBuf, appName, MB_OK | MB_ICONERROR );
+      MessageBoxW( ( ( sphMainWindow == NULL ) ? NULL : *sphMainWindow ), buffer.sBuf, appName, MB_OK | MB_ICONERROR );
    } else if ( logLevel == LOG_LEVEL_FATAL ) {
-      MessageBoxW( shMainWindow, buffer.sBuf, appName, MB_OK | MB_ICONSTOP );
+      MessageBoxW( ( ( sphMainWindow == NULL ) ? NULL : *sphMainWindow ), buffer.sBuf, appName, MB_OK | MB_ICONSTOP );
    }
 }
 
@@ -261,28 +298,14 @@ void logTest() {
    LOG_TRACE_W( L"Testing LOG_TRACE (wide) varargs [%d] [%s] [%f]", 1, L"OK", 1.0 );
 
    // Bounds testing... the following lines should succeed
-   LOG_INFO( "Narrow: 890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345" );
-   LOG_INFO( "Narrow: 8901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456" );
+   LOG_WARN(    "Narrow: 89012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123" );
+   LOG_WARN(    "Narrow: 890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234" );
 
-   LOG_INFO_W( L"Wide: 67890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345" );
-   LOG_INFO_W( L"Wide: 678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456" );
+   LOG_WARN_W( L"Wide: 6789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123" );
+   LOG_WARN_W( L"Wide: 67890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234" );
 
    // The following excessively long lines will fail an assertion check in vsprintf_s
    // This takes into account that "logTest: " is 10 characters long
-// LOG_INFO( "Narrow: 89012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567" );
-
-// LOG_INFO_W( L"Wide: 6789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567" );
+//   LOG_INFO(    "Narrow: 8901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345" );
+//   LOG_INFO_W( L"Wide: 678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345" );
 }
-
-
-
-// The following are the functions I am attempting to replace
-
-//sprintf_s( sBuf, sizeof( sBuf ), __FUNCTION__ ":  Start Goertzel DFT thread index=%zu", index );
-//OutputDebugStringA( sBuf );
-
-//OutputDebugStringA( APP_NAME ": Starting" );
-
-//swprintf_s( wsBuf, sizeof( wsBuf ), __FUNCTIONW__ L":  Device ID=%s", spwstrDeviceId );
-//OutputDebugStringW( wsBuf );
-

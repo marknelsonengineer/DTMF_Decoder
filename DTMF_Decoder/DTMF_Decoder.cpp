@@ -152,7 +152,7 @@ int APIENTRY wWinMain(
    }
 
    /// Initialize the logger
-   br = logInit( ghMainWindow );
+   br = logInit( &ghMainWindow );
    CHECK_BR( "Failed to initialize the logger.  Exiting." );
 
    LOG_TRACE( "Created main window:  Width=%d  Height=%d", giWindowWidth, giWindowHeight );
@@ -271,7 +271,7 @@ LRESULT CALLBACK WndProc( HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam 
          {
             switch ( wParam ) {
                case VK_ESCAPE:
-                  // logTest();                          // This is a good place to test the logger
+                  // logTest();      // This is a good place to test the logger
                   PostMessageA( hWnd, WM_CLOSE, 0, 0 );
                   break ;
                default:
