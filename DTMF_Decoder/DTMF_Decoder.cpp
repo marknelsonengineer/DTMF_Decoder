@@ -94,6 +94,11 @@ int APIENTRY wWinMain(
 
    shInst = hInstance; /// Store the instance handle in a global variable
 
+   /// Set #gbIsRunning to `true`.  Set it to `false` if we need to shutdown.
+   /// For example, #gbIsRunning gets set to false by WM_CLOSE.
+   /// Remember:  #gbIsRunning is a `bool`, so use `false` not `FALSE`.
+   gbIsRunning = true;
+
    /// Initialize COM (needs to be called once per each thread)
    hr = CoInitializeEx( NULL, COINIT_APARTMENTTHREADED );
    CHECK_HR( "Failed to initialize COM" )
@@ -231,11 +236,6 @@ LRESULT CALLBACK WndProc( HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam 
                   break;
                case IDM_EXIT:
                   gracefulShutdown();
-//                  br = DestroyWindow( hWnd );
-//                  WARN_BR( "Failed to destroy window.  Investigate!!" );
-
-//                  logCleanup();
-
                   break;
                default:
                   return DefWindowProc( hWnd, message, wParam, lParam );

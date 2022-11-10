@@ -376,10 +376,6 @@ DWORD WINAPI audioCaptureThread( LPVOID Context ) {
    #endif
 
    /// Audio capture loop
-   /// #gbIsRunning gets set to false by WM_CLOSE
-
-   gbIsRunning = true;
-
    while ( gbIsRunning ) {
       DWORD dwWaitResult;
 
@@ -646,9 +642,6 @@ BOOL audioInit() {
    CHECK_BR( "Failed to allocate PCM queue" );
 
    LOG_INFO( "%s:  Queue size=%zu bytes or %d ms", __FUNCTION__, gstQueueSize, SIZE_OF_QUEUE_IN_MS );
-
-   /// After everything is initialized, set #gbIsRunning to `true`
-   gbIsRunning = true;
 
    /// Initialize the Goertzel module (and associated threads)
    br = goertzel_init( spMixFormat->nSamplesPerSec );
