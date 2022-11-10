@@ -7,7 +7,6 @@ however it probably doesn't make sense to run it from Profile
 ## Basic tests
 - Runs on a 64-bit OS
 - Starts and draws the display
-- Press `ESC` and the program exits
 - Help > About works and is correct
   - The version number is correct
   - The build date is accurate
@@ -27,6 +26,10 @@ however it probably doesn't make sense to run it from Profile
       if ( dwWaitResult == WAIT_OBJECT_0 ) {
 
   Observe that the message box appears and the program gracefully quits.
+- `ALT`-F4 ends the program
+- Press `ESC` and the program exits
+- Double-clicking the upper-left icon on the window frame exits the program
+- Single-clicking the X icon on the right of the window frame exits the program
 
 ## Documentation
 - Check the project's [GitHub page](https://github.com/marknelsonengineer/DTMF_Decoder) and make sure the home page looks good

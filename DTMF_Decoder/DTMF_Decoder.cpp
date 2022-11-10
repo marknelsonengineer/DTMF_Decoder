@@ -179,18 +179,31 @@ int APIENTRY wWinMain(
    /// Main message loop
    MSG msg;
    ZeroMemory( &msg, sizeof( msg ) );
+   BOOL bRet;
 
-   while ( GetMessage( &msg, nullptr, 0, 0 ) ) {
+   while ( ( bRet = GetMessage( &msg,  // The message structure
+                                NULL,  // Get messages for any window that belongs to the current thread
+                                0, 0   // Retrieve all available messages
+                              ) ) != 0 ) {
+      if ( bRet <= 0 ) {
+         if ( bRet <= -1 ) {
+            LOG_FATAL( "Failed to get a message.  Ending program." );
+         }
+         gracefulShutdown();
+      }
+
       if ( !TranslateAccelerator( msg.hwnd, hAccelTable, &msg ) ) {
          TranslateMessage( &msg );
          DispatchMessage( &msg );
       }
    }
-   PostQuitMessage( (int) msg.wParam );   // No return value to check
 
    /// Cleanup all resources
    br = audioCleanup();
-   CHECK_BR( "There was a problem cleaning up the audio resources.  Ending program." )
+   WARN_BR( "There was a problem cleaning up the audio resources.  Ending program." )
+
+   br = logCleanup();
+   WARN_BR( "Failed to cleanup the logs." );
 
    CoUninitialize();  /// Unwind COM
 
@@ -217,10 +230,11 @@ LRESULT CALLBACK WndProc( HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam 
                   DialogBox( shInst, MAKEINTRESOURCE( IDD_ABOUTBOX ), hWnd, About );
                   break;
                case IDM_EXIT:
-                  br = DestroyWindow( hWnd );
-                  WARN_BR( "Failed to destroy window.  Investigate!!" );
+                  gracefulShutdown();
+//                  br = DestroyWindow( hWnd );
+//                  WARN_BR( "Failed to destroy window.  Investigate!!" );
 
-                  logCleanup();
+//                  logCleanup();
 
                   break;
                default:
