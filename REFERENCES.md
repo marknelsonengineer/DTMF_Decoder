@@ -16,7 +16,7 @@ research to write DTMF_Decoder.
 | `LoadAccelerators`     | https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-loadacceleratorsa     |
 | `LoadStringW`          | https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-loadstringw           |
 | `MAKEINTRESOURCE`      | https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-makeintresourcea      |
-| `SendMessage`          | https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-sendmessage           |
+| `PostMessageA`         | https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-postmessagea          |
 | `UpdateWindow`         | https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-updatewindow          |
 | `ShowWindow`           | https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-showwindow            |
 | `InvalidateRect`       | https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-invalidaterect        |

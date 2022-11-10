@@ -38,7 +38,7 @@
 /// | `IAudioCaptureClient::ReleaseBuffer`           | https://learn.microsoft.com/en-us/windows/win32/api/audioclient/nf-audioclient-iaudiocaptureclient-releasebuffer               |
 /// | `IAudioClient::Stop`                           | https://learn.microsoft.com/en-us/windows/win32/api/audioclient/nf-audioclient-iaudioclient-stop                               |
 /// | `IAudioClient::Reset`                          | https://learn.microsoft.com/en-us/windows/win32/api/audioclient/nf-audioclient-iaudioclient-reset                              |
-/// 
+///
 /// ## COM API
 /// | API                 | Link                                                                                          |
 /// |---------------------|-----------------------------------------------------------------------------------------------|
@@ -48,7 +48,7 @@
 /// | `IUnknown::Release` | https://learn.microsoft.com/en-us/windows/win32/api/unknwn/nf-unknwn-iunknown-release         |
 /// | `PropVariantClear`  | https://learn.microsoft.com/en-us/windows/win32/api/combaseapi/nf-combaseapi-propvariantclear |
 /// | `CoTaskMemFree`     | https://learn.microsoft.com/en-us/windows/win32/api/combaseapi/nf-combaseapi-cotaskmemfree    |
-/// 
+///
 /// ## Threads & Aynchronization API
 /// | API                      | Link                                                                                                    |
 /// |--------------------------|---------------------------------------------------------------------------------------------------------|
@@ -57,11 +57,10 @@
 /// | `ThreadProc`             | https://learn.microsoft.com/en-us/previous-versions/windows/desktop/legacy/ms686736(v=vs.85)            |
 /// | `WaitForSingleObject`    | https://learn.microsoft.com/en-us/windows/win32/api/synchapi/nf-synchapi-waitforsingleobject            |
 /// | `ExitThread`             | https://learn.microsoft.com/en-us/windows/win32/api/processthreadsapi/nf-processthreadsapi-exitthread   |
-/// 
+///
 /// ## Generic Win32 API
 /// | API                    | Link                                                                                         |
 /// |------------------------|----------------------------------------------------------------------------------------------|
-/// | `SendMessage`          | https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-sendmessage           |
 /// | `CloseHandle`          | https://learn.microsoft.com/en-us/windows/win32/api/handleapi/nf-handleapi-closehandle       |
 ///
 /// @todo Watch the program with Process Monitor and make sure it's not

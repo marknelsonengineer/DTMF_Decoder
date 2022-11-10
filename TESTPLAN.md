@@ -20,7 +20,13 @@ however it probably doesn't make sense to run it from Profile
 - Observe the program and each of the threads in Process Monitor and ensure none
   of the threads is over heating
 - Run DebugView and observe all of the output
+- Test a deep failure.  Change the `==` to `!=` in the following line 
+  of `audio.cpp`:
 
+      dwWaitResult = WaitForSingleObject( ghAudioSamplesReadyEvent, INFINITE );
+      if ( dwWaitResult == WAIT_OBJECT_0 ) {
+
+  Observe that the message box appears and the program gracefully quits.
 
 ## Documentation
 - Check the project's [GitHub page](https://github.com/marknelsonengineer/DTMF_Decoder) and make sure the home page looks good

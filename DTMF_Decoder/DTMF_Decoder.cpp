@@ -25,7 +25,7 @@
 /// | `DispatchMessage`      | https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-dispatchmessage       |
 /// | `LoadAccelerators`     | https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-loadacceleratorsa     |
 /// | `MAKEINTRESOURCE`      | https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-makeintresourcea      |
-/// | `SendMessage`          | https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-sendmessage           |
+/// | `PostMessageA`         | https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-postmessagea          |
 /// | `TranslateAccelerator` | https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-translateacceleratora |
 /// | `TranslateMessage`     | https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-translatemessage      |
 /// | `DialogBox`            | https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-dialogboxa            |
@@ -256,7 +256,7 @@ LRESULT CALLBACK WndProc( HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam 
             switch ( wParam ) {
                case VK_ESCAPE:
                   // logTest();                          // This is a good place to test the logger
-                  SendMessage( hWnd, WM_CLOSE, 0, 0 );
+                  PostMessageA( hWnd, WM_CLOSE, 0, 0 );
                   break ;
                default:
                   break ;
@@ -314,7 +314,7 @@ LRESULT CALLBACK WndProc( HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam 
 /// effectively pressing the Close button on the window.
 void gracefulShutdown() {
    gbIsRunning = false;
-   SendMessage( ghMainWindow, WM_CLOSE, 0, 0 );  // Shutdown the app
+   PostMessageA( ghMainWindow, WM_CLOSE, 0, 0 );  // Shutdown the app
 }
 
 
