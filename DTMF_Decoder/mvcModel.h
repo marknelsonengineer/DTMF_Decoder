@@ -68,6 +68,12 @@ extern bool gbIsRunning;
 extern HWND ghMainWindow;
 
 
+/// The application's return value.  This defaults to 0 (success).  Any error
+/// handler can set this and it will be passed out of the program when it 
+/// terminates.
+extern int giApplicationReturnValue;
+
+
 /// The size of the queue in milliseconds.  This determines the number of
 /// samples the Goertzel DFT #goertzel_magnitude uses to analyze the signal.
 ///

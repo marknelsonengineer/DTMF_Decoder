@@ -48,6 +48,9 @@ bool gbIsRunning = false;
 HWND ghMainWindow = NULL;
 
 
+int giApplicationReturnValue = 0;  // Default to 0 (SUCCESS)
+
+
 /// @cond Doxygen_Suppress
 BYTE*  gPcmQueue = NULL;
 size_t gstQueueHead = 0;

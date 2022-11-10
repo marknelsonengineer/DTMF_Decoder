@@ -214,7 +214,9 @@ int APIENTRY wWinMain(
 
    LOG_INFO( "All global resources were cleaned up.  Ending program." );
 
-   return (int) msg.wParam;
+   return (int) msg.wParam;  /// The return value `msg.pParam` comes to us
+                             /// from `WM_QUIT` which gets set by PostQuitMessage
+                             /// which gets its value from  #giApplicationReturnValue.
 }
 
 
@@ -305,7 +307,7 @@ LRESULT CALLBACK WndProc( HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam 
          br = goertzel_cleanup();
          WARN_BR( "Failed to cleanup Goertzel DFT" );
 
-         PostQuitMessage( 0 );
+         PostQuitMessage( giApplicationReturnValue );
 
          break;
       default:
