@@ -93,10 +93,10 @@ int APIENTRY wWinMain(
    INT     ir;  // INT result
 
    /// Initialize the logger
-   /// 
-   /// Tell the logger about where we hold the main window handle.  It's not 
+   ///
+   /// Tell the logger about where we hold the main window handle.  It's not
    /// set initially, but as soon as it is, the logger can start using it.
-   br = logInit( &ghMainWindow );  
+   br = logInit( &ghMainWindow );
    CHECK_BR( "Failed to initialize the logger.  Exiting." );
 
    LOG_TRACE( "Starting" );
@@ -238,6 +238,7 @@ LRESULT CALLBACK WndProc( HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam 
             switch ( wmId ) {
                case IDM_ABOUT:
                   DialogBox( shInst, MAKEINTRESOURCE( IDD_ABOUTBOX ), hWnd, About );
+                  // DialogBox returns void -- no checking required
                   break;
                case IDM_EXIT:
                   gracefulShutdown();
