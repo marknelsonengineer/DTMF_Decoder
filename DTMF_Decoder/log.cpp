@@ -13,35 +13,37 @@
 ///     also show a message box and beep
 ///   - Bounds checking on the string buffer
 ///   - Hold the buffer on the stack so it's both thread safe and re-entrant safe
-///   - Append a \n because that's how the Windws debugger likes to print
+///   - Append a `\n` because that's how the Windws debugger likes to print
 ///     output
 ///
 /// #### The Parent Window
-/// A Windows logger is hard becausde `MessageBox` likes to have a handle to
-/// a parent window.  Sometimes, an application doesn't have a parent window
+/// A Windows logger is hard because
+/// [MessageBox](https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-messagebox)
+/// [likes to have a handle to a parent window](https://devblogs.microsoft.com/oldnewthing/20050223-00/?p=36383).
+/// Sometimes, an application doesn't have a parent window
 /// because it either hasn't been created or it's been destroyed -- in which
 /// case, the parent `hWnd` is `NULL`.
 ///
 /// Ideally, I'd like a standalone Windows logger to find its own main window,
-/// but Win32 doesn't have an API for that.  Another approach is for every
-/// #LOG_TRACE, #LOG_DEBUG, ... macro to pass an hWnd into it -- but this burdens
-/// the caller and I don't want to do that.
+/// but [Win32 doesn't have an API for that](https://stackoverflow.com/questions/1119508/get-the-topmost-window-of-my-own-application-only-in-c).
+/// Another approach is for every #LOG_TRACE, #LOG_DEBUG, ... macro to pass an
+/// `hWnd` into it -- but this burdens the caller and I don't want to do that.
 ///
 /// So, we have to set/initialize a Window when we start the logger and keep
 /// it updated as the program evolves.  There's a couple of ways to do this:
-///   1. Hold an hWnd in the logger and keep it up-to-date with `setWindow()`
-///   2. Hold a pointer to the application's `hWnd` and expect the application
-///      to keep it up-to-date.  DANGER:  The application's `hWnd` must be a
-///      global.  It can't be a local or a parameter.
+///   1. Hold an `hWnd` in the logger and keep it up-to-date with a `setWindow()`
+///   2. Hold a pointer to the application's **global** `hWnd` and expect the
+///      application to keep it up-to-date.  DANGER:  The application's `hWnd`
+///      must be a global.  It can't be a local or a parameter.
 ///
 /// I'm choosing Option 2 because:
 ///   - It's simple and fire-and-forget.
-///   - Most Win32 apps keep a global hWnd.
-///   - It's always up-to-date:  When the global hWnd is set or cleared, so
-///     is the logger's hWnd.
+///   - Most Win32 apps keep a global `hWnd`.
+///   - It's always up-to-date:  When the global `hWnd` is set or cleared, so
+///     is the logger's `hWnd`.
 ///
 /// The risk is that someone (me) will use this logger sometime in the future
-/// and initialize an hWnd pointer to a local or a parameter -- in which case
+/// and initialize an `hWnd` pointer to a local or a parameter -- in which case
 /// very bad things happen.  C'est la vie.
 ///
 /// ## APIs Used
@@ -85,8 +87,12 @@ static HWND* sphMainWindow = NULL;
 
 /// Initialize the logger
 ///
-/// Per Raymond Chen's book, all windows, including message boxes, should be
-/// owned by their calling window.  I don't want to pass an hWnd into each log
+/// Note: The logger **can** be called before it's initialized.  This is by
+///       design.  The message box windows just won't have a parent window.
+///
+/// [Per Raymond Chen's book](https://devblogs.microsoft.com/oldnewthing/20050223-00/?p=36383),
+/// all windows, including message boxes, should be
+/// owned by their calling window.  I don't want to pass an `hWnd` into each log
 /// (although, in the future that may be necessary).  So, I'll initialize the
 /// logger and set #sphMainWindow to point to the app's windows handle, which
 /// I expect the app will keep up-to-date for me.
@@ -126,6 +132,9 @@ BOOL logCleanup() {
 /// I'm choosing to make this a function rather than an inline.  Header-only
 /// files are great, but I'd like to keep the buffer and all of the `vsprintf`
 /// stuff in a self-contained library rather than push it into the caller's source.
+///
+/// Note: The logger **can** be called before it's initialized.  This is by
+///       design.  The message box windows just won't have a parent window.
 ///
 /// @param logLevel      The level of this logging event
 /// @param appName       The name of the application
@@ -178,8 +187,8 @@ void logA(
    // Commented out below because I trust vsprintf_s
    // buffer.sBuf[ bufCharsRemaining - 1 ] = '\0';  // Null terminate the buffer (just to be sure)
 
-/// If we overrun the buffer and violate the stack guard, then fail fast by
-/// throwing an `_ASSERT`.
+   /// If we overrun the buffer and violate the stack guard, then fail fast by
+   /// throwing an `_ASSERT`.
    if ( bufCharsRemaining < 0 || buffer.dwGuard != STACK_GUARD ) {
       OutputDebugStringA( "VIOLATED STACK GUARD in Logger.  Exiting immediately." );
       _ASSERT_EXPR( FALSE, L"VIOLATED STACK GUARD in Logger.  Exiting immediately." );
@@ -207,6 +216,9 @@ void logA(
 /// I'm choosing to make this a function rather than an inline.  Header-only
 /// files are great, but I'd like to keep the buffer and all of the `vsprintf`
 /// stuff in a self-contained library rather than push it into the caller's source.
+///
+/// Note: The logger **can** be called before it's initialized.  This is by
+///       design.  The message box windows just won't have a parent window.
 ///
 /// @param logLevel      The level of this logging event
 /// @param appName       The name of the application

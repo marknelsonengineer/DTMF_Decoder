@@ -79,20 +79,27 @@ INT_PTR CALLBACK About( HWND, UINT, WPARAM, LPARAM );
 /// @see https://learn.microsoft.com/en-us/windows/win32/learnwin32/winmain--the-application-entry-point
 ///
 int APIENTRY wWinMain(
-   _In_     HINSTANCE hInstance,
-   _In_opt_ HINSTANCE hPrevInstance,
-   _In_     LPWSTR    lpCmdLine,
-   _In_     int       nCmdShow ) {
+   _In_     HINSTANCE hInstance,     // Handle to this instance
+   _In_opt_ HINSTANCE hPrevInstance, // Unused (legacy from Win16)
+   _In_     LPWSTR    lpCmdLine,     // Command line arguments as a Unicode string
+   _In_     int       nCmdShow ) {   // How the application window should be shown
 
-   LOG_TRACE( "Starting" );
+   _ASSERTE( hInstance != NULL );
+
+   shInst = hInstance; /// Store the instance handle in a global variable
 
    BOOL    br;  // BOOL result
    HRESULT hr;  // HRESULT result
    INT     ir;  // INT result
 
-   _ASSERTE( hInstance != NULL );
+   /// Initialize the logger
+   /// 
+   /// Tell the logger about where we hold the main window handle.  It's not 
+   /// set initially, but as soon as it is, the logger can start using it.
+   br = logInit( &ghMainWindow );  
+   CHECK_BR( "Failed to initialize the logger.  Exiting." );
 
-   shInst = hInstance; /// Store the instance handle in a global variable
+   LOG_TRACE( "Starting" );
 
    /// Set #gbIsRunning to `true`.  Set it to `false` if we need to shutdown.
    /// For example, #gbIsRunning gets set to false by WM_CLOSE.
@@ -151,10 +158,6 @@ int APIENTRY wWinMain(
       return FALSE;
    }
 
-   /// Initialize the logger
-   br = logInit( &ghMainWindow );
-   CHECK_BR( "Failed to initialize the logger.  Exiting." );
-
    LOG_TRACE( "Created main window:  Width=%d  Height=%d", giWindowWidth, giWindowHeight );
 
    /// Initialize the model
@@ -207,12 +210,12 @@ int APIENTRY wWinMain(
    br = audioCleanup();
    WARN_BR( "There was a problem cleaning up the audio resources.  Ending program." )
 
-   br = logCleanup();
-   WARN_BR( "Failed to cleanup the logs." );
-
    CoUninitialize();  /// Unwind COM
 
    LOG_INFO( "All global resources were cleaned up.  Ending program." );
+
+   br = logCleanup();
+   WARN_BR( "Failed to cleanup the logs." );
 
    return (int) msg.wParam;  /// The return value `msg.pParam` comes to us
                              /// from `WM_QUIT` which gets set by PostQuitMessage
@@ -295,8 +298,6 @@ LRESULT CALLBACK WndProc( HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam 
 
             br = DestroyWindow( hWnd );
             WARN_BR( "Failed to destroy window" );
-
-            logCleanup();
 
             break;
          }
