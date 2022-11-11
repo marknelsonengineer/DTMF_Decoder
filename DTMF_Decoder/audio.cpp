@@ -698,7 +698,7 @@ BOOL audioStopDevice() {
 /// Cleanup all things audio.  Basically unwind everything that was done in
 /// #audioInit
 ///
-/// @return `true` if successful.  `false` if there was a problem.
+/// @return `TRUE` if successful.  `FALSE` if there was a problem.
 BOOL audioCleanup() {
    BOOL    br;  // BOOL result
    HRESULT hr;  // HRESULT result

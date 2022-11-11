@@ -277,20 +277,24 @@ BOOL goertzel_end() {
 
 /// Cleanup Goertzel event handles and threads
 ///
-/// @return `true` if successful.  `false` if there was a problem.
+/// @return `TRUE` if successful.  `FALSE` if there was a problem.
 BOOL goertzel_cleanup() {
    BOOL br;  // BOOL result
 
    for ( int i = 0 ; i < NUMBER_OF_DTMF_TONES ; i++ ) {
       shWorkThreads[ i ] = NULL;
 
-      br = CloseHandle( ghStartDFTevent[ i ] );
-      CHECK_BR( "Failed to close startDFTevent handle" );
-      ghStartDFTevent[ i ] = NULL;
+      if ( ghStartDFTevent[ i ] != NULL ) {
+         br = CloseHandle( ghStartDFTevent[ i ] );
+         CHECK_BR( "Failed to close ghStartDFTevent handle" );
+         ghStartDFTevent[ i ] = NULL;
+      }
 
-      CloseHandle( ghDoneDFTevent[ i ] );
-      CHECK_BR( "Failed to close doneDFTevent handle" );
-      ghDoneDFTevent[ i ] = NULL;
+      if ( ghDoneDFTevent[ i ] != NULL ) {
+         br = CloseHandle( ghDoneDFTevent[ i ] );
+         CHECK_BR( "Failed to close ghDoneDFTevent handle" );
+         ghDoneDFTevent[ i ] = NULL;
+      }
    }
 
    return TRUE;

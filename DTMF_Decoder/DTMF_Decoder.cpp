@@ -84,6 +84,15 @@ int APIENTRY wWinMain(
    _In_     LPWSTR    lpCmdLine,     // Command line arguments as a Unicode string
    _In_     int       nCmdShow ) {   // How the application window should be shown
 
+
+   gracefulShutdown();  // This does not shutdown a program during init
+   LOG_TRACE( "audioCleanup returned %d", audioCleanup() );
+   LOG_TRACE( "goertzel_cleanup returned %d", goertzel_cleanup() );
+   LOG_TRACE( "logCleanup returned %d", logCleanup() );
+   LOG_TRACE( "mvcModelCleanup returned %d", mvcModelCleanup() );
+   LOG_TRACE( "mvcViewCleanup returned %d", mvcViewCleanup() );
+
+
    _ASSERTE( hInstance != NULL );
 
    shInst = hInstance; /// Store the instance handle in a global variable
@@ -165,7 +174,7 @@ int APIENTRY wWinMain(
    CHECK_BR( "Failed to initialize the model.  Exiting." );
 
    /// Initialize the view
-   br = mvcViewInitResources();
+   br = mvcViewInit();
    CHECK_BR( "Failed to initialize the view.  Exiting." );
 
    /// Initialize the audio capture device & thread
@@ -303,7 +312,7 @@ LRESULT CALLBACK WndProc( HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam 
             break;
          }
       case WM_DESTROY:  /// WM_DESTROY - Post a quit message and return
-         br = mvcViewCleanupResources();
+         br = mvcViewCleanup();
          WARN_BR( "Failed to cleanup view resources" );
 
          br = goertzel_cleanup();
@@ -321,15 +330,17 @@ LRESULT CALLBACK WndProc( HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam 
 
 /// Gracefully initiate the shutdown of the application
 ///
-/// The app has multiple threads and message loops, so shutdown has to do
-/// things like:
+/// The app has multiple threads and message loops, so #gracefulShutdown has to
+/// do things like:
 ///   - Tell the thread loops to quit
 ///   - Signal the callback handles
 ///   - Actually drop out of the thread loops
 ///   - Cleanup the resources in use
 ///
-/// This function doesn't do these things, but it does get the ball rolling by
+/// This function doesn't do these things, but it gets the ball rolling by
 /// effectively pressing the Close button on the window.
+///
+/// NOTE:  This does not shutdown the program **before** the message loop starts.
 void gracefulShutdown() {
    gbIsRunning = false;
    PostMessageA( ghMainWindow, WM_CLOSE, 0, 0 );  // Shutdown the app

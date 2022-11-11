@@ -25,7 +25,35 @@
 
 
 /// Currently does nothing, but it's good to have around
+///
+/// @return `TRUE` if successful.  `FALSE` if there was a problem.
 BOOL mvcModelInit() {
+   return TRUE;
+}
+
+
+/// Cleans up any loose ends in the model
+///
+/// @return `TRUE` if successful.  `FALSE` if there was a problem.
+BOOL mvcModelCleanup() {
+   /// #gbIsRunning is always current and does not need cleaning
+
+   /// Set #dtmfTones_t::detected to `false`
+   for ( size_t i = 0 ; i < NUMBER_OF_DTMF_TONES ; i++ ) {
+      gDtmfTones[ i ].detected = false;
+   }
+
+   /// Nothing to clean with #gdwMmcssTaskIndex
+
+   /// We expect #audioCleanup to clean #ghAudioSamplesReadyEvent
+
+   /// We expect DTMF_Decoder.cpp to clean #ghMainWindow
+
+   /// #giApplicationReturnValue is always current and does not need cleaning
+
+   /// Call #pcmReleaseQueue to clean #gPcmQueue, #gstQueueHead and #gstQueueSize
+   pcmReleaseQueue();
+
    return TRUE;
 }
 
@@ -85,16 +113,21 @@ BOOL pcmSetQueueSize( _In_ const size_t size ) {
 
 
 void pcmReleaseQueue() {
-   if ( gPcmQueue == NULL )
-      return;
+   if ( gPcmQueue != NULL ) {
 
-   SecureZeroMemory( gPcmQueue, gstQueueSize );  // Zero out memory before releasing it.
+      SecureZeroMemory( gPcmQueue, gstQueueSize );  // Zero out memory before releasing it
 
-   _ASSERTE( _CrtCheckMemory() );  // Check memory and see if there's a problem
+      _ASSERTE( _CrtCheckMemory() );  // Check memory and see if there's a problem
 
-   _free_dbg( gPcmQueue, _CLIENT_BLOCK );
+      _free_dbg( gPcmQueue, _CLIENT_BLOCK );
+
+      gPcmQueue = NULL;
+   }
+
+   gstQueueHead = 0;
+   gstQueueSize = 0;
 }
 
 
-DWORD   gdwMmcssTaskIndex          = 0;
+DWORD   gdwMmcssTaskIndex        = 0;
 HANDLE  ghAudioSamplesReadyEvent = NULL;

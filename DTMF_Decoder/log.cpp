@@ -105,7 +105,8 @@ static HWND* sphMainWindow = NULL;
 BOOL logInit( _In_ HWND* phWindow ) {
    if ( phWindow != NULL ) {     // Test to ensure that phWindow points to
       HWND hWinTemp = *phWindow; // a valid address.  If it's invalid, this
-      _ASSERTE( TRUE );          // will segfault.
+      (void) hWinTemp;           // will segfault.
+      _ASSERTE( TRUE );
    }
 
    sphMainWindow = phWindow;

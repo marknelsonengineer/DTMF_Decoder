@@ -97,8 +97,8 @@ static keypad_t keypad[ 16 ] = {
 
 /// Initialize all of the resources needed to draw the main window
 ///
-/// @return `true` if successful.  `false` if there was a problem.
-BOOL mvcViewInitResources() {
+/// @return `TRUE` if successful.  `FALSE` if there was a problem.
+BOOL mvcViewInit() {
    HRESULT hr;  // HRESULT result
    BOOL    br;  // BOOL result
 
@@ -243,8 +243,8 @@ BOOL mvcViewInitResources() {
 /// The IUnknown::Release() method does not have a meaningful result code
 /// @see https://learn.microsoft.com/en-us/windows/win32/api/unknwn/nf-unknwn-iunknown-release
 ///
-/// @return `true` if successful.  `false` if something went wrong.
-BOOL mvcViewCleanupResources() {
+/// @return `TRUE` if successful.  `FALSE` if something went wrong.
+BOOL mvcViewCleanup() {
    SAFE_RELEASE( spBrushForeground );
    SAFE_RELEASE( spBrushHighlight );
    SAFE_RELEASE( spBrushBackground );

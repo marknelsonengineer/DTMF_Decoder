@@ -148,7 +148,7 @@ Here's what I've learned about processes' end-of-life:
 ### Subsystems to Consider
 - **Main Window Thread**
   - Init Failure Handling
-    - In `wWinMain`, before starting the message loop... the `initSomething` functions
+    - In #wWinMain, before starting the message loop... the `initSomething` functions
       should return `BOOL`s.  If they return `FALSE`, then run #gracefulShutdown and continue??.
       The message loop will start, but quickly terminate and shutdown the other
       subsystems.      
@@ -160,14 +160,14 @@ Here's what I've learned about processes' end-of-life:
         #gracefulShutdown if necessary
     
   - Normal Shutdown
-    - #GracefulShutdown will set #gbIsRunning to `false` and post a `WM_CLOSE` message.
+    - #gracefulShutdown will set #gbIsRunning to `false` and post a `WM_CLOSE` message.
     - WM_CLOSE will
       - Call #goertzel_end
       - Cause the Audio capture thread to loop (and terminate) by setting the `AudioSamplesReady` event
-    Exits the message loop and runs to the end of wWinMain.
+    Exits the message loop and runs to the end of #wWinMain.
     - Call `DestroyWindow`
     - Tell the logger that the main window no longer exists
-    - Exits the message loop and runs to the end of wWinMain.
+    - Exits the message loop and runs to the end of #wWinMain.
 
 - **GDI / Direct2D**
   - Init Failure Handling
@@ -212,28 +212,32 @@ Here's what I've learned about processes' end-of-life:
      - (Done) The model will hold `giApplicationReturnValue`, which will initially
        be set to 0 (Success).  Then, any function/error handler can set it
        which will then get passed out when the program terminates.
-   - (Done) `gbIsRunning` is set to `true` at exactly one place:  The start of `wWinMain`
+   - (Done) #gbIsRunning is set to `true` at exactly one place:  The start of #wWinMain
    - (Done) I've considered using [FlashWindow](https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-flashwindow)
      for errors or warnings, but that's not really what it's for.  
      The MessageBox approach used by the logger is closer to the [Principle of Least Astonishment](https://en.wikipedia.org/wiki/Principle_of_least_astonishment)
+   - All `cleanupSomething` methods should always work and not ASSERT, even if
+     their corresponding `initSomething` methods haven't run yet.  This allows
+     us to call all of the `cleanupSomething` methods during initialization
+     failures.
    - **If the main window hasn't started**
-     - Show a dialog box, then exit `wWinMain`
+     - Show a dialog box, then exit #wWinMain
    - **During initialization, but the message loop hasn't started yet 
      (the `initSomething()` functions)**
      - Unwind, returning `FALSE` until you get to the top, then show a MessageBox
-       and then exit `wWinMain`
+       and then exit #wWinMain
    - **After the message loop has started**
      - Send `WM_CLOSE` to the main window
    - **A normal close operation**
      - On `WM_CLOSE` - The start of a normal close... start unwinding things
-       - Set `isRunning` to `false`
+       - Set #gbIsRunning to `false`
        - Call `goertzel_end`
        - Trigger the audio capture thread loop
-         - When `WaitForSingleObject()` returns, it will see that `isRunning`
-           is `FALSE`, terminate the loop, then cleanup all things audio.
+         - When `WaitForSingleObject()` returns, it will see that #gbIsRunning
+           is `false`, terminate the loop, then cleanup all things audio.
        - Call `audioStopDevice()` ??? Need to think about this ???
        - Call `destroyWindow()` - This is standard Win32 behavior
-       - Call logCleanup() - TODO:  This definately needs to move
+       - Call #logCleanup - TODO:  This definately needs to move
      - On `WM_DESTROY` 
        - Cleanup the view
        - Cleanup Goertzel
@@ -241,7 +245,8 @@ Here's what I've learned about processes' end-of-life:
 
 ### Macros & Functions Supporting Shutdown
 - #gracefulShutdown - Initiates a shutdown by posting WM_CLOSE and setting
-                      #gbIsRunning to `false`
+                      #gbIsRunning to `false`.  NOTE:  This does not shutdown
+                      the program **before** the message loop starts.
 - #gbIsRunning - A global `bool` that all of the worker threads watch (and spin)
 - #CHECK_HR - Check a handle return value and return with a FAIL
 - WARN_HR - Maybe we need to write this??

@@ -13,15 +13,16 @@
 #pragma once
 
 #include <Windows.h>      // For WCHAR, BYTE, etc.
-#include "mvcView.h"      // for mvcInvalidateRow and mvcInvalidateColumn
+#include "mvcView.h"      // For mvcInvalidateRow and mvcInvalidateColumn
 
 
 /// The number of DTMF tones DTMF Decoder processes
 #define NUMBER_OF_DTMF_TONES (8)
 
 
-/// Initialize the model
 extern BOOL mvcModelInit();
+
+extern BOOL mvcModelCleanup();
 
 
 /// Hold display information (#detected & #label) as well as
@@ -69,7 +70,7 @@ extern HWND ghMainWindow;
 
 
 /// The application's return value.  This defaults to 0 (success).  Any error
-/// handler can set this and it will be passed out of the program when it 
+/// handler can set this and it will be passed out of the program when it
 /// terminates.
 extern int giApplicationReturnValue;
 
