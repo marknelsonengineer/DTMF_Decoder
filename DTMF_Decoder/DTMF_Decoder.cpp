@@ -404,19 +404,18 @@ INT_PTR CALLBACK About( HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam ) 
    switch ( message ) {
       case WM_INITDIALOG:
          br = SetDlgItemTextA( hDlg, IDC_PROGRAM_NAME, APP_NAME ", " FULL_VERSION );
-         WARN_BR( "Failed to set the name and version of the app.  Exiting.")
+         WARN_BR( "Failed to set the name and version of the app.")
 
          br = SetDlgItemTextA( hDlg, IDC_DATE, "Built: " __DATE__ "" );
-         /// @todo Set `br = FALSE` and note that the error message never gets its `MessageBox`
+         /// @todo Set `br = FALSE` and change to CHECK_BR.  Note that the error message never gets its `MessageBox`.
          br = FALSE;
-         WARN_BR( "Failed to set the build date of the app.  Exiting." );
+         WARN_BR( "Failed to set the build date of the app." );
 
          return (INT_PTR) TRUE;
 
       case WM_COMMAND:
          if ( LOWORD( wParam ) == IDOK || LOWORD( wParam ) == IDCANCEL ) {
             br = EndDialog( hDlg, LOWORD( wParam ) );
-            br = FALSE;
             WARN_BR( "Failed to end dialog in About" );
             return (INT_PTR) TRUE;
          }
