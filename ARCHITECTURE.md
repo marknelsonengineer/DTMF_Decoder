@@ -145,19 +145,22 @@ Here's what I've learned about processes' end-of-life:
      - `0` means success
      - Anything else means failure
    - [Standard Windows application return codes](https://stackoverflow.com/questions/1538884/what-standard-application-return-exit-codes-should-an-application-support)
+   - Win32 functions that return `BOOL` will return 0 on failure and non-0 on 
+     success...  A program's exit code is the opposite -- they return 0 on 
+     success and non-0 on failure.
+   - Be mindful that Win32's BOOL datatype is an INT, not a `bool`.
 
 ### Subsystems to Consider
 - **Main Window Thread**
-  - Init Failure Handling
-    - In #wWinMain, before starting the message loop...
+  - Init Error Handler
+    - In #wWinMain, before the message loop starts...
       - (50% Done) Each function call has a custom error handler that immediately calls
-        `return EXIT_FAILURE` if there's a problem before the message
-        loop starts.  They may do some cleanup depending on how deep the
-        initialization has already progressed.
-      - The `initSomething` functions should return `BOOL`s and bubbles up
+        `return EXIT_FAILURE`.  Each handler will do a custom set of cleanup
+        depending on how deep the initialization has progressed.
+      - The `initSomething` functions should return `BOOL`s that bubble up
         problems.
 
-  - Running Failure Handling
+  - Running Error Handler
     - Mostly, this happens in the other subsystems, however:
       - (Done) Problems in the message loop will log an error and call #gracefulShutdown
       - Problems in the message handler code will also log issues and call
@@ -167,39 +170,47 @@ Here's what I've learned about processes' end-of-life:
     - #gracefulShutdown will set #gbIsRunning to `false` and post a `WM_CLOSE` message.
     - WM_CLOSE will
       - Call #goertzel_end
-      - Cause the Audio capture thread to loop (and terminate) by setting the `AudioSamplesReady` event
+      - Cause the Audio capture thread to loop (and terminate) by setting 
+        #ghAudioSamplesReadyEvent
     Exits the message loop and runs to the end of #wWinMain.
     - Call `DestroyWindow`
     - Tell the logger that the main window no longer exists
     - Exits the message loop and runs to the end of #wWinMain.
 
 - **GDI / Direct2D**
-  - Init Failure Handling
-  - Running Failure Handling
+  - Init Error Handler
+  - Running Error Handler
   - Normal Shutdown
 
 - **Model**
-  - Init Failure Handling
-  - Running Failure Handling
-  - Normal Shutdown
+  - (Done) Init Error Handler
+    - Doesn't do anything.  Always returns `TRUE` (for now).
+  - Running Error Handler
+    - Propagate errors up the call stack as `BOOL`s
+  - (Done) Normal Shutdown
+    - Go through each item in the model and zero it out (or keep/ignore it)
+    - Calls #pcmReleaseQueue
 
 - **(Done) Logger**
-  - Init Failure Handling
+  - Init Error Handler
     - It's so simple that it's always successful (but we check it anyways)
-  - Running Failure Handling
+  - Running Error Handler
     - The logging functions can throw ASSERTs but they don't return error codes
   - Normal Shutdown
     - At the very end of the program
 
 - **Audio Capture Thread**
-  - Init Failure Handling
-  - Running Failure Handling
+  - Init Error Handler
+  - Running Error Handler
   - Normal Shutdown
 
 - **Goertzel DFT Threads**
-  - Init Failure Handling
-  - Running Failure Handling
+  - Init Error Handler
+  - Running Error Handler
   - Normal Shutdown
+    - Done near the end of #wWinMain to give #goertzel_end as much time as 
+      possible for the threads to end on their own.
+
 
 
 ### Error Handling Policy

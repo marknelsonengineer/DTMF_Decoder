@@ -134,12 +134,14 @@ int APIENTRY wWinMain(
    ir = LoadStringW( hInstance, IDS_APP_TITLE, sswTitle, MAX_LOADSTRING );
    if ( !ir ) {
       LOG_FATAL( "Failed to retrive app title.  Exiting." );
+      CoUninitialize();       // Unwind COM
       return EXIT_FAILURE;
    }
 
    ir = LoadStringW( hInstance, IDC_DTMFDECODER, sswWindowClass, MAX_LOADSTRING );
    if ( !ir ) {
       LOG_FATAL( "Failed to retrieve window class name.  Exiting." );
+      CoUninitialize();       // Unwind COM
       return EXIT_FAILURE;
    }
 
@@ -162,7 +164,7 @@ int APIENTRY wWinMain(
 
    if ( !RegisterClassExW( &wcex ) ) {
       LOG_FATAL( "Failed to register window class.  Exiting.");
-      return FALSE;
+      return EXIT_FAILURE;
    }
 
    /// Create the window
@@ -181,38 +183,57 @@ int APIENTRY wWinMain(
 
    if ( !ghMainWindow ) {
       LOG_FATAL( "Failed to create main window.  Exiting." );
-      return FALSE;
+      CoUninitialize();       // Unwind COM
+      return EXIT_FAILURE;
    }
 
    LOG_TRACE( "Created main window:  Width=%d  Height=%d", giWindowWidth, giWindowHeight );
 
    /// Initialize the model
    br = mvcModelInit();
-   CHECK_BR( "Failed to initialize the model.  Exiting." );
+   if ( !br ) {
+      LOG_FATAL( "Failed to initialize the model.  Exiting." );
+      CoUninitialize();       // Unwind COM
+      return EXIT_FAILURE;
+   }
 
    /// Initialize the view
    br = mvcViewInit();
-   CHECK_BR( "Failed to initialize the view.  Exiting." );
+   if ( !br ) {
+      LOG_FATAL( "Failed to initialize the view.  Exiting." );
+      mvcModelCleanup();
+      CoUninitialize();       // Unwind COM
+      return EXIT_FAILURE;
+   }
 
    /// Initialize the audio capture device & thread
    br = audioInit();
-   CHECK_BR( "Failed to initialize the audio system.  Exiting." );
-
-   /// Initialize Win32 message loop
-   ShowWindow( ghMainWindow, nCmdShow );   // It's OK to ignore the result of this
+   if ( !br ) {
+      LOG_FATAL( "Failed to initialize the audio capture system.  Exiting." );
+      mvcViewCleanup();
+      mvcModelCleanup();
+      CoUninitialize();       // Unwind COM
+      return EXIT_FAILURE;
+   }
 
    HACCEL hAccelTable = LoadAccelerators( hInstance, MAKEINTRESOURCE( IDC_DTMFDECODER ) );
    if ( hAccelTable == NULL ) {
       LOG_FATAL( "Failed to load manu accelerator.  Exiting." );
-      return FALSE;
+      mvcViewCleanup();
+      mvcModelCleanup();
+      CoUninitialize();       // Unwind COM
+      audioCleanup();
+      return EXIT_FAILURE;
    }
+
+   ShowWindow( ghMainWindow, nCmdShow );   // It's OK to ignore the result of ShowWindow
 
    LOG_INFO( "All global resources were successfully initialized" );
 
 
-   /// Main message loop
+   /// The application's message loop
    MSG msg;
-   ZeroMemory( &msg, sizeof( msg ) );
+   ZeroMemory( &msg, sizeof( msg ) );  // Returns void, so nothing to check
    BOOL bRet;
 
    while ( ( bRet = GetMessage( &msg,  // The message structure
@@ -232,9 +253,24 @@ int APIENTRY wWinMain(
       }
    }
 
-   /// Cleanup all resources
+   /// Cleanup all resources in the reverse order they were created
    br = audioCleanup();
-   WARN_BR( "There was a problem cleaning up the audio resources.  Ending program." )
+   WARN_BR( "Failed to clean up audio resources." );
+
+   // The view was cleaned up in WM_DESTRO (immediately following the destruction
+   // of the window
+
+   br = goertzel_cleanup();
+   WARN_BR( "Failed to cleanup Goertzel DFT" );
+
+   br = mvcModelCleanup();
+   WARN_BR( "Failed to cleanup the model." );
+
+   // The window has already been cleaned up
+
+   // Don't un-register the windows class because:
+   //   1. There may be other instances of DTMF Decoder running
+   //   2. Windows will clean this up on its own
 
    CoUninitialize();  /// Unwind COM
 
@@ -329,12 +365,9 @@ LRESULT CALLBACK WndProc( HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam 
 
             break;
          }
-      case WM_DESTROY:  /// WM_DESTROY - Post a quit message and return
+      case WM_DESTROY:  /// WM_DESTROY - Post a quit message
          br = mvcViewCleanup();
          WARN_BR( "Failed to cleanup view resources" );
-
-         br = goertzel_cleanup();
-         WARN_BR( "Failed to cleanup Goertzel DFT" );
 
          PostQuitMessage( giApplicationReturnValue );
 

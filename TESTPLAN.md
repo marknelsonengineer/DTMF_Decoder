@@ -36,6 +36,7 @@ however it probably doesn't make sense to run it from Profile
   - Uncomment `logTest()` in DTMF_Decoder.cpp and make sure it's doing its thing.
     - Uncomment 2 excessively long log tests at the end of `log.cpp` (one at a time)
       and verify that they throw asserts.
+  - Reverse the tests of error handlers and verify that the errors work as expected.
 
 ## Documentation
 - Check the project's [GitHub page](https://github.com/marknelsonengineer/DTMF_Decoder) and make sure the home page looks good
