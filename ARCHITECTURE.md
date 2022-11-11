@@ -151,8 +151,8 @@ Here's what I've learned about processes' end-of-life:
    - Be mindful that Win32's BOOL datatype is an INT, not a `bool`.
 
 ### Subsystems to Consider
-- **Main Window Thread**
-  - (Done) Init Error Handler
+- (Done) **Main Window Thread**
+  - Init Error Handler
     - In #wWinMain, before the message loop starts...
       - Each function call has a custom error handler that calls a 
         custom set of cleanups depending on how deep the initialization
@@ -162,22 +162,27 @@ Here's what I've learned about processes' end-of-life:
 
   - Running Error Handler
     - Mostly, this happens in the other subsystems, however:
-      - (Done) Problems in the message loop will log an error and call #gracefulShutdown
-      - Problems in the message handler code will also log a message and call
+      - Problems in the message loop will log an error and call #gracefulShutdown
+      - Problems in the message handlers will also log a message and call
         #gracefulShutdown if necessary
 
   - Normal Shutdown
-    - #gracefulShutdown sets #gbIsRunning to `false` and posts `WM_CLOSE`
+    - #gracefulShutdown
+      - Set #gbIsRunning to `false`
+      - Post `WM_CLOSE`
     - WM_CLOSE will
+      - Set #gbIsRunning to `false`
       - Call #goertzel_end
       - Cause the Audio capture thread to loop (and terminate) by setting 
         #ghAudioSamplesReadyEvent
+      - Stop the audio capture device
       - Call `DestroyWindow`
     - WM_DESTROY will:
       - Call #mvcViewCleanup 
       - Call `PostQuitMessage`
     - WM_QUIT will:
-      - Exit the message loop and let #wWinMain run to the end.
+      - Exit the message loop and let #wWinMain run to the end... Cleaning
+        up resources in the reverse order they were created
 
 - **GDI / Direct2D**
   - Init Error Handler

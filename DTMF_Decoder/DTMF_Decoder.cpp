@@ -345,6 +345,7 @@ LRESULT CALLBACK WndProc( HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam 
       case WM_CLOSE:    /// WM_CLOSE - Start the process of closing the application
          {
             gbIsRunning = false;
+
             br = goertzel_end();
             WARN_BR( "Failed to end the Goertzel DFT threads" );
 
@@ -387,7 +388,11 @@ LRESULT CALLBACK WndProc( HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam 
 /// This function doesn't do these things, but it gets the ball rolling by
 /// effectively pressing the Close button on the window.
 ///
-/// NOTE:  This does not shutdown the program **before** the message loop starts.
+/// This does not shutdown the program **before** the message loop starts
+/// 
+/// This is both a normal and failure-mode shutdown, so this doesn't set
+/// #giApplicationReturnValue
+/// 
 void gracefulShutdown() {
    gbIsRunning = false;
    PostMessageA( ghMainWindow, WM_CLOSE, 0, 0 );  // Shutdown the app
@@ -408,7 +413,6 @@ INT_PTR CALLBACK About( HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam ) 
 
          br = SetDlgItemTextA( hDlg, IDC_DATE, "Built: " __DATE__ "" );
          /// @todo Set `br = FALSE` and change to CHECK_BR.  Note that the error message never gets its `MessageBox`.
-         br = FALSE;
          WARN_BR( "Failed to set the build date of the app." );
 
          return (INT_PTR) TRUE;
