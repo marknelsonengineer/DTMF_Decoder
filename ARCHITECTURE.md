@@ -3,75 +3,75 @@ Architecture
 
 The overall architecture of DTMF Decoder is fairly straightforward.
 
-The main window is a 1-panel, hand-drawn, non-resizable window with a 
+The main window is a 1-panel, hand-drawn, non-resizable window with a
 telephone keypad on it.
 
-The program opens the default audio capture device (there's no user interface 
+The program opens the default audio capture device (there's no user interface
 for selecting an audio device).  Then, it starts to listen to audio frames.
 
-The most efficient way to listen to audio is to register a callback function 
+The most efficient way to listen to audio is to register a callback function
 that gets called when the OS has a batch of audio frames to process.  So,
 we spin up an audio capture thread, wait for audio, process the frames and
 then release the buffer.
 
 We use a [Goertzel Algorithm](https://en.wikipedia.org/wiki/Goertzel_algorithm)
 to determine how much energy is in each frequency bucket.  This implementation
-processes the time-domain PCM data in 1 pass (for each frequency) -- and 
-because DTMF needs to monitor 8 frequencies, it needs 8 passes/calculations.  
+processes the time-domain PCM data in 1 pass (for each frequency) -- and
+because DTMF needs to monitor 8 frequencies, it needs 8 passes/calculations.
 
-For efficiency (and for fun) I chose to spin up 8 Goertzel Work Threads, 
+For efficiency (and for fun) I chose to spin up 8 Goertzel Work Threads,
 which wait (in parallel) for a batch of frames to come in.  Once they arrive,
 it signals all 8 threads to run in parallel and when **all** of the Goertzel
-work threads finish, it signals the Audio Capture thread to continue 
+work threads finish, it signals the Audio Capture thread to continue
 processing.
 
 When a frequency surpasses a set threshold, the row or column frequency labels
-are redrawn (in a highlighted color).  If both a DTMF row *and* column are 
+are redrawn (in a highlighted color).  If both a DTMF row *and* column are
 "on", then the key "lights up" as well.  Super simple.
 
-Per [Raymond Chen](https://devblogs.microsoft.com/oldnewthing/author/oldnewthing)'s 
+Per [Raymond Chen](https://devblogs.microsoft.com/oldnewthing/author/oldnewthing)'s
 book [The Old New Thing](https://www.amazon.com/Old-New-Thing-Development-Throughout/dp/0321440307/)
-I should trust the Window's Update mechanism and repaint the display on the 
+I should trust the Window's Update mechanism and repaint the display on the
 main thread in WM_PAINT.  To that end, when each Goertzel thread finishes its
 calculations, it checks to see if the state has changed.  If so, it invalidates
 a rectangle (a full row or column) on the display.  Later on, the main application
 message loop will get a WM_PAINT message and the screen will repaint.
 
-Each element that gets drawn on the screen checks an "update rectangle".  If 
+Each element that gets drawn on the screen checks an "update rectangle".  If
 the element is in the update rectangle, it gets drawn.  If not, then it must
 not need to be updated.  This is the Win32 way of drawing.
 
 For performance, I hand-coded an x86-64 Goertzel algorithm in Assembly
 Language.  C is very "chatty" with memory, and this algorithm takes advantage
-of:  
+of:
   - Out-of-order processing
   - All of the intermediate variables are held in registers
 
-The x86-32 bit version of the program uses a traditional C-based Goertzel 
+The x86-32 bit version of the program uses a traditional C-based Goertzel
 algorithm, for a reference design and comparison.
 
 When you are running DTMF Decoder in a VM, it's still subject to the whims
 of the hypervisor's scheduler.  Therefore, you may get frames with
 DATA_DISCONTINUITY set.  However, when you run it on a bare-metal
-Windows system, the performance is excellent and it processes all of the 
+Windows system, the performance is excellent and it processes all of the
 audio in realtime.
 
-DTMF Decoder has a good, simple logging mechanism.  It logs everything to 
+DTMF Decoder has a good, simple logging mechanism.  It logs everything to
 DebugView.  Logs to WARN, ERROR and FATAL will also popup a Dialog Box.  That's
 it for a user interface.
 
-So, it's a very simple program that took ~80 hours to write (4,800 minutes). 
-There's ~3,000 lines of code, so I'm averaging about 96-seconds per line.  Not 
+So, it's a very simple program that took ~80 hours to write (4,800 minutes).
+There's ~3,000 lines of code, so I'm averaging about 96-seconds per line.  Not
 bad, per [The Mythical Man Month](https://en.wikipedia.org/wiki/The_Mythical_Man-Month)
 but still, not great.
 
 That said, it's been forever since I've written in Win32 and I'd write this
-much faster if I had to do it again.  I've written a guide to the API calls I 
+much faster if I had to do it again.  I've written a guide to the API calls I
 use [here](REFERENCES.md).  I read every one of these to write this program.
 
 ## Shutdown
 I've never had to think quite so hard about how to (correctly) shutdown a
-program as I've had for a [Win32](https://learn.microsoft.com/en-us/windows/win32/) 
+program as I've had for a [Win32](https://learn.microsoft.com/en-us/windows/win32/)
 program.  There are so many scenarios to consider!  For example, shutting down...
    - Before any windows have been created
    - During the program's initialization (before the message loop has started)
@@ -79,20 +79,20 @@ program.  There are so many scenarios to consider!  For example, shutting down..
      message loop)
    - A failure while cleaning up during shutdown
    - ...and a normal shutdown
-   
+
 Yikes!
 
 Here's what I've learned about processes' end-of-life:
    - [Error Handling](https://learn.microsoft.com/en-us/windows/win32/debug/error-handling) by Microsoft
-     - Well-written applications include error-handling code that allows them 
-       to recover gracefully from unexpected errors. When an error occurs, the 
-       application may need to request user intervention, or it may be able to 
+     - Well-written applications include error-handling code that allows them
+       to recover gracefully from unexpected errors. When an error occurs, the
+       application may need to request user intervention, or it may be able to
        recover on its own.
    - [The WM_QUIT_Message](https://devblogs.microsoft.com/oldnewthing/20050222-00/?p=36393)
    - [The difference between WM_QUIT, WM_CLOSE, and WM_DESTROY](https://stackoverflow.com/questions/3155782/what-is-the-difference-between-wm-quit-wm-close-and-wm-destroy-in-a-windows-pr)
    - [Terminating a Process](https://learn.microsoft.com/en-us/windows/win32/procthread/terminating-a-process)
    - [Terminating a Thread](https://learn.microsoft.com/en-us/windows/win32/procthread/terminating-a-thread)
-   - I ran Spy++ on DTMF Decoder and captured the messages when I clicked the 
+   - I ran Spy++ on DTMF Decoder and captured the messages when I clicked the
      X in the upper-right corner.
 
          <000075> P WM_NCLBUTTONDOWN nHittest:HTCLOSE xPos:443 yPos:7
@@ -136,29 +136,33 @@ Here's what I've learned about processes' end-of-life:
          <000113> R WM_NCDESTROY
          <000114> R WM_CLOSE
          <000115> R WM_SYSCOMMAND
-   
-   - I can see `WM_CLOSE` and `WM_DESTROY`      
+
+   - I can see `WM_CLOSE` and `WM_DESTROY`
    - `WM_QUIT` never makes it to the message handler... which makes sense, as
      soon as `GetMessage` gets it, it exits out of the `while()` loop.
    - [The convention for process exit codes](https://peteronprogramming.wordpress.com/2018/05/29/list-of-peculiar-exit-codes-on-windows/)
      in Windows is:
      - `0` means success
      - Anything else means failure
+   - [Standard Windows application return codes](https://stackoverflow.com/questions/1538884/what-standard-application-return-exit-codes-should-an-application-support)
 
 ### Subsystems to Consider
 - **Main Window Thread**
   - Init Failure Handling
-    - In #wWinMain, before starting the message loop... the `initSomething` functions
-      should return `BOOL`s.  If they return `FALSE`, then run #gracefulShutdown and continue??.
-      The message loop will start, but quickly terminate and shutdown the other
-      subsystems.      
-      
+    - In #wWinMain, before starting the message loop...
+      - (50% Done) Each function call has a custom error handler that immediately calls
+        `return EXIT_FAILURE` if there's a problem before the message
+        loop starts.  They may do some cleanup depending on how deep the
+        initialization has already progressed.
+      - The `initSomething` functions should return `BOOL`s and bubbles up
+        problems.
+
   - Running Failure Handling
     - Mostly, this happens in the other subsystems, however:
       - (Done) Problems in the message loop will log an error and call #gracefulShutdown
-      - Problems in the message handler code will also log issues and call 
+      - Problems in the message handler code will also log issues and call
         #gracefulShutdown if necessary
-    
+
   - Normal Shutdown
     - #gracefulShutdown will set #gbIsRunning to `false` and post a `WM_CLOSE` message.
     - WM_CLOSE will
@@ -207,22 +211,22 @@ Here's what I've learned about processes' end-of-life:
      the preference would be for [wWinMain](https://learn.microsoft.com/en-us/windows/win32/learnwin32/winmain--the-application-entry-point)
      to exit.
      - (Done) A normal exit returns 0
-     - An abnormal exit returns someting else... but it does not have to be 
+     - An abnormal exit returns someting else... but it does not have to be
        unique for each type of error
      - (Done) The model will hold `giApplicationReturnValue`, which will initially
        be set to 0 (Success).  Then, any function/error handler can set it
        which will then get passed out when the program terminates.
    - (Done) #gbIsRunning is set to `true` at exactly one place:  The start of #wWinMain
    - (Done) I've considered using [FlashWindow](https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-flashwindow)
-     for errors or warnings, but that's not really what it's for.  
+     for errors or warnings, but that's not really what it's for.
      The MessageBox approach used by the logger is closer to the [Principle of Least Astonishment](https://en.wikipedia.org/wiki/Principle_of_least_astonishment)
-   - All `cleanupSomething` methods should always work and not ASSERT, even if
+   - (Done) All `cleanupSomething` methods should always work and not ASSERT, even if
      their corresponding `initSomething` methods haven't run yet.  This allows
      us to call all of the `cleanupSomething` methods during initialization
      failures.
    - **If the main window hasn't started**
      - Show a dialog box, then exit #wWinMain
-   - **During initialization, but the message loop hasn't started yet 
+   - **During initialization, but the message loop hasn't started yet
      (the `initSomething()` functions)**
      - Unwind, returning `FALSE` until you get to the top, then show a MessageBox
        and then exit #wWinMain
@@ -238,7 +242,7 @@ Here's what I've learned about processes' end-of-life:
        - Call `audioStopDevice()` ??? Need to think about this ???
        - Call `destroyWindow()` - This is standard Win32 behavior
        - Call #logCleanup - TODO:  This definately needs to move
-     - On `WM_DESTROY` 
+     - On `WM_DESTROY`
        - Cleanup the view
        - Cleanup Goertzel
        - `PostQuitMessate( giApplicationReturnValue )` - This is standard Win32 behavior
@@ -255,7 +259,7 @@ Here's what I've learned about processes' end-of-life:
 - #CHECK_IR - Check an `int` return value
 
 ## Coding Conventions
-The [C++ Core Guidelines](https://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines) 
+The [C++ Core Guidelines](https://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines)
 discourage prefix notation (for example, Hungarian notation).  Internally, the
 Windows team no longer uses it. But its use remains in samples and documentation.
 

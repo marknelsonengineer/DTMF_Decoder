@@ -6,6 +6,7 @@
 ///
 /// The main loop (with wWinMain and WndProc)
 ///
+/// @see https://learn.microsoft.com/en-us/windows/win32/
 /// @see https://learn.microsoft.com/en-us/windows/win32/learnwin32/winmain--the-application-entry-point
 /// @see https://learn.microsoft.com/en-us/windows/win32/api/winuser/nc-winuser-wndproc
 /// @see https://learn.microsoft.com/en-us/windows/win32/winmsg/using-messages-and-message-queues
@@ -47,7 +48,7 @@
 #include <pgobootrun.h>   // For PgoAutoSweep
 
 #include "DTMF_Decoder.h" // For APP_NAME
-#include "mvcModel.h"     // Holds the persistent model for the application
+#include "mvcModel.h"     // For the persistent model of the application
 #include "mvcView.h"      // For drawing the window
 #include "audio.h"        // For capturing audio
 #include "goertzel.h"     // For goertzel_end()
@@ -77,21 +78,25 @@ INT_PTR CALLBACK About( HWND, UINT, WPARAM, LPARAM );
 /// Program entrypoint
 ///
 /// @see https://learn.microsoft.com/en-us/windows/win32/learnwin32/winmain--the-application-entry-point
+/// @see https://learn.microsoft.com/en-us/windows/win32/api/winbase/nf-winbase-winmain
 ///
 int APIENTRY wWinMain(
-   _In_     HINSTANCE hInstance,     // Handle to this instance
-   _In_opt_ HINSTANCE hPrevInstance, // Unused (legacy from Win16)
-   _In_     LPWSTR    lpCmdLine,     // Command line arguments as a Unicode string
-   _In_     int       nCmdShow ) {   // How the application window should be shown
+   _In_     HINSTANCE hInstance,     ///< Handle to this instance
+   _In_opt_ HINSTANCE hPrevInstance, ///< Unused (legacy from Win16)
+   _In_     LPWSTR    lpCmdLine,     ///< Command line arguments as a Unicode string
+   _In_     int       nCmdShow )     ///< How the application window should be shown
+   {
 
-
+   // This is a test... but I'm going to keep it in for now.
    gracefulShutdown();  // This does not shutdown a program during init
-   LOG_TRACE( "audioCleanup returned %d", audioCleanup() );
-   LOG_TRACE( "goertzel_cleanup returned %d", goertzel_cleanup() );
-   LOG_TRACE( "logCleanup returned %d", logCleanup() );
-   LOG_TRACE( "mvcModelCleanup returned %d", mvcModelCleanup() );
-   LOG_TRACE( "mvcViewCleanup returned %d", mvcViewCleanup() );
+   _ASSERTE( audioCleanup() );
+   _ASSERTE( goertzel_cleanup() );
+   _ASSERTE( logCleanup() );
+   _ASSERTE( mvcModelCleanup() );
+   _ASSERTE( mvcViewCleanup() );
 
+
+   // The program really starts here
 
    _ASSERTE( hInstance != NULL );
 
@@ -106,7 +111,10 @@ int APIENTRY wWinMain(
    /// Tell the logger about where we hold the main window handle.  It's not
    /// set initially, but as soon as it is, the logger can start using it.
    br = logInit( &ghMainWindow );
-   CHECK_BR( "Failed to initialize the logger.  Exiting." );
+   if ( !br ) {
+      LOG_FATAL( "Failed to initialize the logger.  Exiting." );
+      return EXIT_FAILURE;
+   }
 
    LOG_TRACE( "Starting" );
 
@@ -117,14 +125,23 @@ int APIENTRY wWinMain(
 
    /// Initialize COM (needs to be called once per each thread)
    hr = CoInitializeEx( NULL, COINIT_APARTMENTTHREADED );
-   CHECK_HR( "Failed to initialize COM" )
+   if ( FAILED( hr ) ) {
+      LOG_FATAL( "Failed to initialize COM.  Exiting." );
+      return EXIT_FAILURE;
+   }
 
    /// Initialize global strings
-   ir = LoadStringW( hInstance, IDS_APP_TITLE,   sswTitle,       MAX_LOADSTRING );
-   CHECK_IR( "Failed to retrive app title" );
+   ir = LoadStringW( hInstance, IDS_APP_TITLE, sswTitle, MAX_LOADSTRING );
+   if ( !ir ) {
+      LOG_FATAL( "Failed to retrive app title.  Exiting." );
+      return EXIT_FAILURE;
+   }
 
    ir = LoadStringW( hInstance, IDC_DTMFDECODER, sswWindowClass, MAX_LOADSTRING );
-   CHECK_IR( "Failed to retrieve window class name" );
+   if ( !ir ) {
+      LOG_FATAL( "Failed to retrieve window class name.  Exiting." );
+      return EXIT_FAILURE;
+   }
 
    /// Register the Windows Class
    WNDCLASSEXW wcex;
@@ -221,13 +238,14 @@ int APIENTRY wWinMain(
 
    CoUninitialize();  /// Unwind COM
 
-   LOG_INFO( "All global resources were cleaned up.  Ending program." );
-
    br = logCleanup();
    WARN_BR( "Failed to cleanup the logs." );
 
-   return (int) msg.wParam;  /// The return value `msg.pParam` comes to us
-                             /// from `WM_QUIT` which gets set by PostQuitMessage
+   // The log can still be called even after it's been "cleanedup"
+   LOG_INFO( "All " APP_NAME " resources were cleaned up.  Ending program." );
+
+                             /// The return value `msg.pParam` comes to us
+   return (int) msg.wParam;  /// from `WM_QUIT` which gets set by `PostQuitMessage`
                              /// which gets its value from  #giApplicationReturnValue.
 }
 

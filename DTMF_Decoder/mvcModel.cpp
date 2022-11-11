@@ -76,7 +76,7 @@ bool gbIsRunning = false;
 HWND ghMainWindow = NULL;
 
 
-int giApplicationReturnValue = 0;  // Default to 0 (SUCCESS)
+int giApplicationReturnValue = EXIT_SUCCESS;  // Default to SUCCESS
 
 
 /// @cond Doxygen_Suppress
