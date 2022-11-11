@@ -11,6 +11,7 @@ DTMF Decoder for Windows
 - Get back to my roots as a [Windows C Usermode](https://en.wikipedia.org/wiki/Windows_API) programmer
 - See [what's changed](https://stackoverflow.com/questions/3121538/how-has-windows-api-changed-in-the-last-10-years)
   in the last 25 years of Windows Win32 programming (since I wrote paint from Charles Petzold's book [Programming Windows](https://www.amazon.com/Programming-Windows%C2%AE-Fifth-Developer-Reference/dp/157231995X))
+- Write a model [Win32](https://learn.microsoft.com/en-us/windows/win32/) program that does everything correctly
 - Write a [Fourier Transform](https://en.wikipedia.org/wiki/Fourier_transform) (or something like one)
 
 ## Links

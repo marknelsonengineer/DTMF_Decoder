@@ -71,8 +71,8 @@ use [here](REFERENCES.md).  I read every one of these to write this program.
 
 ## Shutdown
 I've never had to think quite so hard about how to (correctly) shutdown a
-program as I've had for a Win32 program.  There are so many scenarios to
-consider!  For example, shutting down...
+program as I've had for a [Win32](https://learn.microsoft.com/en-us/windows/win32/) 
+program.  There are so many scenarios to consider!  For example, shutting down...
    - Before any windows have been created
    - During the program's initialization (before the message loop has started)
    - In a thread (that has its own synchronization and doesn't spin the
@@ -148,21 +148,21 @@ Here's what I've learned about processes' end-of-life:
 ### Subsystems to Consider
 - **Main Window Thread**
   - Init Failure Handling
-    - In `wWinMain`, before starting the message loop... the initSomething functions
-      should return `BOOL`s.  If they return `FALSE`, then run `gracefulShutdown` and continue??.
+    - In `wWinMain`, before starting the message loop... the `initSomething` functions
+      should return `BOOL`s.  If they return `FALSE`, then run #gracefulShutdown and continue??.
       The message loop will start, but quickly terminate and shutdown the other
       subsystems.      
       
   - Running Failure Handling
     - Mostly, this happens in the other subsystems, however:
-      - (Done) Problems in the message loop will log an error and call `gracefulShutdown`
+      - (Done) Problems in the message loop will log an error and call #gracefulShutdown
       - Problems in the message handler code will also log issues and call 
-        `gracefulShutdown` if necessary
+        #gracefulShutdown if necessary
     
   - Normal Shutdown
-    - `GracefulShutdown` will set `gbIsRunning` to `false` and post a WM_CLOSE message.
+    - #GracefulShutdown will set #gbIsRunning to `false` and post a `WM_CLOSE` message.
     - WM_CLOSE will
-      - Call `goertzel_end`
+      - Call #goertzel_end
       - Cause the Audio capture thread to loop (and terminate) by setting the `AudioSamplesReady` event
     Exits the message loop and runs to the end of wWinMain.
     - Call `DestroyWindow`
@@ -196,7 +196,6 @@ Here's what I've learned about processes' end-of-life:
   - Init Failure Handling
   - Running Failure Handling
   - Normal Shutdown
-
 
 
 ### Error Handling Policy
@@ -241,15 +240,14 @@ Here's what I've learned about processes' end-of-life:
        - `PostQuitMessate( giApplicationReturnValue )` - This is standard Win32 behavior
 
 ### Macros & Functions Supporting Shutdown
-- `gracefulShutdown()` - Initiates a shutdown by posting WM_CLOSE and setting
-                         `gbIsRunning` to `false`
-- `gbIsRunning` - A global `bool` that allows all of the worker threads to 
-                  keep spinning
-- `CHECK_HR` - Check a handle return value and return with a FAIL
-- `WARN_HR`
-- `CHECK_BR`
-- `WARN_BR`
-- `CHECK_IR`
+- #gracefulShutdown - Initiates a shutdown by posting WM_CLOSE and setting
+                      #gbIsRunning to `false`
+- #gbIsRunning - A global `bool` that all of the worker threads watch (and spin)
+- #CHECK_HR - Check a handle return value and return with a FAIL
+- WARN_HR - Maybe we need to write this??
+- #CHECK_BR - Check a `BOOL` return value
+- #WARN_BR - Check a `BOOL` return value
+- #CHECK_IR - Check an `int` return value
 
 ## Coding Conventions
 The [C++ Core Guidelines](https://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines) 
