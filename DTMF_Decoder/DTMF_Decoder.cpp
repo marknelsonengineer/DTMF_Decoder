@@ -272,12 +272,12 @@ int APIENTRY wWinMain(
    //   1. There may be other instances of DTMF Decoder running
    //   2. Windows will clean this up on its own
 
-   CoUninitialize();  /// Unwind COM
+   CoUninitialize();         // Unwind COM
 
    br = logCleanup();
    WARN_BR( "Failed to cleanup the logs." );
 
-   // The log can still be called even after it's been "cleanedup"
+   // The log can still be called even after it's been "cleaned up"
    LOG_INFO( "All " APP_NAME " resources were cleaned up.  Ending program." );
 
                              /// The return value `msg.pParam` comes to us
@@ -294,8 +294,7 @@ LRESULT CALLBACK WndProc( HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam 
    BOOL br;  // BOOL result
 
    switch ( message ) {
-      case WM_COMMAND:  /// WM_COMMAND - Process the application menu
-         {
+      case WM_COMMAND: { /// WM_COMMAND - Process the application menu
             int wmId = LOWORD( wParam );
             // Parse the menu selections
             switch ( wmId ) {
@@ -311,27 +310,24 @@ LRESULT CALLBACK WndProc( HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam 
             }
          }
          break;
-      case WM_PAINT:  /// WM_PAINT - Paint the main window
-         {
+      case WM_PAINT: { /// WM_PAINT - Paint the main window
             RECT updateRect;
             br = GetUpdateRect( hWnd, &updateRect, FALSE );
-
             if ( !br ) {
                break;  // If there is no update region, then don't paint anything
             }
 
             PAINTSTRUCT ps;
             HDC hdc = BeginPaint( hWnd, &ps );
-
             (void) hdc;  // Suppress a compiler warning that hdc
                          // is not checked after this.  No code is generated.
 
-            // Add any drawing code here...
+            // Paint the window
             br = mvcViewPaintWindow( &updateRect );
-            WARN_BR( "Failed to paint window.  Investigate!!" );
+            CHECK_BR( "Failed to paint window.  Investigate!!" );
 
             br = EndPaint( hWnd, &ps );
-            WARN_BR( "Failed to end paint.  Investigate!!" );
+            CHECK_BR( "Failed to end paint.  Investigate!!" );
          }
          break;
       case WM_KEYDOWN:  /// WM_KEYDOWN - Exit if ESC is pressed

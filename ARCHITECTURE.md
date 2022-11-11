@@ -152,30 +152,32 @@ Here's what I've learned about processes' end-of-life:
 
 ### Subsystems to Consider
 - **Main Window Thread**
-  - Init Error Handler
+  - (Done) Init Error Handler
     - In #wWinMain, before the message loop starts...
-      - (50% Done) Each function call has a custom error handler that immediately calls
-        `return EXIT_FAILURE`.  Each handler will do a custom set of cleanup
-        depending on how deep the initialization has progressed.
+      - Each function call has a custom error handler that calls a 
+        custom set of cleanups depending on how deep the initialization
+        has progressed.  Finally, the handler calls `return EXIT_FAILURE`
       - The `initSomething` functions should return `BOOL`s that bubble up
-        problems.
+        problems
 
   - Running Error Handler
     - Mostly, this happens in the other subsystems, however:
       - (Done) Problems in the message loop will log an error and call #gracefulShutdown
-      - Problems in the message handler code will also log issues and call
+      - Problems in the message handler code will also log a message and call
         #gracefulShutdown if necessary
 
   - Normal Shutdown
-    - #gracefulShutdown will set #gbIsRunning to `false` and post a `WM_CLOSE` message.
+    - #gracefulShutdown sets #gbIsRunning to `false` and posts `WM_CLOSE`
     - WM_CLOSE will
       - Call #goertzel_end
       - Cause the Audio capture thread to loop (and terminate) by setting 
         #ghAudioSamplesReadyEvent
-    Exits the message loop and runs to the end of #wWinMain.
-    - Call `DestroyWindow`
-    - Tell the logger that the main window no longer exists
-    - Exits the message loop and runs to the end of #wWinMain.
+      - Call `DestroyWindow`
+    - WM_DESTROY will:
+      - Call #mvcViewCleanup 
+      - Call `PostQuitMessage`
+    - WM_QUIT will:
+      - Exit the message loop and let #wWinMain run to the end.
 
 - **GDI / Direct2D**
   - Init Error Handler
@@ -224,25 +226,24 @@ Here's what I've learned about processes' end-of-life:
      - (Done) A normal exit returns 0
      - An abnormal exit returns someting else... but it does not have to be
        unique for each type of error
-     - (Done) The model will hold `giApplicationReturnValue`, which will initially
+     - (Done) The model will hold #giApplicationReturnValue, which will initially
        be set to 0 (Success).  Then, any function/error handler can set it
        which will then get passed out when the program terminates.
    - (Done) #gbIsRunning is set to `true` at exactly one place:  The start of #wWinMain
    - (Done) I've considered using [FlashWindow](https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-flashwindow)
      for errors or warnings, but that's not really what it's for.
-     The MessageBox approach used by the logger is closer to the [Principle of Least Astonishment](https://en.wikipedia.org/wiki/Principle_of_least_astonishment)
-   - (Done) All `cleanupSomething` methods should always work and not ASSERT, even if
+     The `MessageBox` approach used in log.cpp is closer to the [Principle of Least Astonishment](https://en.wikipedia.org/wiki/Principle_of_least_astonishment)
+   - (Done) `cleanupSomething` methods should always work and not `ASSERT`, even if
      their corresponding `initSomething` methods haven't run yet.  This allows
      us to call all of the `cleanupSomething` methods during initialization
      failures.
-   - **If the main window hasn't started**
+   - (Done) **If the main window hasn't started**
      - Show a dialog box, then exit #wWinMain
-   - **During initialization, but the message loop hasn't started yet
-     (the `initSomething()` functions)**
-     - Unwind, returning `FALSE` until you get to the top, then show a MessageBox
-       and then exit #wWinMain
+   - **Inside the `initSomething()` functions**
+     - Unwind, returning `FALSE` until you get to the top, then show a `MessageBox`,
+       set #giApplicationReturnValue and bubble up the error
    - **After the message loop has started**
-     - Send `WM_CLOSE` to the main window
+     - Set #giApplicationReturnValue and call #gracefulShutdown
    - **A normal close operation**
      - On `WM_CLOSE` - The start of a normal close... start unwinding things
        - Set #gbIsRunning to `false`
@@ -252,22 +253,39 @@ Here's what I've learned about processes' end-of-life:
            is `false`, terminate the loop, then cleanup all things audio.
        - Call `audioStopDevice()` ??? Need to think about this ???
        - Call `destroyWindow()` - This is standard Win32 behavior
-       - Call #logCleanup - TODO:  This definately needs to move
      - On `WM_DESTROY`
        - Cleanup the view
-       - Cleanup Goertzel
-       - `PostQuitMessate( giApplicationReturnValue )` - This is standard Win32 behavior
+       - Call `PostQuitMessate( giApplicationReturnValue )` - This is standard Win32 behavior
 
 ### Macros & Functions Supporting Shutdown
-- #gracefulShutdown - Initiates a shutdown by posting WM_CLOSE and setting
-                      #gbIsRunning to `false`.  NOTE:  This does not shutdown
-                      the program **before** the message loop starts.
-- #gbIsRunning - A global `bool` that all of the worker threads watch (and spin)
-- #CHECK_HR - Check a handle return value and return with a FAIL
-- WARN_HR - Maybe we need to write this??
-- #CHECK_BR - Check a `BOOL` return value
-- #WARN_BR - Check a `BOOL` return value
-- #CHECK_IR - Check an `int` return value
+- #gracefulShutdown - Initiates a shutdown setting #gbIsRunning to `false`
+  and posting `WM_CLOSE`
+  - Will not shutdown the program **before** the message loop starts; there's
+    queue to collect the `WM_CLOSE` yet
+  - This is both a normal and failure-mode shutdown, so this doesn't set
+    #giApplicationReturnValue
+                      
+- #gbIsRunning - A global `bool` that all of the worker threads watch
+
+- Helper macros for checking the result of function calls (both to Win32 and 
+  internal calls)
+  - When a `CHECK_` macro fails, it:
+    - Sets #giApplicationReturnValue to #EXIT_FAILURE
+    - Runs #gracefulShutdown
+    - Calls #LOG_FATAL
+    - Returns `FALSE`
+  - When a `WARN_` macro fails, it just calls #LOG_WARN
+  - The `_BR` macros check `BOOL`s.  The `_HR` macros check an `HRESULT` (usually
+    in the audio capture subystem).  The `_IR` macros check `INT`.
+    - They all rely on pre-declared return variable declarations
+      `BOOL br`, `HRESULT hr` and `INT ir` _and_ they depend on the 
+      function being tested to set the return value
+  - The helper macros are:
+    - #CHECK_HR - Check an `HRESULT` return value
+    - #CHECK_BR - Check a `BOOL` return value
+    - #CHECK_IR - Check an `int` return value
+    - #WARN_BR - Check a `BOOL` return value
+
 
 ## Coding Conventions
 The [C++ Core Guidelines](https://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines)
