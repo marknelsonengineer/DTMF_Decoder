@@ -116,7 +116,7 @@ int APIENTRY wWinMain(
       return EXIT_FAILURE;
    }
 
-   LOG_TRACE( "Starting" );
+   LOG_TRACE( "Starting " APP_NAME );
 
    /// Set #gbIsRunning to `true`.  Set it to `false` if we need to shutdown.
    /// For example, #gbIsRunning gets set to false by WM_CLOSE.
@@ -253,6 +253,9 @@ int APIENTRY wWinMain(
       }
    }
 
+   br = goertzel_end();
+   WARN_BR( "Failed to end the Goertzel DFT threads" );
+
    /// Cleanup all resources in the reverse order they were created
    br = audioCleanup();
    WARN_BR( "Failed to clean up audio resources." );
@@ -346,9 +349,6 @@ LRESULT CALLBACK WndProc( HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam 
          {
             gbIsRunning = false;
 
-            br = goertzel_end();
-            WARN_BR( "Failed to end the Goertzel DFT threads" );
-
             if ( ghAudioSamplesReadyEvent != NULL ) {
                br = SetEvent( ghAudioSamplesReadyEvent );
                WARN_BR( "Failed to signal gAudioSamplesReadyEvent" );
@@ -389,10 +389,10 @@ LRESULT CALLBACK WndProc( HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam 
 /// effectively pressing the Close button on the window.
 ///
 /// This does not shutdown the program **before** the message loop starts
-/// 
+///
 /// This is both a normal and failure-mode shutdown, so this doesn't set
 /// #giApplicationReturnValue
-/// 
+///
 void gracefulShutdown() {
    gbIsRunning = false;
    PostMessageA( ghMainWindow, WM_CLOSE, 0, 0 );  // Shutdown the app

@@ -256,7 +256,7 @@ BOOL goertzel_init( _In_ const int iSampleRate ) {
 ///
 /// @see https://learn.microsoft.com/en-us/windows/win32/api/synchapi/nf-synchapi-setevent
 ///
-/// @return `true` if successful.  `false` if there was a problem.
+/// @return `TRUE` if successful.  `FALSE` if there was a problem.
 BOOL goertzel_end() {
    gbIsRunning = false;  // Just to be sure
 
@@ -265,10 +265,10 @@ BOOL goertzel_end() {
    for ( int i = 0 ; i < NUMBER_OF_DTMF_TONES ; i++ ) {
       // Trigger all of the threads to run... and spin their loops
       br = SetEvent( ghStartDFTevent[ i ] );
-      CHECK_BR( "Failed to signal a startDFTevent" );
+      CHECK_BR( "Failed to signal a ghStartDFTevent" );
 
       br = SetEvent( ghDoneDFTevent[ i ] );
-      CHECK_BR( "Failed to signal a doneDFTevent" );
+      CHECK_BR( "Failed to signal a ghDoneDFTevent" );
    }
 
    return TRUE;

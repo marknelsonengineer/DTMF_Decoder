@@ -470,14 +470,13 @@ static BOOL audioPrintWaveFormat( _In_ const WAVEFORMATEX* pFmt ) {
 
 /// Initialize the audio capture device and start the capture thread
 ///
-/// @return `true` if successful.  `false` if there was a problem.
+/// @return `TRUE` if successful.  `FALSE` if there was a problem.
 BOOL audioInit() {
    HRESULT hr;  // HRESULT result
    BOOL    br;  // BOOL result
 
    if ( sShareMode == AUDCLNT_SHAREMODE_EXCLUSIVE ) {
-      LOG_FATAL( "Exclusive mode not supported right now" );
-      return FALSE;
+      RETURN_FATAL( "Exclusive mode not supported right now.  Exiting." );
    }
 
    _ASSERTE( sShareMode == AUDCLNT_SHAREMODE_SHARED );
@@ -486,7 +485,7 @@ BOOL audioInit() {
    IMMDeviceEnumerator* deviceEnumerator = NULL;
 
    hr = CoCreateInstance( __uuidof( MMDeviceEnumerator ), NULL, CLSCTX_INPROC_SERVER, IID_PPV_ARGS( &deviceEnumerator ) );
-   CHECK_HR( "Failed to instantiate the multimedia device enumerator via COM" );
+   CHECK_HR( "Failed to instantiate the multimedia device enumerator via COM.  Exiting." );
 
    /// Get the IMMDevice
    _ASSERTE( spDevice == NULL );

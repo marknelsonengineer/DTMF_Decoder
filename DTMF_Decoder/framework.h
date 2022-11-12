@@ -16,11 +16,11 @@
 
 /// @cond Doxygen_Suppress
 
-// Disable large parts of the Windows API that we do not need
+// Disable large parts of the Windows API that we don't need
 #define WIN32_LEAN_AND_MEAN
 #define WIN32_EXTRA_LEAN
 
-// Disable specific Windows APIs that we do not need
+// Disable specific Windows APIs that we don't need
 #define NOGDICAPMASKS
 // #define NOVIRTUALKEYCODES  ///< We are looking for VK_ESCAPE
 // #define NOWINMESSAGES      ///< We need the message loop API
@@ -36,21 +36,21 @@
 #define NOATOM
 #define NOCLIPBOARD
 #define NOCOLOR
-// #define NOCTLMGR           /// Need the dialog box API
+// #define NOCTLMGR           ///< Need the dialog box API
 #define NODRAWTEXT
-// #define NOGDI              /// We use parts of the GDI API
+// #define NOGDI              ///< We use parts of the GDI API
 #define NOKERNEL
-// #define NOUSER             /// Need the usual USERMODE API
+// #define NOUSER             ///< Need the usual USERMODE API
 #define NONLS
-// #define NOMB               /// Need for the logger's MessageBox
+// #define NOMB               ///< Need for the logger's MessageBox
 #define NOMEMMGR
 #define NOMETAFILE
 #define NOMINMAX
-// #define NOMSG              /// Need the messaging API
+// #define NOMSG              ///< Need the messaging API
 #define NOOPENFILE
 #define NOSCROLL
 #define NOSERVICE
-#define NOSOUND               /// We are NOT USING the native sound API
+#define NOSOUND               ///< We are NOT USING the native sound API
 #define NOTEXTMETRIC
 #define NOWH
 #define NOWINOFFSETS
@@ -72,8 +72,8 @@
 #include "log.h"          // For our logging functions
 
 
-/// Release the pointer P to a COM object by calling the IUnknown::Release
-/// method and then setting P to NULL
+/// Release the pointer P to a COM object by calling `IUnknown::Release`
+/// and setting P to `NULL`
 ///
 /// @see https://learn.microsoft.com/en-us/windows/win32/medfound/saferelease
 /// @see https://learn.microsoft.com/en-us/windows/win32/api/unknwn/nf-unknwn-iunknown-release
@@ -94,57 +94,61 @@
 /// - Return `FALSE`
 ///
 /// @see https://learn.microsoft.com/en-us/windows/win32/com/using-macros-for-error-handling
-#define FATAL_ERROR( message ) \
+#define RETURN_FATAL( message ) \
    giApplicationReturnValue = EXIT_FAILURE; \
-   gracefulShutdown();         \
-   LOG_FATAL( message );       \
-   return FALSE;               \
+   gracefulShutdown();          \
+   LOG_FATAL( message );        \
+   return FALSE;                \
 
 
 
-/// Standardized macro for checking the result of COM HRESULT values
+/// Standardized macro for checking the return value of COM functions that
+/// return `HRESULT`s.
 ///
-/// Failing a CHECK macro will terminate the application with an #EXIT_FAILURE.
+/// Failing a `CHECK_` macro will terminate the application with an #EXIT_FAILURE.
 ///
 /// @see https://learn.microsoft.com/en-us/windows/win32/com/using-macros-for-error-handling
-#define CHECK_HR( message )   \
-   if ( FAILED( hr ) ) {      \
-      FATAL_ERROR( message ); \
+#define CHECK_HR( message )    \
+   if ( FAILED( hr ) ) {       \
+      RETURN_FATAL( message ); \
    }
 
 
-/// Standardized macro for checking the result of GDI BOOL results.  For example,
+/// Standardized macro for checking the return value of GDI functions that
+/// return `BOOL`s.  For example,
 /// If the function succeeds, the return value is nonzero.
 /// If the function fails, the return value is zero.
 ///
-/// Failing a CHECK macro will terminate the application with an #EXIT_FAILURE.
+/// Failing a `CHECK_` macro will terminate the application with an #EXIT_FAILURE.
 ///
-#define CHECK_BR( message )   \
-   if ( !br ) {               \
-      FATAL_ERROR( message ); \
+#define CHECK_BR( message )    \
+   if ( !br ) {                \
+      RETURN_FATAL( message ); \
    }
 
 
-/// Standardized macro for checking the result of GDI BOOL results.  For example,
+/// Standardized macro for checking the return value of GDI functions that
+/// return `BOOL`s.  For example,
 /// If the function succeeds, the return value is nonzero.
 /// If the function fails, the return value is zero.
 ///
-/// Failing a WARN macro will just print a warning.  It won't change the program flow
-#define WARN_BR( message )    \
-   if ( !br ) {               \
-      LOG_WARN( message );    \
+/// Failing a `WARN_` macro will just print a warning.  It won't change the program flow
+#define WARN_BR( message )     \
+   if ( !br ) {                \
+      LOG_WARN( message );     \
    }
 
 
-/// Standardized macro for checking the result of INT results.  For example,
+/// Standardized macro for checking the return value of functions that return
+/// `INT`s.  For example,
 /// If the function succeeds, the return value is nonzero.
 /// If the function fails, the return value is zero.
 ///
-/// Failing a CHECK macro will terminate the application with an #EXIT_FAILURE.
+/// Failing a `CHECK_` macro will terminate the application with an #EXIT_FAILURE.
 ///
-#define CHECK_IR( message )   \
-   if ( !ir ) {               \
-      FATAL_ERROR( message ); \
+#define CHECK_IR( message )    \
+   if ( !ir ) {                \
+      RETURN_FATAL( message ); \
    }
 
 
