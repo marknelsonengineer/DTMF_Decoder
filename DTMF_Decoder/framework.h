@@ -85,18 +85,31 @@
       }
 #endif
 
+/// Standardized macro for processing a fatal error
+///
+/// - Set #giApplicationReturnValue to #EXIT_FAILURE
+/// - Call #gracefulShutdown, which will set #gbIsRunning to `false and post
+///   a `WM_CLOSE` message
+/// - Call #LOG_FATAL and print a message on the screen
+/// - Return `FALSE`
+///
+/// @see https://learn.microsoft.com/en-us/windows/win32/com/using-macros-for-error-handling
+#define FATAL_ERROR( message ) \
+   giApplicationReturnValue = EXIT_FAILURE; \
+   gracefulShutdown();         \
+   LOG_FATAL( message );       \
+   return FALSE;               \
+
+
 
 /// Standardized macro for checking the result of COM HRESULT values
 ///
 /// Failing a CHECK macro will terminate the application with an #EXIT_FAILURE.
 ///
 /// @see https://learn.microsoft.com/en-us/windows/win32/com/using-macros-for-error-handling
-#define CHECK_HR( message ) \
-   if ( FAILED( hr ) ) {    \
-      giApplicationReturnValue = EXIT_FAILURE; \
-      gracefulShutdown();   \
-      LOG_FATAL( message ); \
-      return FALSE;         \
+#define CHECK_HR( message )   \
+   if ( FAILED( hr ) ) {      \
+      FATAL_ERROR( message ); \
    }
 
 
@@ -106,12 +119,9 @@
 ///
 /// Failing a CHECK macro will terminate the application with an #EXIT_FAILURE.
 ///
-#define CHECK_BR( message ) \
-   if ( !br ) {             \
-      giApplicationReturnValue = EXIT_FAILURE; \
-      gracefulShutdown();   \
-      LOG_FATAL( message ); \
-      return FALSE;         \
+#define CHECK_BR( message )   \
+   if ( !br ) {               \
+      FATAL_ERROR( message ); \
    }
 
 
@@ -120,9 +130,9 @@
 /// If the function fails, the return value is zero.
 ///
 /// Failing a WARN macro will just print a warning.  It won't change the program flow
-#define WARN_BR( message )  \
-   if ( !br ) {             \
-      LOG_WARN( message );  \
+#define WARN_BR( message )    \
+   if ( !br ) {               \
+      LOG_WARN( message );    \
    }
 
 
@@ -132,12 +142,9 @@
 ///
 /// Failing a CHECK macro will terminate the application with an #EXIT_FAILURE.
 ///
-#define CHECK_IR( message ) \
-   if ( !ir ) {             \
-      giApplicationReturnValue = EXIT_FAILURE; \
-      gracefulShutdown();   \
-      LOG_FATAL( message ); \
-      return FALSE;         \
+#define CHECK_IR( message )   \
+   if ( !ir ) {               \
+      FATAL_ERROR( message ); \
    }
 
 

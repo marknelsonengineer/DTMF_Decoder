@@ -146,9 +146,9 @@ Here's what I've learned about processes' end-of-life:
      - Anything else means failure
    - [Standard Windows application return codes](https://stackoverflow.com/questions/1538884/what-standard-application-return-exit-codes-should-an-application-support)
    - Win32 functions that return `BOOL` will return 0 on failure and non-0 on 
-     success...  A program's exit code is the opposite -- they return 0 on 
+     success...  A program's exit code does the opposite -- they return 0 on 
      success and non-0 on failure.
-   - Be mindful that Win32's BOOL datatype is an INT, not a `bool`.
+   - Be mindful that Win32's `BOOL` datatype is an `INT`, not a `bool`.
 
 ### Subsystems to Consider
 - (Done) **Main Window Thread**
@@ -198,7 +198,7 @@ Here's what I've learned about processes' end-of-life:
     - Go through each item in the model and zero it out (or keep/ignore it)
     - Calls #pcmReleaseQueue
 
-- **(Done) Logger**
+- (Done) **Logger**
   - Init Error Handler
     - It's so simple that it's always successful (but we check it anyways)
   - Running Error Handler
@@ -217,8 +217,6 @@ Here's what I've learned about processes' end-of-life:
   - Normal Shutdown
     - Done near the end of #wWinMain to give #goertzel_end as much time as 
       possible for the threads to end on their own.
-
-
 
 ### Error Handling Policy
    - (Done) We will not use [TerminateProcess](https://learn.microsoft.com/en-us/windows/win32/api/processthreadsapi/nf-processthreadsapi-terminateprocess),
