@@ -9,6 +9,7 @@
 ///
 /// @see https://github.com/Harvie/Programs/blob/master/c/goertzel/goertzel.c
 /// @see https://en.wikipedia.org/wiki/Goertzel_algorithm
+/// @see https://en.wikipedia.org/wiki/Fast_Fourier_transform
 ///
 /// ## Math APIs
 /// | API                               | Link                                                                                             |
@@ -47,26 +48,26 @@
 #include <avrt.h>         // For AvSetMmThreadCharacteristics()
 #include <stdio.h>        // For sprintf_s()
 
-///< For getting math defines in C++ (this is a .cpp file)
+/// For getting math defines in C++ (this is a .cpp file)
 #define _USE_MATH_DEFINES
-#include <math.h>              // For sinf() and cosf()
+#include <math.h>         // For sinf() and cosf()
 
 #include "DTMF_Decoder.h" // For APP_NAME
 #include "mvcModel.h"     // For gPcmQueue and friends
 #include "goertzel.h"     // For yo bad self
 
 
-       HANDLE ghStartDFTevent[ NUMBER_OF_DTMF_TONES ];  ///< Handles to events.  External to support inlining.
-       HANDLE ghDoneDFTevent[ NUMBER_OF_DTMF_TONES ];   ///< Handles to events.  External to support inlining.
-static HANDLE shWorkThreads[ NUMBER_OF_DTMF_TONES ];    ///< The worker threads
+       HANDLE ghStartDFTevent[ NUMBER_OF_DTMF_TONES ];  ///< Handles to events.  Declared external to support inlining.
+       HANDLE ghDoneDFTevent[ NUMBER_OF_DTMF_TONES ];   ///< Handles to events.  Declared external to support inlining.
+static HANDLE shWorkThreads[ NUMBER_OF_DTMF_TONES ];    ///< Handles to the worker threads
 
-extern "C" float fScaleFactor = 0;  ///< Set in goertzel_init() and used in goertzel_magnitude()
+extern "C" float fScaleFactor = 0;  ///< Set in goertzel_Init() and used in goertzel_Magnitude()
 
 #ifdef _WIN64
    #pragma message( "Compiling 64-bit program" )
 
    extern "C" {
-      void goertzel_magnitude_64( const UINT8 index, dtmfTones_t* toneStruct );
+      void goertzel_Magnitude_x64( const UINT8 index, dtmfTones_t* toneStruct );
    };
 #else
    #pragma message( "Compiling 32-bit program" )
@@ -79,14 +80,14 @@ extern "C" float fScaleFactor = 0;  ///< Set in goertzel_init() and used in goer
 /// processing audio data in realtime.
 ///
 /// The original version of this algorithm came from:
-/// @see https://github.com/Harvie/Programs/blob/master/c/goertzel/goertzel.c
+/// https://github.com/Harvie/Programs/blob/master/c/goertzel/goertzel.c
 ///
 /// Inlined for performance reasons.
 ///
 /// @param index       The index into the DTMF tones array
 /// @param toneStruct  A pointer to #gDtmfTones (so it doesn't have to
 ///                    re-compute the index each time
-__forceinline static void goertzel_magnitude(
+__forceinline static void goertzel_Magnitude(
    _In_     const UINT8        index,
    _Inout_        dtmfTones_t* toneStruct ) {
 
@@ -117,7 +118,7 @@ __forceinline static void goertzel_magnitude(
 }
 
 
-/// Runs one of the 8 DFT worker threads
+/// Runs each of the 8 DFT worker threads
 ///
 /// @see https://learn.microsoft.com/en-us/previous-versions/windows/desktop/legacy/ms686736(v=vs.85)
 ///
@@ -125,7 +126,7 @@ __forceinline static void goertzel_magnitude(
 ///                 for values are `0` through `7`.  This is critical for
 ///                 thread safety.
 ///
-/// @return `true` if successful.  `false` if there was a problem.
+/// @return `0` if successful.  Non-`0` if there was a problem.
 DWORD WINAPI goertzelWorkThread( _In_ LPVOID pContext ) {
    _ASSERTE( pContext != NULL );
 
@@ -143,7 +144,7 @@ DWORD WINAPI goertzelWorkThread( _In_ LPVOID pContext ) {
    /// Set the multimedia class scheduler service, which will set the CPU
    /// priority for this thread
    ///
-   /// Note:  Uses the exported &gdwMmcssTaskIndex that was originally set in audio.cpp
+   /// Note:  Uses the exported #gdwMmcssTaskIndex originally set in audio.cpp
    ///
    /// @see https://learn.microsoft.com/en-us/windows/win32/api/avrt/nf-avrt-avsetmmthreadcharacteristicsa
    mmcssHandle = AvSetMmThreadCharacteristicsW( L"Capture", &gdwMmcssTaskIndex );
@@ -161,7 +162,7 @@ DWORD WINAPI goertzelWorkThread( _In_ LPVOID pContext ) {
       if ( dwWaitResult == WAIT_OBJECT_0 ) {
          if ( gbIsRunning ) {
             #ifdef _WIN64
-               goertzel_magnitude_64( (UINT8) index, &gDtmfTones[index] );
+               goertzel_Magnitude_x64( (UINT8) index, &gDtmfTones[index] );
             #else
               goertzel_magnitude( iIndex, &gDtmfTones[index] );
             #endif
@@ -203,31 +204,31 @@ DWORD WINAPI goertzelWorkThread( _In_ LPVOID pContext ) {
 #define M_PIF 3.141592653589793238462643383279502884e+00F
 
 
-/// Initialize values needed by the Goertzel DFT and start the worker threads
+/// Initialize values needed by the goertzel DFT and start the worker threads
 ///
 /// @param  iSampleRate  Samples per second
 /// @return `TRUE` if successful.  `FALSE` if there was a problem.
-BOOL goertzel_init( _In_ const int iSampleRate ) {
+BOOL goertzel_Init( _In_ const int iSampleRate ) {
    _ASSERTE( iSampleRate > 0 );
    _ASSERTE( gstQueueSize > 0 );
 
    float floatSamplingRate = (float) iSampleRate;
 
-   float floatnumSamples = (float) gstQueueSize;
+   float floatNumSamples = (float) gstQueueSize;
 
    fScaleFactor = gstQueueSize / 2.0f;
 
    /// Set sine, cosine and coeff for each DTMF tone in #gDtmfTones.
    for ( int i = 0 ; i < NUMBER_OF_DTMF_TONES ; i++ ) {
-      int   k      = (int) ( 0.5f + ( ( floatnumSamples * gDtmfTones[ i ].frequency ) / (float) floatSamplingRate ) );
-      float omega  = ( 2.0f * M_PIF * k ) / floatnumSamples;
+      int   k      = (int) ( 0.5f + ( ( floatNumSamples * gDtmfTones[ i ].frequency ) / (float) floatSamplingRate ) );
+      float omega  = ( 2.0f * M_PIF * k ) / floatNumSamples;
 
       gDtmfTones[ i ].sine   = sinf( omega );
       gDtmfTones[ i ].cosine = cosf( omega );
       gDtmfTones[ i ].coeff  = 2.0f * gDtmfTones[ i ].cosine;
    }
 
-   /// Create the events for synchronizing the threads
+   /// Create events for synchronizing the threads
    for ( int i = 0 ; i < NUMBER_OF_DTMF_TONES ; i++ ) {
       _ASSERTE( ghStartDFTevent[ i ] == NULL );
       _ASSERTE( ghDoneDFTevent[ i ] == NULL );
@@ -256,15 +257,15 @@ BOOL goertzel_init( _In_ const int iSampleRate ) {
 
 /// Signal all of the threads so they can end on their own terms
 ///
-/// This function should not return until all of the Goertzel work threads have
-/// stopped.  In Win32, threads will set their signalled state when they 
+/// This function should not return until all of the goertzel work threads have
+/// stopped.  In Win32, threads will set their signalled state when they
 /// terminate, so let's take advantage of that.
 ///
 /// @see https://learn.microsoft.com/en-us/windows/win32/api/synchapi/nf-synchapi-setevent
 /// @see https://learn.microsoft.com/en-us/windows/win32/sync/wait-functions
 ///
 /// @return `TRUE` if successful.  `FALSE` if there was a problem.
-BOOL goertzel_end() {
+BOOL goertzel_Stop() {
    /// Start by setting #gbIsRunning to `FALSE` -- just to be sure
    gbIsRunning = false;
 
@@ -274,8 +275,8 @@ BOOL goertzel_end() {
       _ASSERTE( shWorkThreads[ i ] != NULL );
       _ASSERTE( ghStartDFTevent[ i ] != NULL );
 
-      /// Trigger all of the threads to run... and spin their loops
-      /// with #gbIsRunning now `FALSE` all of the threads will terminate
+      /// Trigger all of the threads to run... which will spin their loops
+      /// with #gbIsRunning `== FALSE` causing all of the threads to terminate
       br = SetEvent( ghStartDFTevent[ i ] );
       CHECK_BR( "Failed to signal a ghStartDFTevent.  Exiting." );
    }
@@ -298,10 +299,10 @@ BOOL goertzel_end() {
 }
 
 
-/// Cleanup Goertzel event handles and threads
+/// Cleanup goertzel event handles
 ///
 /// @return `TRUE` if successful.  `FALSE` if there was a problem.
-BOOL goertzel_cleanup() {
+BOOL goertzel_Cleanup() {
    BOOL br;  // BOOL result
 
    for ( int i = 0 ; i < NUMBER_OF_DTMF_TONES ; i++ ) {

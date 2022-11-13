@@ -69,6 +69,7 @@ That said, it's been forever since I've written in Win32 and I'd write this
 much faster if I had to do it again.  I've written a guide to the API calls I
 use [here](REFERENCES.md).  I read every one of these to write this program.
 
+
 ## Shutdown
 I've never had to think quite so hard about how to (correctly) shutdown a
 program as I've had for a [Win32](https://learn.microsoft.com/en-us/windows/win32/)
@@ -145,9 +146,9 @@ Here's what I've learned about processes' end-of-life:
      - `0` means success
      - Anything else means failure
    - [Standard Windows application return codes](https://stackoverflow.com/questions/1538884/what-standard-application-return-exit-codes-should-an-application-support)
-   - Win32 functions that return `BOOL` will return 0 on failure and non-0 on 
-     success...  A program's exit code does the opposite -- they return 0 on 
-     success and non-0 on failure.
+   - Win32 functions that return `BOOL` will return `0` on failure and non-`0` on 
+     success...  A program's exit code does the opposite -- they return `0` on 
+     success and non-`0` on failure.
    - Be mindful that Win32's `BOOL` datatype is an `INT`, not a `bool`.
 
 ### Subsystems to Consider
@@ -172,7 +173,7 @@ Here's what I've learned about processes' end-of-life:
       - Post `WM_CLOSE`
     - WM_CLOSE will
       - Set #gbIsRunning to `false`
-      - Call #goertzel_end
+      - Call #goertzel_Stop
       - Cause the Audio capture thread to loop (and terminate) by setting 
         #ghAudioSamplesReadyEvent
       - Stop the audio capture device
@@ -202,7 +203,7 @@ Here's what I've learned about processes' end-of-life:
   - Init Error Handler
     - It's so simple that it's always successful (but we check it anyways)
   - Running Error Handler
-    - The logging functions can throw ASSERTs but they don't return error codes
+    - The logging functions can throw `ASSERT`s but they don't return error codes
   - Normal Shutdown
     - At the very end of the program
 
@@ -212,11 +213,18 @@ Here's what I've learned about processes' end-of-life:
   - Normal Shutdown
 
 - **Goertzel DFT Threads**
-  - Init Error Handler
+  - (Done) Init Error Handler
+    - This is called in #audioInit... after some important audio data structures 
+      are created but before the audio capture thread starts.
+    - Propagate errors up the call stack as `BOOL`s
   - Running Error Handler
   - Normal Shutdown
-    - Done near the end of #wWinMain to give #goertzel_end as much time as 
-      possible for the threads to end on their own.
+    - Call #goertzel_Stop to stop the threads.  #goertzel_Stop does not 
+      return until all of the threads have stopped
+    - #goertzel_Stop should be called _after_ ending the audio capture
+      thread
+    - After the threads are done, call #goertzel_Cleanup to close out the 
+      resources it created
 
 ### Error Handling Policy
    - (Done) We will not use [TerminateProcess](https://learn.microsoft.com/en-us/windows/win32/api/processthreadsapi/nf-processthreadsapi-terminateprocess),
@@ -226,11 +234,11 @@ Here's what I've learned about processes' end-of-life:
    - Instead of using [ExitProcess](https://learn.microsoft.com/en-us/windows/win32/api/processthreadsapi/nf-processthreadsapi-exitprocess),
      the preference would be for [wWinMain](https://learn.microsoft.com/en-us/windows/win32/learnwin32/winmain--the-application-entry-point)
      to exit.
-     - (Done) A normal exit returns 0
-     - An abnormal exit returns someting else... but it does not have to be
-       unique for each type of error
+     - (Done) A normal exit returns #EXIT_SUCCESS (`0`)
+     - An abnormal exit returns #EXIT_FAILURE... We don't need unique error
+       codes for each type of error
      - (Done) The model will hold #giApplicationReturnValue, which will initially
-       be set to 0 (Success).  Then, any function/error handler can set it
+       be set to #EXIT_SUCCESS (`0`).  Then, any function/error handler can set it
        which will then get passed out when the program terminates.
    - (Done) #gbIsRunning is set to `true` at exactly one place:  The start of #wWinMain
    - (Done) I've considered using [FlashWindow](https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-flashwindow)
@@ -240,9 +248,18 @@ Here's what I've learned about processes' end-of-life:
      their corresponding `initSomething` methods haven't run yet.  This allows
      us to call all of the `cleanupSomething` methods during initialization
      failures.
+   - There's an assymetry around starting and ending threads that needs
+     explaining.  We start threads in #audioInit and #goertzel_Init (in
+     addition to initializing their data structures).  However, we stop the 
+     threads in #audioStopDevice and #goertzel_Stop.  Lastly we release
+     resources in #audioCleanup and #goertzel_Cleanup.  This is because
+     the the audio and goertzel systems have interdependent data structures,
+     so when it comes time to terminate the program we first need to stop
+     both subsystems, then release their resources.
+     
    - (Done) **If the main window hasn't started**
      - Show a dialog box, then exit #wWinMain
-   - **Inside the `initSomething()` functions**
+   - **Inside the `initSomething` functions**
      - Unwind, returning `FALSE` until you get to the top, then show a `MessageBox`,
        set #giApplicationReturnValue and bubble up the error
    - **After the message loop has started**
@@ -250,21 +267,30 @@ Here's what I've learned about processes' end-of-life:
    - **A normal close operation**
      - On `WM_CLOSE` - The start of a normal close... start unwinding things
        - Set #gbIsRunning to `false`
-       - Call `goertzel_end`
+       - Call #goertzel_Stop
        - Trigger the audio capture thread loop
-         - When `WaitForSingleObject()` returns, it will see that #gbIsRunning
+         - When `WaitForSingleObject` returns, it will see that #gbIsRunning
            is `false`, terminate the loop, then cleanup all things audio.
-       - Call `audioStopDevice()` ??? Need to think about this ???
-       - Call `destroyWindow()` - This is standard Win32 behavior
+       - Call #audioStopDevice ??? Need to think about this ???
+       - Call `destroyWindow` - This is standard Win32 behavior
      - On `WM_DESTROY`
        - Cleanup the view
        - Call `PostQuitMessate( giApplicationReturnValue )` - This is standard Win32 behavior
+
+|                               | Normal Shutdown         | Abnormal Shutdown |
+|-------------------------------|-------------------------|-------------------|
+| Set #giApplicationReturnValue | #EXIT_SUCCESS (Default) | #EXIT_FAILURE     |
+| Set #gbIsRunning to `false`   | Yes                     | Yes               |
+| Post `WM_CLOSE`               | Yes                     | Yes               |
+| Call #LOG_FATAL( message )    | No                      | Yes               |
+| return                        | `TRUE`                  | `FALSE`           |
+
 
 ### Macros & Functions Supporting Shutdown
 - #gracefulShutdown - Initiates a shutdown setting #gbIsRunning to `false`
   and posting `WM_CLOSE`
   - Will not shutdown the program **before** the message loop starts; there's
-    queue to collect the `WM_CLOSE` yet
+    no queue to collect the `WM_CLOSE` yet
   - This is both a normal and failure-mode shutdown, so this doesn't set
     #giApplicationReturnValue
                       
@@ -272,9 +298,9 @@ Here's what I've learned about processes' end-of-life:
 
 - Helper macros for checking the result of function calls (both to Win32 and 
   internal calls)
-  - When a `CHECK_` macro fails, it:
+  - #RETURN_FATAL is called when a `CHECK_` macro fails, it:
     - Sets #giApplicationReturnValue to #EXIT_FAILURE
-    - Runs #gracefulShutdown
+    - Calls #gracefulShutdown
     - Calls #LOG_FATAL
     - Returns `FALSE`
   - When a `WARN_` macro fails, it just calls #LOG_WARN
@@ -284,6 +310,7 @@ Here's what I've learned about processes' end-of-life:
       `BOOL br`, `HRESULT hr` and `INT ir` _and_ they depend on the 
       function being tested to set the return value
   - The helper macros are:
+    - #RETURN_FATAL - Prepare for a fatal exit, then `return FALSE`
     - #CHECK_HR - Check an `HRESULT` return value
     - #CHECK_BR - Check a `BOOL` return value
     - #CHECK_IR - Check an `int` return value
@@ -296,6 +323,11 @@ discourage prefix notation (for example, Hungarian notation).  Internally, the
 Windows team no longer uses it. But its use remains in samples and documentation.
 
 I choose to continue to use it.  See [Windows Coding Convention](https://learn.microsoft.com/en-us/windows/win32/learnwin32/windows-coding-conventions).
+
+By convention, most `extern` functions will be named `subjectAction`.  This
+tends to group them together (by subject).  If the last letter of subject 
+is an `l`, then it's OK to name a function `subject_Action` as `l` is hard to 
+distinguish from `I`.
 
 
 ## DTMF Decoder's Call Graph

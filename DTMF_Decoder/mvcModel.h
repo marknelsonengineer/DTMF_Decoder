@@ -29,9 +29,9 @@ extern BOOL mvcModelCleanup();
 /// pre-computed information for the Goertzel Magnitude calculation for each
 /// individual DTMF tone
 ///
-/// #sine, #cosine, #coeff are computed and set by #goertzel_init
+/// #sine, #cosine, #coeff are computed and set by #goertzel_Init
 ///
-/// #goertzelMagnitude is set in #goertzel_magnitude
+/// #goertzelMagnitude is set in #goertzel_Magnitude
 ///
 /// #detected is set in #goertzelWorkThread
 typedef struct {
@@ -76,7 +76,7 @@ extern int giApplicationReturnValue;
 
 
 /// The size of the queue in milliseconds.  This determines the number of
-/// samples the Goertzel DFT #goertzel_magnitude uses to analyze the signal.
+/// samples the Goertzel DFT #goertzel_Magnitude uses to analyze the signal.
 ///
 /// Generally, the larger the queue, the slower (but more accurate) the
 /// detection is.
@@ -88,7 +88,7 @@ extern int giApplicationReturnValue;
 
 /// Pointer to the #gPcmQueue.  The queue is allocated by #pcmSetQueueSize.
 /// Released by #pcmReleaseQueue.  It is populated in #processAudioFrame
-/// by #pcmEnqueue.  #goertzel_magnitude needs direct access to this to analyze
+/// by #pcmEnqueue.  #goertzel_Magnitude needs direct access to this to analyze
 /// the audio stream.
 ///
 /// This is thread safe because all of the threads read from the same,

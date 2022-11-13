@@ -19,15 +19,15 @@
 #include <Windows.h>      // For BOOL, etc.
 
 
-/// When the result of #goertzel_magnitude `>=` this, then this means it's
+/// When the result of #goertzel_Magnitude `>=` this, then this means it's
 /// detected a tone.
 #define GOERTZEL_MAGNITUDE_THRESHOLD  10.0f
 
-extern BOOL goertzel_init( _In_ const int SAMPLING_RATE_IN );
+extern BOOL goertzel_Init( _In_ const int SAMPLING_RATE_IN );
 
-extern BOOL goertzel_end();
+extern BOOL goertzel_Stop();
 
-extern BOOL goertzel_cleanup();
+extern BOOL goertzel_Cleanup();
 
 extern HANDLE ghStartDFTevent[ NUMBER_OF_DTMF_TONES ];
 extern HANDLE ghDoneDFTevent[ NUMBER_OF_DTMF_TONES ];

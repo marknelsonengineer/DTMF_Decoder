@@ -643,7 +643,7 @@ BOOL audioInit() {
    LOG_INFO( "%s:  Queue size=%zu bytes or %d ms", __FUNCTION__, gstQueueSize, SIZE_OF_QUEUE_IN_MS );
 
    /// Initialize the Goertzel module (and associated threads)
-   br = goertzel_init( spMixFormat->nSamplesPerSec );
+   br = goertzel_Init( spMixFormat->nSamplesPerSec );
    CHECK_BR( "Failed to initialioze Goertzel module (and associated threads)" );
 
 

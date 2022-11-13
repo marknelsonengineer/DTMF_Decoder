@@ -51,7 +51,7 @@
 #include "mvcModel.h"     // For the persistent model of the application
 #include "mvcView.h"      // For drawing the window
 #include "audio.h"        // For capturing audio
-#include "goertzel.h"     // For goertzel_end()
+#include "goertzel.h"     // For goertzel_Stop()
 #include "resource.h"     // For the resource definitions
 #include "version.h"      // For the application's version strings
 
@@ -90,7 +90,7 @@ int APIENTRY wWinMain(
    // This is a test... but I'm going to keep it in for now.
    gracefulShutdown();  // This does not shutdown a program during init
    _ASSERTE( audioCleanup() );
-   _ASSERTE( goertzel_cleanup() );
+   _ASSERTE( goertzel_Cleanup() );
    _ASSERTE( logCleanup() );
    _ASSERTE( mvcModelCleanup() );
    _ASSERTE( mvcViewCleanup() );
@@ -253,7 +253,7 @@ int APIENTRY wWinMain(
       }
    }
 
-   br = goertzel_end();
+   br = goertzel_Stop();
    WARN_BR( "Failed to end the Goertzel DFT threads" );
 
    /// Cleanup all resources in the reverse order they were created
@@ -263,7 +263,7 @@ int APIENTRY wWinMain(
    // The view was cleaned up in WM_DESTRO (immediately following the destruction
    // of the window
 
-   br = goertzel_cleanup();
+   br = goertzel_Cleanup();
    WARN_BR( "Failed to cleanup Goertzel DFT" );
 
    br = mvcModelCleanup();

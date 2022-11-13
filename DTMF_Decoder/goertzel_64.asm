@@ -42,8 +42,8 @@ option casemap:none    ; Make symbols case sensitive
 ; XMM4 = Scratch (PCM byte)
 ; XMM5 = Scratch
 ;
-public goertzel_magnitude_64
-goertzel_magnitude_64 PROC
+public goertzel_Magnitude_x64
+goertzel_Magnitude_x64 PROC
 
 	XOR RAX, RAX                      ; Zero out RAX
 	MOV  R8, gPcmQueue                ; Read from this point in the Queue
@@ -88,6 +88,6 @@ exitForLoop:
 
 	RET
 
-goertzel_magnitude_64 ENDP
+goertzel_Magnitude_x64 ENDP
 
 END
