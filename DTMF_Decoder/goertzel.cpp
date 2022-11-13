@@ -22,6 +22,7 @@
 /// | API                               | Link                                                                                             |
 /// |-----------------------------------|--------------------------------------------------------------------------------------------------|
 /// | `SetEvent`                        | https://learn.microsoft.com/en-us/windows/win32/api/synchapi/nf-synchapi-setevent                |
+/// | `ResetEvent`                      | https://learn.microsoft.com/en-us/windows/win32/api/synchapi/nf-synchapi-resetevent              |
 /// | `WaitForSingleObject`             | https://learn.microsoft.com/en-us/windows/win32/api/synchapi/nf-synchapi-waitforsingleobject     |
 /// | `WaitForMultipleObjects`          | https://learn.microsoft.com/en-us/windows/win32/api/synchapi/nf-synchapi-waitformultipleobjects  |
 /// | `CreateEventA`                    | https://learn.microsoft.com/en-us/windows/win32/api/synchapi/nf-synchapi-createeventa            |
@@ -192,7 +193,7 @@ DWORD WINAPI goertzelWorkThread( _In_ LPVOID pContext ) {
       mmcssHandle = NULL;
    }
 
-   LOG_TRACE( "End Goertzel DFT thread." );
+   LOG_TRACE( "End Goertzel DFT thread index=%zu", index );
 
    ExitThread( 0 );
 }
@@ -202,10 +203,10 @@ DWORD WINAPI goertzelWorkThread( _In_ LPVOID pContext ) {
 #define M_PIF 3.141592653589793238462643383279502884e+00F
 
 
-/// Initialize values needed by the Goertzel DFT
+/// Initialize values needed by the Goertzel DFT and start the worker threads
 ///
 /// @param  iSampleRate  Samples per second
-/// @return `true` if successful.  `false` if there was a problem.
+/// @return `TRUE` if successful.  `FALSE` if there was a problem.
 BOOL goertzel_init( _In_ const int iSampleRate ) {
    _ASSERTE( iSampleRate > 0 );
    _ASSERTE( gstQueueSize > 0 );
@@ -228,23 +229,24 @@ BOOL goertzel_init( _In_ const int iSampleRate ) {
 
    /// Create the events for synchronizing the threads
    for ( int i = 0 ; i < NUMBER_OF_DTMF_TONES ; i++ ) {
+      _ASSERTE( ghStartDFTevent[ i ] == NULL );
+      _ASSERTE( ghDoneDFTevent[ i ] == NULL );
+      _ASSERTE( shWorkThreads[ i ] == NULL );
+
       ghStartDFTevent[ i ] = CreateEventA( NULL, FALSE, FALSE, NULL );
       if ( ghStartDFTevent[ i ] == NULL ) {
-         LOG_ERROR( "Failed to create a startDFTevent event handle" );
-         return FALSE;
+         RETURN_FATAL( "Failed to create a ghStartDFTevent event handle.  Exiting." );
       }
 
       ghDoneDFTevent[ i ] = CreateEventA( NULL, FALSE, FALSE, NULL );
       if ( ghDoneDFTevent[ i ] == NULL ) {
-         LOG_ERROR( "Failed to create a doneDFTevent event handle" );
-         return FALSE;
+         RETURN_FATAL( "Failed to create a ghDoneDFTevent event handle.  Exiting." );
       }
 
       /// Start the threads
       shWorkThreads[i] = CreateThread(NULL, 0, goertzelWorkThread, &gDtmfTones[i].index, 0, NULL);
       if ( shWorkThreads[ i ] == NULL ) {
-         LOG_ERROR( "Failed to create a Goertzel work thread" );
-         return FALSE;
+         RETURN_FATAL( "Failed to create a Goertzel work thread.  Exiting." );
       }
    }
 
@@ -254,22 +256,38 @@ BOOL goertzel_init( _In_ const int iSampleRate ) {
 
 /// Signal all of the threads so they can end on their own terms
 ///
+/// This function should not return until all of the Goertzel work threads have
+/// stopped.  In Win32, threads will set their signalled state when they 
+/// terminate, so let's take advantage of that.
+///
 /// @see https://learn.microsoft.com/en-us/windows/win32/api/synchapi/nf-synchapi-setevent
+/// @see https://learn.microsoft.com/en-us/windows/win32/sync/wait-functions
 ///
 /// @return `TRUE` if successful.  `FALSE` if there was a problem.
 BOOL goertzel_end() {
-   gbIsRunning = false;  // Just to be sure
+   /// Start by setting #gbIsRunning to `FALSE` -- just to be sure
+   gbIsRunning = false;
 
    BOOL br;  // BOOL result
 
    for ( int i = 0 ; i < NUMBER_OF_DTMF_TONES ; i++ ) {
-      // Trigger all of the threads to run... and spin their loops
-      br = SetEvent( ghStartDFTevent[ i ] );
-      CHECK_BR( "Failed to signal a ghStartDFTevent" );
+      _ASSERTE( shWorkThreads[ i ] != NULL );
+      _ASSERTE( ghStartDFTevent[ i ] != NULL );
 
-      br = SetEvent( ghDoneDFTevent[ i ] );
-      CHECK_BR( "Failed to signal a ghDoneDFTevent" );
+      /// Trigger all of the threads to run... and spin their loops
+      /// with #gbIsRunning now `FALSE` all of the threads will terminate
+      br = SetEvent( ghStartDFTevent[ i ] );
+      CHECK_BR( "Failed to signal a ghStartDFTevent.  Exiting." );
    }
+
+   /// Wait for the threads to terminate
+   DWORD   dwWaitResult;  // Result from WaitForMultipleObjects
+   dwWaitResult = WaitForMultipleObjects( NUMBER_OF_DTMF_TONES, shWorkThreads, TRUE, INFINITE );
+   if ( !( dwWaitResult >= WAIT_OBJECT_0 && dwWaitResult <= ( WAIT_OBJECT_0 + NUMBER_OF_DTMF_TONES - 1 ) ) ) {
+      RETURN_FATAL( "Wait for all Goertzel threads to end failed.  Exiting." );
+   }
+
+   LOG_TRACE( "All Goertzel threads ended normally" );
 
    return TRUE;
 }

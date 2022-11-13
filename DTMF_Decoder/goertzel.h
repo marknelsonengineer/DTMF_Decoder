@@ -65,7 +65,7 @@ __forceinline BOOL goertzel_compute_dtmf_tones() {
 
    /// For performance reasons, I'm asserting the result of the `WaitForMultipleObjects`.
    /// I don't want to compute this in the Release version for each audio buffer run.
-   _ASSERTE( dwWaitResult >= WAIT_OBJECT_0 && dwWaitResult <= WAIT_OBJECT_0 + NUMBER_OF_DTMF_TONES - 1 );
+   _ASSERTE( dwWaitResult >= WAIT_OBJECT_0 && dwWaitResult <= ( WAIT_OBJECT_0 + NUMBER_OF_DTMF_TONES - 1 ) );
 
    return TRUE;
 }

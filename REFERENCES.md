@@ -130,6 +130,7 @@ research to write DTMF_Decoder.
 | `CreateEventEx`          | https://learn.microsoft.com/en-us/windows/win32/api/synchapi/nf-synchapi-createeventexa                 |
 | `ThreadProc`             | https://learn.microsoft.com/en-us/previous-versions/windows/desktop/legacy/ms686736(v=vs.85)            |
 | `SetEvent`               | https://learn.microsoft.com/en-us/windows/win32/api/synchapi/nf-synchapi-setevent                       |
+| `ResetEvent`             | https://learn.microsoft.com/en-us/windows/win32/api/synchapi/nf-synchapi-resetevent                     |
 | `WaitForSingleObject`    | https://learn.microsoft.com/en-us/windows/win32/api/synchapi/nf-synchapi-waitforsingleobject            |
 | `WaitForMultipleObjects` | https://learn.microsoft.com/en-us/windows/win32/api/synchapi/nf-synchapi-waitformultipleobjects         |
 | `ExitThread`             | https://learn.microsoft.com/en-us/windows/win32/api/processthreadsapi/nf-processthreadsapi-exitthread   |

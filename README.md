@@ -7,12 +7,17 @@ DTMF Decoder for Windows
 
 
 ## Goals
-- Write a [DTMF](https://en.wikipedia.org/wiki/Dual-tone_multi-frequency_signaling) tone decoder
-- Get back to my roots as a [Windows C Usermode](https://en.wikipedia.org/wiki/Windows_API) programmer
+- Write a [DTMF](https://en.wikipedia.org/wiki/Dual-tone_multi-frequency_signaling) 
+  tone decoder
+- Get back to my roots as a [Windows C Usermode](https://en.wikipedia.org/wiki/Windows_API) 
+  programmer
 - See [what's changed](https://stackoverflow.com/questions/3121538/how-has-windows-api-changed-in-the-last-10-years)
-  in the last 25 years of Windows Win32 programming (since I wrote paint from Charles Petzold's book [Programming Windows](https://www.amazon.com/Programming-Windows%C2%AE-Fifth-Developer-Reference/dp/157231995X))
-- Write a model [Win32](https://learn.microsoft.com/en-us/windows/win32/) program that does everything correctly
-- Write a [Fourier Transform](https://en.wikipedia.org/wiki/Fourier_transform) (or something like one)
+  in the last 25 years of Windows Win32 programming (since I wrote paint from 
+  Charles Petzold's book [Programming Windows](https://www.amazon.com/Programming-Windows%C2%AE-Fifth-Developer-Reference/dp/157231995X))
+- Write a model [Win32](https://learn.microsoft.com/en-us/windows/win32/) program 
+  that does everything correctly
+- Write a [Fourier Transform](https://en.wikipedia.org/wiki/Fourier_transform)
+  (or something like one)
 
 ## Links
 The project's home page (hosted by GitHub) is [here](https://github.com/marknelsonengineer/DTMF_Decoder)
@@ -49,9 +54,11 @@ The source code documentation (hosted by UH) is [here](https://www2.hawaii.edu/~
     and [this](https://bobobobo.wordpress.com/2008/01/31/how-to-create-a-basic-window-in-c/) for a starting point
 
 - **Logging:** I've been programming for a long time and grown accustomed to being
-  able to write debug messages to the console.  I'm going to push myself a bit:  No console logging this time.
+  able to write debug messages to the console.  I'm going to push myself a bit:  
+  No console logging this time.
   Instead, I'm going to rely more on the debugger than I ever have before.
-  - Note:  Should I have chosen to do a console-based log, I'd have dumped to a syslog on localhost.
+  - Note:  Should I have chosen to do a console-based log, I'd have dumped to 
+    a syslog on localhost.
   - I think I'll try using [DebugOutputString](https://learn.microsoft.com/en-us/windows/win32/api/debugapi/nf-debugapi-outputdebugstringa)
 
 - **Performance:** (Unintended, but fun) Due to the realtime nature of the 
@@ -70,6 +77,14 @@ The source code documentation (hosted by UH) is [here](https://www2.hawaii.edu/~
   Note:  I compared the Debug and Release configurations of both of these techniques
   with Ghidra.  I was pleasantly surprised to see that both completely disappear in the
   Release versions.  In a Debug configuration, they have different implementations.
+
+- **Cleaning up Threads:**  Most of the subsystems have a `cleanupSomething`
+  function.  The threads also need `stopSomething` functions that trigger the
+  threads to end (and wait until they actually do end).  One dilemma I faced 
+  is:  Should the `cleanup` function also stop the threads?  I think the answer
+  is:  No.  I will have separate `cleanup` and `stop` functions.  The reason 
+  is that the threads use each others' resources.  I'm going to want to stop
+  all of the threads, then cleanup their resources.
 
 ## Toolchain
 This project is the product of a tremendous amount of R&D and would not be possible without the following world-class tools:

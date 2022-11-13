@@ -281,11 +281,13 @@ int APIENTRY wWinMain(
    WARN_BR( "Failed to cleanup the logs." );
 
    // The log can still be called even after it's been "cleaned up"
-   LOG_INFO( "All " APP_NAME " resources were cleaned up.  Ending program." );
+   if ( giApplicationReturnValue == EXIT_SUCCESS ) {
+      LOG_INFO( "All " APP_NAME " resources were cleaned up.  Ending program:  SUCCESS." );
+   } else {
+      LOG_INFO( "All " APP_NAME " resources were cleaned up.  Ending program in failure mode." );
+   }
 
-                             /// The return value `msg.pParam` comes to us
-   return (int) msg.wParam;  /// from `WM_QUIT` which gets set by `PostQuitMessage`
-                             /// which gets its value from  #giApplicationReturnValue.
+   return giApplicationReturnValue;
 }
 
 
