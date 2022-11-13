@@ -287,6 +287,11 @@ BOOL goertzel_end() {
       RETURN_FATAL( "Wait for all Goertzel threads to end failed.  Exiting." );
    }
 
+   /// Cleanup the thread handles
+   for ( int i = 0 ; i < NUMBER_OF_DTMF_TONES ; i++ ) {
+      shWorkThreads[ i ] = NULL;
+   }
+
    LOG_TRACE( "All Goertzel threads ended normally" );
 
    return TRUE;
@@ -300,8 +305,6 @@ BOOL goertzel_cleanup() {
    BOOL br;  // BOOL result
 
    for ( int i = 0 ; i < NUMBER_OF_DTMF_TONES ; i++ ) {
-      shWorkThreads[ i ] = NULL;
-
       if ( ghStartDFTevent[ i ] != NULL ) {
          br = CloseHandle( ghStartDFTevent[ i ] );
          CHECK_BR( "Failed to close ghStartDFTevent handle" );
