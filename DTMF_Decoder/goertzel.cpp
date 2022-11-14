@@ -130,14 +130,14 @@ __forceinline static void goertzel_Magnitude(
 DWORD WINAPI goertzelWorkThread( _In_ LPVOID pContext ) {
    _ASSERTE( pContext != NULL );
 
-   int iIndex = *(int*) pContext;  // This comes to us as an int from dtmfTones_t
-   size_t index = iIndex;          // But we use it as an index into an array, so convert to size_t
+   int    iIndex = *(int*) pContext;  // Comes to us as an int from #dtmfTones_t
+   size_t index  = iIndex;            // But we use it as an index into an array, so convert to size_t
 
    _ASSERTE( iIndex < NUMBER_OF_DTMF_TONES );
    _ASSERTE( ghStartDFTevent[ index ] != NULL );
    _ASSERTE( ghDoneDFTevent[ index ]  != NULL );
 
-   LOG_TRACE( "Start Goertzel DFT thread index=%zu", index );
+   LOG_TRACE( "Goertzel DFT thread: %zu   Starting.", index );
 
    HANDLE mmcssHandle = NULL;  // Local to the thread for safety
 
@@ -149,9 +149,9 @@ DWORD WINAPI goertzelWorkThread( _In_ LPVOID pContext ) {
    /// @see https://learn.microsoft.com/en-us/windows/win32/api/avrt/nf-avrt-avsetmmthreadcharacteristicsa
    mmcssHandle = AvSetMmThreadCharacteristicsW( L"Capture", &gdwMmcssTaskIndex );
    if ( mmcssHandle == NULL ) {
-      LOG_WARN( "Failed to set MMCSS on Goertzel work thread.  Continuing." );
+      LOG_WARN( "Goertzel DFT thread: %zu   Failed to set MMCSS on Goertzel work thread.  Continuing." );
    }
-   // LOG_INFO( "Set MMCSS on Goertzel work thread." );
+   // LOG_INFO( "Goertzel DFT thread: %zu   Set MMCSS on Goertzel work thread." );
 
 // while ( gbIsRunning && index == 4 ) {   // Use for debugging/development
    while ( gbIsRunning ) {
@@ -172,8 +172,6 @@ DWORD WINAPI goertzelWorkThread( _In_ LPVOID pContext ) {
             } else {
                mvcModelToggleToneDetectedStatus( index, false );
             }
-
-            SetEvent( ghDoneDFTevent[ index ] );
          }
       } else if ( dwWaitResult == WAIT_FAILED ) {
          LOG_FATAL( "WaitForSingleObject in Goertzel thread failed.  Exiting.  Investigate!" );
@@ -184,17 +182,18 @@ DWORD WINAPI goertzelWorkThread( _In_ LPVOID pContext ) {
          gracefulShutdown();
          break;  // While loop
       }
+      SetEvent( ghDoneDFTevent[ index ] );
    }
 
-   // The thread is done.  Shut it down.
+   /// When the thread is done, put the CPU thread priority back
    if ( mmcssHandle != NULL ) {
       if( !AvRevertMmThreadCharacteristics( mmcssHandle ) ) {
-         LOG_WARN( "Failed to revert MMCSS on Goertzel work thread.  Continuing." );
+         LOG_WARN( "Goertzel DFT thread: %zu   Failed to revert MMCSS on Goertzel work thread.  Continuing." );
       }
       mmcssHandle = NULL;
    }
 
-   LOG_TRACE( "End Goertzel DFT thread index=%zu", index );
+   LOG_TRACE( "Goertzel DFT thread: %zu   Done", index );
 
    ExitThread( 0 );
 }

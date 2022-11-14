@@ -218,6 +218,9 @@ Here's what I've learned about processes' end-of-life:
       are created but before the audio capture thread starts.
     - Propagate errors up the call stack as `BOOL`s
   - Running Error Handler
+    - The error will set #gbIsRunning to `false`, set #giApplicationReturnValue
+      to #EXIT_FAILURE and post an `MW_CLOSE`.  The thread will continue
+      to run until the application .
   - Normal Shutdown
     - Call #goertzel_Stop to stop the threads.  #goertzel_Stop does not 
       return until all of the threads have stopped
@@ -310,6 +313,7 @@ Here's what I've learned about processes' end-of-life:
       `BOOL br`, `HRESULT hr` and `INT ir` _and_ they depend on the 
       function being tested to set the return value
   - The helper macros are:
+    - #PROCESS_FATAL - Centralized macro to tell the application about a fatal error
     - #RETURN_FATAL - Prepare for a fatal exit, then `return FALSE`
     - #CHECK_HR - Check an `HRESULT` return value
     - #CHECK_BR - Check a `BOOL` return value

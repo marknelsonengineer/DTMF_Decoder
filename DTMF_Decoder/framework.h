@@ -85,21 +85,29 @@
       }
 #endif
 
+
 /// Standardized macro for processing a fatal error
 ///
 /// - Set #giApplicationReturnValue to #EXIT_FAILURE
-/// - Call #gracefulShutdown, which will set #gbIsRunning to `false and post
-///   a `WM_CLOSE` message
+/// - Call #gracefulShutdown
 /// - Call #LOG_FATAL and print a message on the screen
+///
+/// @see https://learn.microsoft.com/en-us/windows/win32/com/using-macros-for-error-handling
+#define PROCESS_FATAL( message )  \
+   giApplicationReturnValue = EXIT_FAILURE; \
+   gracefulShutdown();            \
+   LOG_FATAL( message );          \
+
+
+/// Standardized macro for returning on a fatal error
+///
+/// - Use #PROCESS_FATAL to tell the application about the problem
 /// - Return `FALSE`
 ///
 /// @see https://learn.microsoft.com/en-us/windows/win32/com/using-macros-for-error-handling
-#define RETURN_FATAL( message ) \
-   giApplicationReturnValue = EXIT_FAILURE; \
-   gracefulShutdown();          \
-   LOG_FATAL( message );        \
-   return FALSE;                \
-
+#define RETURN_FATAL( message )  \
+   PROCESS_FATAL( message );     \
+   return FALSE;                 \
 
 
 /// Standardized macro for checking the return value of COM functions that
