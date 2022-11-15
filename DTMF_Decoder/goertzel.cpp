@@ -159,6 +159,7 @@ DWORD WINAPI goertzelWorkThread( _In_ LPVOID pContext ) {
 
       /// Wait for this thread's #ghStartDFTevent to be signalled
       dwWaitResult = WaitForSingleObject( ghStartDFTevent[index], INFINITE);
+      // dwWaitResult = WAIT_FAILED;
       if ( dwWaitResult == WAIT_OBJECT_0 ) {
          if ( gbIsRunning ) {
             #ifdef _WIN64
@@ -174,14 +175,17 @@ DWORD WINAPI goertzelWorkThread( _In_ LPVOID pContext ) {
             }
          }
       } else if ( dwWaitResult == WAIT_FAILED ) {
-         LOG_FATAL( "WaitForSingleObject in Goertzel thread failed.  Exiting.  Investigate!" );
-         gracefulShutdown();
-         break;  // While loop
+         PostMessageA( ghMainWindow, guUMW_ERROR_IN_THREAD, MAKEWPARAM( 1, iIndex ), 0 );
+
+         // LOG_FATAL( "WaitForSingleObject in Goertzel thread failed.  Exiting.  Investigate!" );
+         //gracefulShutdown();
+         // break;  // While loop
       } else {
          LOG_FATAL( "WaitForSingleObject in Goertzel thread ended for an unknown reason.  Exiting.  Investigate!" );
          gracefulShutdown();
          break;  // While loop
       }
+
       SetEvent( ghDoneDFTevent[ index ] );
    }
 

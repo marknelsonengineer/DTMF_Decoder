@@ -189,6 +189,7 @@ Here's what I've learned about processes' end-of-life:
   - Init Error Handler
   - Running Error Handler
   - Normal Shutdown
+    - Cleaned up in `WM_DESTROY` immediately after the window is destroyed
 
 - **Model**
   - (Done) Init Error Handler
@@ -259,6 +260,19 @@ Here's what I've learned about processes' end-of-life:
      the the audio and goertzel systems have interdependent data structures,
      so when it comes time to terminate the program we first need to stop
      both subsystems, then release their resources.
+     
+   - Worker threads should not create windows.  This bears repeating.  Worker 
+     threads should not create windows.  They dont have message loops.  They will 
+     get out of sync and the controlling process will loose control of them.  
+     
+     So, how can they communicate problems and safely shutdown the app?  Lets 
+     post a custom message back to the main thread.  Heres the plan:
+
+     - Create a GUID
+     - Register the app name + GUID
+     - When threads have problems, they post a message to the custom message.  
+     - The high part of WPARAM is the thread number.  The low part is a message number. 
+     - LPARAM is not used  
      
    - (Done) **If the main window hasn't started**
      - Show a dialog box, then exit #wWinMain
