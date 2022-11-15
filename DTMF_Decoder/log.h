@@ -86,3 +86,10 @@ extern void logW(
    _In_ ... );
 
 extern void logTest();
+
+
+extern void        logSetMsg( _In_ const logLevels_t level, _In_ const UINT suMsgId );
+extern UINT        logGetMsgId();
+extern logLevels_t logGetMsgLevel();
+extern void        logResetMsg();
+extern bool        logHasMsg();

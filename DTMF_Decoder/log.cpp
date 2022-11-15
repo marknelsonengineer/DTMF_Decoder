@@ -15,6 +15,12 @@
 ///   - Hold the buffer on the stack so it's both thread safe and re-entrant safe
 ///   - Append a `\n` because that's how the Windws debugger likes to print
 ///     output
+///   - Help thread and mesage loop handlers register an error to be displayed
+///     at a later time (this utilizes the Windows model of `GetLastError`
+///     and `SetLastError`)
+///
+/// @see https://learn.microsoft.com/en-us/windows/win32/api/errhandlingapi/nf-errhandlingapi-getlasterror
+/// @see https://learn.microsoft.com/en-us/windows/win32/api/errhandlingapi/nf-errhandlingapi-setlasterror
 ///
 /// #### The Parent Window
 /// A Windows logger is hard because
@@ -110,6 +116,9 @@ BOOL logInit( _In_ HWND* phWindow ) {
    }
 
    sphMainWindow = phWindow;
+
+   /// Call #logResetMsg to reset the last message logger
+   logResetMsg();
 
    return TRUE;
 }
@@ -321,4 +330,77 @@ void logTest() {
    // This takes into account that "logTest: " is 10 characters long
 //   LOG_INFO(    "Narrow: 8901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345" );
 //   LOG_INFO_W( L"Wide: 678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345" );
+}
+
+
+/// The ID when no message has been set
+#define NO_MESSAGE 0
+
+
+static UINT suMsgId = NO_MESSAGE;  ///< The ID of the first valid message
+static logLevels_t sMsgLevel = LOG_LEVEL_TRACE;  ///< The level of the first valid message
+
+
+/// Save a message in the logger.
+///
+/// Only save messages where the severity level is #LOG_LEVEL_WARN,
+/// #LOG_LEVEL_ERROR or #LOG_LEVEL_FATAL.  This is because these messages
+/// generate `MessageBox`es and can't be displayed by worker threads or when
+/// we have issues in the actual message loop.  So we save them and print the
+/// first one we encounter at a later time.
+///
+/// This is not thread-safe, but it's close enough for what we are doing.
+///
+/// @param level The severity of the message
+/// @param msgId The ID of the message
+void logSetMsg( _In_ const logLevels_t level, _In_ const UINT msgId ) {
+   _ASSERTE( msgId != NO_MESSAGE );
+
+   if ( logHasMsg() )
+      return;           /// Do nothing if a message has already been set
+
+   if ( level < LOG_LEVEL_WARN )
+      return;           /// Silently return if level is `<` #LOG_LEVEL_WARN
+
+   suMsgId = msgId;
+   sMsgLevel = level;
+}
+
+
+/// Get the ID of the first message
+///
+/// @return The ID of the first message.  If there are no messages, return
+///         #NO_MESSAGE
+UINT logGetMsgId() {
+   return suMsgId;
+}
+
+
+/// Get the level of the first message
+///
+/// @return The level of the first message.  If there are no messages, return
+///         #LOG_LEVEL_TRACE
+logLevels_t logGetMsgLevel() {
+   return sMsgLevel;
+}
+
+
+/// Reset the message store
+void logResetMsg() {
+   suMsgId    = NO_MESSAGE;
+   sMsgLevel = LOG_LEVEL_TRACE;
+
+   _ASSERTE( !logHasMsg() );
+}
+
+
+/// Report if the logger has a message
+///
+/// @return `true` if there's a message waiting.  `false` if there is not.
+bool logHasMsg() {
+   if( suMsgId == NO_MESSAGE ) {
+      return false;
+   } else {
+      return true;
+   }
 }
