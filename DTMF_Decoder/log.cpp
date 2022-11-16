@@ -52,6 +52,15 @@
 /// and initialize an `hWnd` pointer to a local or a parameter -- in which case
 /// very bad things happen.  C'est la vie.
 ///
+/// I'm also storing the a pointer to the instance handle as well.  This is
+/// for getting strings from the resources via `LoadStringW`.
+///
+/// All of the strings loaded from resources are assumed to be wide (UNICODE).
+///
+/// When Log functions throw exceptions, they will:
+///      OutputDebugStringA( "VIOLATED STACK GUARD in Logger.  Exiting immediately." );
+///      _ASSERT_EXPR( FALSE, L"VIOLATED STACK GUARD in Logger.  Exiting immediately." );
+///
 /// ## APIs Used
 /// | API                  | Link                                                                                                                              |
 /// |--------------------- | ----------------------------------------------------------------------------------------------------------------------------------|
@@ -91,6 +100,12 @@
 static HWND* sphMainWindow = NULL;
 
 
+/// Pointer to the application's current instance handle.  This is used to
+/// lookup resources (strings) in the application.
+static HINSTANCE* sphInst = NULL;
+
+
+
 /// Initialize the logger
 ///
 /// Note: The logger **can** be called before it's initialized.  This is by
@@ -103,16 +118,44 @@ static HWND* sphMainWindow = NULL;
 /// logger and set #sphMainWindow to point to the app's windows handle, which
 /// I expect the app will keep up-to-date for me.
 ///
+/// @param phInst   The application instance handle.  **This must be a global
+///                 variable.**
+///
 /// @param phWindow The window that will own the log message boxes (usually the
 ///                 application's main window).  **This must be a global variable.**
 ///                 It is OK to set this to `NULL`
 ///
 /// @return `TRUE` if successful.  `FALSE` if there was a problem.
-BOOL logInit( _In_ HWND* phWindow ) {
-   if ( phWindow != NULL ) {     // Test to ensure that phWindow points to
-      HWND hWinTemp = *phWindow; // a valid address.  If it's invalid, this
-      (void) hWinTemp;           // will segfault.
-      _ASSERTE( TRUE );
+BOOL logInit( _In_ HINSTANCE* phInst, _In_ HWND* phWindow ) {
+
+   /// To validate the phInst and phWindow parameters, we try to read one byte
+   /// from the pointers.  If the pointers are invalid, they will likely
+   /// throw a "Read access violation".  We use a `__try` block to catch this.
+   ///
+   /// @see https://learn.microsoft.com/en-us/cpp/cpp/structured-exception-handling-c-cpp?view=msvc-170
+   if ( phInst != NULL ) {
+      __try {
+         char tmpChar = *(char*) phInst;
+         (void) tmpChar;
+      } __except ( EXCEPTION_EXECUTE_HANDLER ) {
+         OutputDebugStringA( "The instance handle passed to logInit points to an invalid memory region.  Exiting." );
+         return FALSE;
+   }
+   } else {
+      OutputDebugStringA( "The instance handle passed to logInit is NULL.  Exiting." );
+      return FALSE;
+   }
+
+   sphInst = phInst;
+
+   if ( phWindow != NULL ) {
+      __try {
+         char tmpChar = *(char*) phWindow;
+         (void) tmpChar;
+      } __except ( EXCEPTION_EXECUTE_HANDLER ) {
+         OutputDebugStringA( "The window handle passed to logInit points to an invalid memory region.  Exiting." );
+         return FALSE;
+      }
    }
 
    sphMainWindow = phWindow;
