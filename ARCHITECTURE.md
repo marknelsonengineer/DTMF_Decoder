@@ -89,6 +89,8 @@ Here's what I've learned about processes' end-of-life:
        to recover gracefully from unexpected errors. When an error occurs, the
        application may need to request user intervention, or it may be able to
        recover on its own.
+   - [Modern C++ Best Practices for Exceptions and Error Handling](https://learn.microsoft.com/en-us/cpp/cpp/errors-and-exception-handling-modern-cpp?view=msvc-170)
+     - Note:  I do not plan to re-architect a Win32 program to use exceptions.  
    - [The WM_QUIT_Message](https://devblogs.microsoft.com/oldnewthing/20050222-00/?p=36393)
    - [The difference between WM_QUIT, WM_CLOSE, and WM_DESTROY](https://stackoverflow.com/questions/3155782/what-is-the-difference-between-wm-quit-wm-close-and-wm-destroy-in-a-windows-pr)
    - [Terminating a Process](https://learn.microsoft.com/en-us/windows/win32/procthread/terminating-a-process)

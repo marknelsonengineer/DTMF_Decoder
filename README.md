@@ -18,6 +18,8 @@ DTMF Decoder for Windows
   that does everything correctly
 - Write a [Fourier Transform](https://en.wikipedia.org/wiki/Fourier_transform)
   (or something like one)
+- Write a good, general purpose logger that I can use with other projects
+
 
 ## Links
 The project's home page (hosted by GitHub) is [here](https://github.com/marknelsonengineer/DTMF_Decoder)

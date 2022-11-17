@@ -100,7 +100,7 @@ int APIENTRY wWinMain(
 
    _ASSERTE( hInstance != NULL );
 
-   shInst = hInstance; /// Store the instance handle in a global variable
+   shInst = hInstance;  /// Store the instance handle in a global variable
 
    BOOL    br;  // BOOL result
    HRESULT hr;  // HRESULT result
@@ -110,13 +110,14 @@ int APIENTRY wWinMain(
    ///
    /// Tell the logger about where we hold the main window handle.  It's not
    /// set initially, but as soon as it is, the logger can start using it.
-   br = logInit( &ghMainWindow );
+   br = logInit( &shInst, &ghMainWindow );
    if ( !br ) {
       LOG_FATAL( "Failed to initialize the logger.  Exiting." );
       return EXIT_FAILURE;
    }
 
-   LOG_TRACE( "Starting " APP_NAME );
+   LOG_TRACE_R( IDS_DTMF_DECODER_STARTING, APP_NAME_W );  // "Starting DTMF Decoder"
+
 
    /// Set #gbIsRunning to `true`.  Set it to `false` if we need to shutdown.
    /// For example, #gbIsRunning gets set to false by WM_CLOSE.

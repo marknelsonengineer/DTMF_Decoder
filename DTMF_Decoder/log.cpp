@@ -10,13 +10,14 @@
 ///   - Log to `OutputDebugString` with the flexibility of `printf`
 ///   - Both wide and narrow logging
 ///   - For log levels #LOG_LEVEL_FATAL, #LOG_LEVEL_ERROR and #LOG_LEVEL_WARN
-///     also show a message box and beep
+///     also show a message box and appropriate icon
 ///   - Bounds checking on the string buffer
 ///   - Hold the buffer on the stack so it's both thread safe and re-entrant safe
 ///   - Append a `\n` because that's how the Windws debugger likes to print
 ///     output
+///   - Support logging from resource strings
 ///   - Help thread and mesage loop handlers register an error to be displayed
-///     at a later time (this utilizes the Windows model of `GetLastError`
+///     at a later time (this mimics the Windows model of `GetLastError`
 ///     and `SetLastError`)
 ///
 /// @see https://learn.microsoft.com/en-us/windows/win32/api/errhandlingapi/nf-errhandlingapi-getlasterror
@@ -53,13 +54,33 @@
 /// very bad things happen.  C'est la vie.
 ///
 /// I'm also storing the a pointer to the instance handle as well.  This is
-/// for getting strings from the resources via `LoadStringW`.
-///
-/// All of the strings loaded from resources are assumed to be wide (UNICODE).
+/// for getting strings from the resources via `LoadStringW`.  All of the
+/// strings loaded from resources are assumed to be wide (UNICODE).
 ///
 /// When Log functions throw exceptions, they will:
+/// ````
 ///      OutputDebugStringA( "VIOLATED STACK GUARD in Logger.  Exiting immediately." );
 ///      _ASSERT_EXPR( FALSE, L"VIOLATED STACK GUARD in Logger.  Exiting immediately." );
+/// ````
+///
+/// Sometimes you need to log a message and display it later.  This happens
+/// if you detect a warning, error or failure inside the message loop or in
+/// one of the worker threads.  When this happens, you need to capture the event
+/// and show the message later.  This is a common Windows design pattern...
+/// @see https://learn.microsoft.com/en-us/windows/win32/api/errhandlingapi/nf-errhandlingapi-getlasterror
+/// @see https://learn.microsoft.com/en-us/windows/win32/debug/error-handling
+///
+/// To that end, we will use the same design pattern to save messages with
+/// #logSetMsg, #logGetMsgId, #logGetMsgLevel, #logResetMsg and #logHasMsg.
+///
+/// The message IDs stored in this stateful holder should be the same IDs that
+/// can be displayed by the `_R` loggers.
+///
+/// I am also choosing to save the ID and level of the *first* message received.
+/// We could have saved the __last__ message or keep messages with the __highest__
+/// level.  I chose the __first__ message received (the level must be
+/// `>=` #LOG_LEVEL_WARN because, in my experience, the first complaint is the best
+/// place to look when you are troubleshooting (I'm looking at you, `gcc`).
 ///
 /// ## APIs Used
 /// | API                  | Link                                                                                                                              |
@@ -75,6 +96,7 @@
 /// | `OutputDebugStringW` | https://learn.microsoft.com/en-us/windows/win32/api/debugapi/nf-debugapi-outputdebugstringw                                       |
 /// | `MessageBoxW`        | https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-messageboxw                                                |
 /// | `MessageBeep`        | https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-messagebeep                                                |
+/// | `LoadStringW`        | https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-loadstringw           |
 ///
 /// @file    log.cpp
 /// @author  Mark Nelson <marknels@hawaii.edu>
@@ -87,12 +109,17 @@
 #include <stdarg.h>       // For va_start
 
 
-/// Save a random number at the end of the string buffer.  When we're done,
+/// Save a random number at the end of the string buffers.  When we're done,
 /// make sure it's untouched.
 ///
 /// If we overrun the buffer and violate the stack guard, then fail fast by
-/// throwing an `_ASSERT`.
+/// throwing an `_ASSERT_EXPR( FALSE, ...`.
 #define STACK_GUARD 0xed539d63
+
+
+/// The ID when no message has been set.  If a message is set, it is presumed
+/// to be an ID from the string table in resources.
+#define NO_MESSAGE 0
 
 
 /// Pointer to an application's global windows handle.  This window will "own"
@@ -108,15 +135,19 @@ static HINSTANCE* sphInst = NULL;
 
 /// Initialize the logger
 ///
-/// Note: The logger **can** be called before it's initialized.  This is by
-///       design.  The message box windows just won't have a parent window.
+/// The logger **can** be called before it's initialized.  This is by design...
+/// `MessageBox` just won't have a parent window.
 ///
 /// [Per Raymond Chen's book](https://devblogs.microsoft.com/oldnewthing/20050223-00/?p=36383),
-/// all windows, including message boxes, should be
-/// owned by their calling window.  I don't want to pass an `hWnd` into each log
-/// (although, in the future that may be necessary).  So, I'll initialize the
-/// logger and set #sphMainWindow to point to the app's windows handle, which
-/// I expect the app will keep up-to-date for me.
+/// all windows, including message boxes, __should__ be owned by their calling
+/// window.  I don't want to pass an `hWnd` into each log (although, in the
+/// future that may be necessary).  So, I'll initialize the logger and set
+/// #sphMainWindow to point to the app's windows handle, which I expect the app
+/// will keep up-to-date for me.  We use the same technique for the application's
+/// instance handle `HINSTANCE`.
+///
+/// Don't use the resource string loggers (like #LOG_TRACE_R) before
+/// initializing the logger as it won't have the application's `HINSTANCE` yet.
 ///
 /// @param phInst   The application instance handle.  **This must be a global
 ///                 variable.**
@@ -128,19 +159,19 @@ static HINSTANCE* sphInst = NULL;
 /// @return `TRUE` if successful.  `FALSE` if there was a problem.
 BOOL logInit( _In_ HINSTANCE* phInst, _In_ HWND* phWindow ) {
 
-   /// To validate the phInst and phWindow parameters, we try to read one byte
-   /// from the pointers.  If the pointers are invalid, they will likely
+   /// To validate the `phInst` and `phWindow` parameters, we try to read one
+   /// byte from the pointers.  If the pointers are invalid, they will __likely__
    /// throw a "Read access violation".  We use a `__try` block to catch this.
    ///
    /// @see https://learn.microsoft.com/en-us/cpp/cpp/structured-exception-handling-c-cpp?view=msvc-170
    if ( phInst != NULL ) {
       __try {
          char tmpChar = *(char*) phInst;
-         (void) tmpChar;
+         (void) tmpChar;  // Suppress a compiler warning that tmpChar is not checked after this.  No code is generated.
       } __except ( EXCEPTION_EXECUTE_HANDLER ) {
          OutputDebugStringA( "The instance handle passed to logInit points to an invalid memory region.  Exiting." );
          return FALSE;
-   }
+      }
    } else {
       OutputDebugStringA( "The instance handle passed to logInit is NULL.  Exiting." );
       return FALSE;
@@ -151,7 +182,7 @@ BOOL logInit( _In_ HINSTANCE* phInst, _In_ HWND* phWindow ) {
    if ( phWindow != NULL ) {
       __try {
          char tmpChar = *(char*) phWindow;
-         (void) tmpChar;
+         (void) tmpChar;  // Suppress a compiler warning that tmpChar is not checked after this.  No code is generated.
       } __except ( EXCEPTION_EXECUTE_HANDLER ) {
          OutputDebugStringA( "The window handle passed to logInit points to an invalid memory region.  Exiting." );
          return FALSE;
@@ -160,7 +191,7 @@ BOOL logInit( _In_ HINSTANCE* phInst, _In_ HWND* phWindow ) {
 
    sphMainWindow = phWindow;
 
-   /// Call #logResetMsg to reset the last message logger
+   /// Call #logResetMsg to reset the message store
    logResetMsg();
 
    return TRUE;
@@ -173,11 +204,14 @@ BOOL logInit( _In_ HINSTANCE* phInst, _In_ HWND* phWindow ) {
 BOOL logCleanup() {
    sphMainWindow = NULL;  /// Set #sphMainWindow to `NULL`
 
+   /// No need to clean/erase #sphInst.  It should be good for the lifetime
+   /// of the application.
+
    return TRUE;
 }
 
 
-/// Generic logging function (narrow character)
+/// Generic narrow character, `printf`-style message logger
 ///
 /// This is intended to be called through the logging macros like #LOG_INFO.
 /// It is not intended to be called directly.
@@ -186,8 +220,8 @@ BOOL logCleanup() {
 /// files are great, but I'd like to keep the buffer and all of the `vsprintf`
 /// stuff in a self-contained library rather than push it into the caller's source.
 ///
-/// Note: The logger **can** be called before it's initialized.  This is by
-///       design.  The message box windows just won't have a parent window.
+/// The logger **can** be called before it's initialized.  This is by design...  
+/// `MessageBoxA` just won't have a parent window.
 ///
 /// @param logLevel      The level of this logging event
 /// @param appName       The name of the application
@@ -241,7 +275,7 @@ void logA(
    // buffer.sBuf[ bufCharsRemaining - 1 ] = '\0';  // Null terminate the buffer (just to be sure)
 
    /// If we overrun the buffer and violate the stack guard, then fail fast by
-   /// throwing an `_ASSERT`.
+   /// throwing an `_ASSERT_EXPR( FALSE, ...`.
    if ( bufCharsRemaining < 0 || buffer.dwGuard != STACK_GUARD ) {
       OutputDebugStringA( "VIOLATED STACK GUARD in Logger.  Exiting immediately." );
       _ASSERT_EXPR( FALSE, L"VIOLATED STACK GUARD in Logger.  Exiting immediately." );
@@ -261,31 +295,35 @@ void logA(
 }
 
 
-/// Generic logging function (wide character)
+/// Generic wide character `vararg`-style message logger
 ///
-/// This is intended to be called through the logging macros like #LOG_INFO_W.
-/// It is not intended to be called directly.
+/// This is intended to be called through the logging functions like #logW and
+/// #logWMsg.  It is not intended to be called directly.
 ///
 /// I'm choosing to make this a function rather than an inline.  Header-only
-/// files are great, but I'd like to keep the buffer and all of the `vsprintf`
+/// files are great, but I'd like to keep the format and all of the `vsprintf`
 /// stuff in a self-contained library rather than push it into the caller's source.
 ///
-/// Note: The logger **can** be called before it's initialized.  This is by
-///       design.  The message box windows just won't have a parent window.
+/// The logger **can** be called before it's initialized.  This is by design...
+/// `MessageBoxW` just won't have a parent window.
 ///
 /// @param logLevel      The level of this logging event
 /// @param appName       The name of the application
 /// @param functionName  The name of the function
-/// @param format, ...   `printf`-style formatting
-void logW(
+/// @param format        `printf`-style formatting
+/// @param args          Varargs va_list
+static void vLogW(
    _In_ const logLevels_t logLevel,
-   _In_ const WCHAR* appName,
-   _In_ const WCHAR* functionName,
-   _In_ const WCHAR* format,
-   _In_ ... ) {
+   _In_ const WCHAR*      appName,
+   _In_ const WCHAR*      functionName,
+   _In_ const WCHAR*      format,
+   _In_ const va_list     args ) {
+
    /// Silently `return` if `appName`, `functionName` or `format` is `NULL`
    if ( appName == NULL || functionName == NULL || format == NULL )
       return;
+
+   // There's no real validation for args.
 
    struct buffer_t {
       WCHAR sBuf[ MAX_LOG_STRING ];
@@ -294,13 +332,9 @@ void logW(
 
    buffer.dwGuard = STACK_GUARD;
 
-   va_list args;
-   int     numCharsWritten   = 0;
-   int     bufCharsRemaining = MAX_LOG_STRING;
-   WCHAR*  pBufferHead       = buffer.sBuf;
-
-   va_start( args, format );
-   // va_start does not return a result code
+   int    numCharsWritten = 0;
+   int    bufCharsRemaining = MAX_LOG_STRING;
+   WCHAR* pBufferHead = buffer.sBuf;
 
    numCharsWritten = swprintf_s( pBufferHead, bufCharsRemaining, L"%s: ", functionName );
    // swprintf_s returns the number of characters written
@@ -308,7 +342,8 @@ void logW(
    pBufferHead       += numCharsWritten;
 
    /// Under normal circumstances, `vswprintf_s` will throw an `_ASSERT` failure
-   /// on a buffer overflow (and it takes `\0` into account).
+   /// on a buffer overflow (and it takes `\0` into account).  So, I'm not
+   /// doing any return value checking of `vswprintf_s`
    numCharsWritten = vswprintf_s( pBufferHead, bufCharsRemaining, format, args );
    bufCharsRemaining -= numCharsWritten;
    pBufferHead       += numCharsWritten;
@@ -321,8 +356,8 @@ void logW(
    (void) pBufferHead;  // Suppress a compiler warning that pBufferHead
                         // is not checked after this.  No code is generated.
 
-/// If we overrun the buffer and violate the stack guard, then fail fast by
-/// throwing an `_ASSERT`.
+   /// If we overrun the buffer and violate the stack guard, then fail fast by
+   /// throwing an `_ASSERT_EXPR( FALSE, ...`.
    if ( bufCharsRemaining < 0 || buffer.dwGuard != STACK_GUARD ) {
       OutputDebugStringW( L"VIOLATED STACK GUARD in Logger.  Exiting immediately." );
       _ASSERT_EXPR( FALSE, L"VIOLATED STACK GUARD in Logger.  Exiting immediately." );
@@ -340,9 +375,99 @@ void logW(
 }
 
 
+/// Generic wide character, `printf`-style message logger
+///
+/// This is intended to be called through the wide string logging macros like 
+/// #LOG_INFO_W.  It is not intended to be called directly.
+///
+/// The logger **can** be called before it's initialized.  This is by design...  
+/// `MessageBoxW` just won't have a parent window.
+///
+/// @param logLevel      The level of this logging event
+/// @param appName       The name of the application
+/// @param functionName  The name of the function
+/// @param format, ...   `printf`-style formatting
+void logW(
+   _In_ const logLevels_t logLevel,
+   _In_ const WCHAR*      appName,
+   _In_ const WCHAR*      functionName,
+   _In_ const WCHAR*      format,
+   _In_ ... ) {
+
+   /// Silently `return` if `appName`, `functionName` or `format` is `NULL`
+   if ( appName == NULL || functionName == NULL || format == NULL )
+      return;
+
+   va_list args;
+   va_start( args, format );          // va_start does not return a result code
+
+   vLogW( logLevel, appName, functionName, format, args );
+}
+
+
+/// Generic wide character, `printf`-style resource string logger
+///
+/// This is intended to be called through the wide resource string logging 
+/// macros like #LOG_INFO_R.  It is not intended to be called directly.
+///
+/// The logger **can not** be called before it's initialized.  The
+/// application's instance handle needs to be set for `LoadStringW` to work.
+///
+/// @param logLevel      The level of this logging event
+/// @param appName       The name of the application
+/// @param functionName  The name of the function
+/// @param msgId, ...    The ID of the resource string.  The string may contain `printf`-style formatting characters.
+void logWMsg(
+   _In_ const logLevels_t logLevel,
+   _In_ const WCHAR*      appName,
+   _In_ const WCHAR*      functionName,
+   _In_ const UINT        msgId,
+   _In_ ... ) {
+
+   /// Silently `return` if `appName` or `functionName` is `NULL`
+   /// or if `msgId` is #NO_MESSAGE
+   if ( appName == NULL || functionName == NULL || msgId == NO_MESSAGE )
+      return;
+
+   _ASSERTE( sphInst != NULL );
+
+   INT ir;  // INT result
+
+   struct buffer_t {
+      WCHAR sBuf[ MAX_LOG_STRING ];
+      DWORD dwGuard;
+   } format;
+
+   format.dwGuard = STACK_GUARD;
+
+   ir = LoadStringW( *sphInst, msgId, format.sBuf, MAX_LOG_STRING );
+   /// Becuse we are in a log routine, it doesn't make sense to log an error
+   /// message.  So, if there are problems, then fail fast by throwing an
+   /// `_ASSERT_EXPR( FALSE, ...`.
+   if ( !ir ) {
+      OutputDebugStringW( L"Can't find string in resources.  Exiting immediately." );
+      _ASSERT_EXPR( FALSE, L"Can't find string in resources.  Exiting immediately." );
+   }
+
+   /// If we overrun the format and violate the stack guard, then fail fast by
+   /// throwing an `_ASSERT_EXPR( FALSE, ...`.
+   if ( format.dwGuard != STACK_GUARD ) {
+      OutputDebugStringW( L"VIOLATED STACK GUARD in Logger.  Exiting immediately." );
+      _ASSERT_EXPR( FALSE, L"VIOLATED STACK GUARD in Logger.  Exiting immediately." );
+   }
+
+   va_list args;
+   va_start( args, msgId );           // va_start does not return a result code
+
+   vLogW( logLevel, appName, functionName, format.sBuf, args );
+}
+
+
 /// Test the logging functionality
 ///
 /// This is not normally used, except for testing.
+///
+/// @todo Need to add tests for the `_R` log routines
 void logTest() {
    LOG_TRACE( "Testing LOG_TRACE (narrow)" );
    LOG_DEBUG( "Testing LOG_DEBUG (narrow)" );
@@ -376,15 +501,11 @@ void logTest() {
 }
 
 
-/// The ID when no message has been set
-#define NO_MESSAGE 0
-
-
-static UINT suMsgId = NO_MESSAGE;  ///< The ID of the first valid message
+static UINT        suMsgId   = NO_MESSAGE;       ///< The ID of the first valid message
 static logLevels_t sMsgLevel = LOG_LEVEL_TRACE;  ///< The level of the first valid message
 
 
-/// Save a message in the logger.
+/// Save a message ID and level in the logger.
 ///
 /// Only save messages where the severity level is #LOG_LEVEL_WARN,
 /// #LOG_LEVEL_ERROR or #LOG_LEVEL_FATAL.  This is because these messages
@@ -410,7 +531,8 @@ void logSetMsg( _In_ const logLevels_t level, _In_ const UINT msgId ) {
 }
 
 
-/// Get the ID of the first message
+/// Get the ID of the first message.  The ID can then be used to loookup a
+/// string in the resource string table.
 ///
 /// @return The ID of the first message.  If there are no messages, return
 ///         #NO_MESSAGE
@@ -437,7 +559,7 @@ void logResetMsg() {
 }
 
 
-/// Report if the logger has a message
+/// Does the logger have a message?
 ///
 /// @return `true` if there's a message waiting.  `false` if there is not.
 bool logHasMsg() {
