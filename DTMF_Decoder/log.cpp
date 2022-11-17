@@ -220,7 +220,7 @@ BOOL logCleanup() {
 /// files are great, but I'd like to keep the buffer and all of the `vsprintf`
 /// stuff in a self-contained library rather than push it into the caller's source.
 ///
-/// The logger **can** be called before it's initialized.  This is by design...  
+/// The logger **can** be called before it's initialized.  This is by design...
 /// `MessageBoxA` just won't have a parent window.
 ///
 /// @param logLevel      The level of this logging event
@@ -240,7 +240,7 @@ void logA(
    struct buffer_t {
       CHAR  sBuf[ MAX_LOG_STRING ];
       DWORD dwGuard;
-   } buffer;
+   } buffer = { "", 0 };
 
    buffer.dwGuard = STACK_GUARD;
 
@@ -328,7 +328,7 @@ static void vLogW(
    struct buffer_t {
       WCHAR sBuf[ MAX_LOG_STRING ];
       DWORD dwGuard;
-   } buffer;
+   } buffer = { L"", 0 };
 
    buffer.dwGuard = STACK_GUARD;
 
@@ -377,10 +377,10 @@ static void vLogW(
 
 /// Generic wide character, `printf`-style message logger
 ///
-/// This is intended to be called through the wide string logging macros like 
+/// This is intended to be called through the wide string logging macros like
 /// #LOG_INFO_W.  It is not intended to be called directly.
 ///
-/// The logger **can** be called before it's initialized.  This is by design...  
+/// The logger **can** be called before it's initialized.  This is by design...
 /// `MessageBoxW` just won't have a parent window.
 ///
 /// @param logLevel      The level of this logging event
@@ -407,7 +407,7 @@ void logW(
 
 /// Generic wide character, `printf`-style resource string logger
 ///
-/// This is intended to be called through the wide resource string logging 
+/// This is intended to be called through the wide resource string logging
 /// macros like #LOG_INFO_R.  It is not intended to be called directly.
 ///
 /// The logger **can not** be called before it's initialized.  The
@@ -436,7 +436,7 @@ void logWMsg(
    struct buffer_t {
       WCHAR sBuf[ MAX_LOG_STRING ];
       DWORD dwGuard;
-   } format;
+   } format = { L"", 0 };
 
    format.dwGuard = STACK_GUARD;
 
@@ -501,8 +501,9 @@ void logTest() {
 }
 
 
-static UINT        suMsgId   = NO_MESSAGE;       ///< The ID of the first valid message
-static logLevels_t sMsgLevel = LOG_LEVEL_TRACE;  ///< The level of the first valid message
+static UINT        suMsgId    = NO_MESSAGE;       ///< The ID of the first valid message
+static logLevels_t sMsgLevel  = LOG_LEVEL_TRACE;  ///< The level of the first valid message
+static WPARAM      sMsgWParam = 0;                ///< A WPARAM parameter associated with the first valid message
 
 
 /// Save a message ID and level in the logger.
@@ -515,9 +516,10 @@ static logLevels_t sMsgLevel = LOG_LEVEL_TRACE;  ///< The level of the first val
 ///
 /// This is not thread-safe, but it's close enough for what we are doing.
 ///
-/// @param level The severity of the message
-/// @param msgId The ID of the message
-void logSetMsg( _In_ const logLevels_t level, _In_ const UINT msgId ) {
+/// @param level     The severity of the message
+/// @param msgId     The ID of the message
+/// @param msgWParam A WPARAM passed into the message
+void logSetMsg( _In_ const logLevels_t level, _In_ const UINT msgId, _In_ const WPARAM msgWParam ) {
    _ASSERTE( msgId != NO_MESSAGE );
 
    if ( logHasMsg() )
@@ -526,8 +528,9 @@ void logSetMsg( _In_ const logLevels_t level, _In_ const UINT msgId ) {
    if ( level < LOG_LEVEL_WARN )
       return;           /// Silently return if level is `<` #LOG_LEVEL_WARN
 
-   suMsgId = msgId;
-   sMsgLevel = level;
+   suMsgId    = msgId;
+   sMsgLevel  = level;
+   sMsgWParam = msgWParam;
 }
 
 
@@ -550,10 +553,19 @@ logLevels_t logGetMsgLevel() {
 }
 
 
+/// Get a WPARAM parameter from the first message
+///
+/// @return A WPARAM associated with the first message.  IF there is none, return `0`
+WPARAM logGetMsgWParam() {
+   return sMsgWParam;
+}
+
+
 /// Reset the message store
 void logResetMsg() {
    suMsgId    = NO_MESSAGE;
-   sMsgLevel = LOG_LEVEL_TRACE;
+   sMsgLevel  = LOG_LEVEL_TRACE;
+   sMsgWParam = 0;
 
    _ASSERTE( !logHasMsg() );
 }

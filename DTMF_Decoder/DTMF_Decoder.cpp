@@ -38,6 +38,7 @@
 /// | `SecureZeroMemory`     | https://learn.microsoft.com/en-us/previous-versions/windows/desktop/legacy/aa366877(v=vs.85) |
 /// | `SetEvent`             | https://learn.microsoft.com/en-us/windows/win32/api/synchapi/nf-synchapi-setevent            |
 /// | `SetDlgItemTextA`      | https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-setdlgitemtexta       |
+/// | `HIWORD`               | https://learn.microsoft.com/en-us/previous-versions/windows/desktop/legacy/ms632657(v=vs.85) |
 ///
 /// @file    DTMF_Decoder.cpp
 /// @author  Mark Nelson <marknels@hawaii.edu>
@@ -268,6 +269,30 @@ int APIENTRY wWinMain(
    br = goertzel_Stop();
    WARN_BR( "Failed to end the Goertzel DFT threads" );
 
+   /// After all of the threads have stopped, see if they have any messages
+   /// to report
+   if ( logHasMsg() ) {
+      UINT        msgId    = logGetMsgId();
+      logLevels_t msgLevel = logGetMsgLevel();
+      size_t      index    = HIWORD( logGetMsgWParam() );
+
+      logResetMsg();
+
+      switch ( msgLevel ) {
+         case LOG_LEVEL_WARN:
+            LOG_WARN_R( msgId, index );
+            break;
+         case LOG_LEVEL_ERROR:
+            LOG_ERROR_R( msgId, index );
+            break;
+         case LOG_LEVEL_FATAL:
+            LOG_FATAL_R( msgId, index );
+            break;
+         default:
+            _ASSERT_EXPR( FALSE, "Should never get here" );
+      }
+   }
+
    /// Cleanup all resources in the reverse order they were created
    br = audioCleanup();
    WARN_BR( "Failed to clean up audio resources." );
@@ -377,6 +402,8 @@ LRESULT CALLBACK WndProc( HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam 
             break;
          }
       case WM_DESTROY:  /// WM_DESTROY - Post a quit message
+         ghMainWindow = NULL;
+
          br = mvcViewCleanup();
          WARN_BR( "Failed to cleanup view resources" );
 
@@ -386,9 +413,7 @@ LRESULT CALLBACK WndProc( HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam 
       default:
          if ( message == guUMW_ERROR_IN_THREAD ) {   // Because guUMW_ERROR_IN_THREAD is a variable, it can't be tested in a switch statement
             giApplicationReturnValue = EXIT_FAILURE;
-            //LOG_FATAL( "I am Sam" );
             gracefulShutdown();
-
             break;
          }
          return DefWindowProc( hWnd, message, wParam, lParam );

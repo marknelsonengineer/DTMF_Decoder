@@ -70,6 +70,7 @@
 
 #include "DTMF_Decoder.h" // For APP_NAME
 #include "log.h"          // For our logging functions
+#include "resource.h"     // For the string table
 
 
 /// Release the pointer P to a COM object by calling `IUnknown::Release`

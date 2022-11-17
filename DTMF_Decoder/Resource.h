@@ -7,9 +7,16 @@
 #define IDS_APP_TITLE                   103
 #define IDD_ABOUTBOX                    103
 #define IDM_ABOUT                       104
+#define IDS_GOERTZEL_FAILED_TO_SET_MMCSS 104
 #define IDM_EXIT                        105
+#define IDS_GOERTZEL_WAITFORSINGLEOBJECT_FAILED 105
+#define IDS_GOERTZEL_WAITFORSINGLEOBJECT_FAILED_UNKNOWN 106
 #define IDI_DTMF_DECODER                107
+#define IDS_GOERTZEL_FAILED_TO_REVERT_MMCSS 107
+#define IDS_GOERTZEL_DONE               108
 #define IDC_DTMFDECODER                 109
+#define IDS_STRING110                   110
+#define IDS_GOERTZEL_START              110
 #define IDR_MAINFRAME                   128
 #define IDS_DTMF_DECODER_STARTING       134
 #define IDC_PROGRAM_NAME                1000

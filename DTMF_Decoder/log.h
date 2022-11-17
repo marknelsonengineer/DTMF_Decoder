@@ -116,8 +116,9 @@ extern void logWMsg(
 extern void logTest();
 
 
-extern void        logSetMsg( _In_ const logLevels_t level, _In_ const UINT suMsgId );
+extern void        logSetMsg( _In_ const logLevels_t level, _In_ const UINT msgId, _In_ const WPARAM msgWParam );
 extern UINT        logGetMsgId();
 extern logLevels_t logGetMsgLevel();
+extern WPARAM      logGetMsgWParam();
 extern void        logResetMsg();
 extern bool        logHasMsg();

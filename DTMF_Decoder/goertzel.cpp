@@ -39,6 +39,7 @@
 /// |-----------------------------------|--------------------------------------------------------------------------------------------------|
 /// | `CloseHandle`                     | https://learn.microsoft.com/en-us/windows/win32/api/handleapi/nf-handleapi-closehandle           |
 /// | `#pragma message`                 | https://learn.microsoft.com/en-us/cpp/preprocessor/message?view=msvc-170                         |
+/// | `HIWORD`                          | https://learn.microsoft.com/en-us/previous-versions/windows/desktop/legacy/ms632657(v=vs.85)     |
 ///
 /// @file    goertzel.cpp
 /// @author  Mark Nelson <marknels@hawaii.edu>
@@ -63,6 +64,7 @@ static HANDLE shWorkThreads[ NUMBER_OF_DTMF_TONES ];    ///< Handles to the work
 
 extern "C" float fScaleFactor = 0;  ///< Set in goertzel_Init() and used in goertzel_Magnitude()
 
+
 #ifdef _WIN64
    #pragma message( "Compiling 64-bit program" )
 
@@ -74,6 +76,7 @@ extern "C" float fScaleFactor = 0;  ///< Set in goertzel_Init() and used in goer
 #endif
 
 
+#ifndef _WIN64
 /// Compute the Goertzel magnitude of 8-bit PCM data
 ///
 /// This 1-pass loop over #gPcmQueue has been optimized for performance as it is
@@ -116,6 +119,7 @@ __forceinline static void goertzel_Magnitude(
 
    toneStruct->goertzelMagnitude = sqrtf( real * real + imag * imag ) / fScaleFactor;
 }
+#endif
 
 
 /// Runs each of the 8 DFT worker threads
@@ -131,13 +135,13 @@ DWORD WINAPI goertzelWorkThread( _In_ LPVOID pContext ) {
    _ASSERTE( pContext != NULL );
 
    int    iIndex = *(int*) pContext;  // Comes to us as an int from #dtmfTones_t
-   size_t index  = iIndex;            // But we use it as an index into an array, so convert to size_t
+   size_t index  = iIndex;            // But we use it as an index into an array, so convert to `size_t`
 
    _ASSERTE( iIndex < NUMBER_OF_DTMF_TONES );
    _ASSERTE( ghStartDFTevent[ index ] != NULL );
    _ASSERTE( ghDoneDFTevent[ index ]  != NULL );
 
-   LOG_TRACE( "Goertzel DFT thread: %zu   Starting.", index );
+   LOG_TRACE_R( IDS_GOERTZEL_START, index );  // "Goertzel DFT thread: %zu   Starting."
 
    HANDLE mmcssHandle = NULL;  // Local to the thread for safety
 
@@ -149,17 +153,15 @@ DWORD WINAPI goertzelWorkThread( _In_ LPVOID pContext ) {
    /// @see https://learn.microsoft.com/en-us/windows/win32/api/avrt/nf-avrt-avsetmmthreadcharacteristicsa
    mmcssHandle = AvSetMmThreadCharacteristicsW( L"Capture", &gdwMmcssTaskIndex );
    if ( mmcssHandle == NULL ) {
-      LOG_WARN( "Goertzel DFT thread: %zu   Failed to set MMCSS on Goertzel work thread.  Continuing." );
+      LOG_WARN_R( IDS_GOERTZEL_FAILED_TO_SET_MMCSS, iIndex );  // "Goertzel DFT thread: %zu   Failed to set MMCSS on Goertzel work thread.  Continuing."
    }
    // LOG_INFO( "Goertzel DFT thread: %zu   Set MMCSS on Goertzel work thread." );
 
-// while ( gbIsRunning && index == 4 ) {   // Use for debugging/development
    while ( gbIsRunning ) {
       DWORD dwWaitResult;
 
       /// Wait for this thread's #ghStartDFTevent to be signalled
       dwWaitResult = WaitForSingleObject( ghStartDFTevent[index], INFINITE);
-      // dwWaitResult = WAIT_FAILED;
       if ( dwWaitResult == WAIT_OBJECT_0 ) {
          if ( gbIsRunning ) {
             #ifdef _WIN64
@@ -175,15 +177,11 @@ DWORD WINAPI goertzelWorkThread( _In_ LPVOID pContext ) {
             }
          }
       } else if ( dwWaitResult == WAIT_FAILED ) {
-         PostMessageA( ghMainWindow, guUMW_ERROR_IN_THREAD, MAKEWPARAM( 1, iIndex ), 0 );
-
-         // LOG_FATAL( "WaitForSingleObject in Goertzel thread failed.  Exiting.  Investigate!" );
-         //gracefulShutdown();
-         // break;  // While loop
+         logSetMsg( LOG_LEVEL_FATAL, IDS_GOERTZEL_WAITFORSINGLEOBJECT_FAILED, MAKEWPARAM( 0, iIndex ) );          // "WaitForSingleObject in Goertzel thread failed.  Exiting.  Investigate!"
+         PostMessageA( ghMainWindow, guUMW_ERROR_IN_THREAD, 0, 0 );
       } else {
-         LOG_FATAL( "WaitForSingleObject in Goertzel thread ended for an unknown reason.  Exiting.  Investigate!" );
-         gracefulShutdown();
-         break;  // While loop
+         logSetMsg( LOG_LEVEL_FATAL, IDS_GOERTZEL_WAITFORSINGLEOBJECT_FAILED_UNKNOWN, MAKEWPARAM( 0, iIndex ) );  // "WaitForSingleObject in Goertzel thread ended for an unknown reason.  Exiting.  Investigate!"
+         PostMessageA( ghMainWindow, guUMW_ERROR_IN_THREAD, 0, 0 );
       }
 
       SetEvent( ghDoneDFTevent[ index ] );
@@ -192,12 +190,12 @@ DWORD WINAPI goertzelWorkThread( _In_ LPVOID pContext ) {
    /// When the thread is done, put the CPU thread priority back
    if ( mmcssHandle != NULL ) {
       if( !AvRevertMmThreadCharacteristics( mmcssHandle ) ) {
-         LOG_WARN( "Goertzel DFT thread: %zu   Failed to revert MMCSS on Goertzel work thread.  Continuing." );
+         logSetMsg( LOG_LEVEL_WARN, IDS_GOERTZEL_FAILED_TO_REVERT_MMCSS, MAKEWPARAM( 0, iIndex ) );  // "Goertzel DFT thread: %zu   Failed to revert MMCSS on Goertzel work thread.  Continuing."
       }
       mmcssHandle = NULL;
    }
 
-   LOG_TRACE( "Goertzel DFT thread: %zu   Done", index );
+   LOG_TRACE_R( IDS_GOERTZEL_DONE, index );  // "Goertzel DFT thread: %zu   Done"
 
    ExitThread( 0 );
 }
