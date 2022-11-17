@@ -1,7 +1,7 @@
 Architecture
 ============
 
-The overall architecture of DTMF Decoder is fairly straightforward.
+The overall architecture of DTMF Decoder is very straightforward.
 
 The main window is a 1-panel, hand-drawn, non-resizable window with a
 telephone keypad on it.
@@ -15,12 +15,12 @@ we spin up an audio capture thread, wait for audio, process the frames and
 then release the buffer.
 
 We use a [Goertzel Algorithm](https://en.wikipedia.org/wiki/Goertzel_algorithm)
-to determine how much energy is in each frequency bucket.  This implementation
+to determine how much energy is in each DTMF frequency bucket.  This implementation
 processes the time-domain PCM data in 1 pass (for each frequency) -- and
 because DTMF needs to monitor 8 frequencies, it needs 8 passes/calculations.
 
 For efficiency (and for fun) I chose to spin up 8 Goertzel Work Threads,
-which wait (in parallel) for a batch of frames to come in.  Once they arrive,
+which wait (in parallel) for a batch of frames to come in.  When they arrive,
 it signals all 8 threads to run in parallel and when **all** of the Goertzel
 work threads finish, it signals the Audio Capture thread to continue
 processing.
@@ -220,10 +220,16 @@ Here's what I've learned about processes' end-of-life:
     - This is called in #audioInit... after some important audio data structures 
       are created but before the audio capture thread starts.
     - Propagate errors up the call stack as `BOOL`s
-  - Running Error Handler
-    - The error will set #gbIsRunning to `false`, set #giApplicationReturnValue
-      to #EXIT_FAILURE and post an `MW_CLOSE`.  The thread will continue
-      to run until the application .
+  - (Done) Running Error Handler
+    - Work threads can't display `MessageBox`es, so we need to save the error, 
+      shutdown the app and then print a `MessageBox` in the main application
+      thread during shutdown.
+      - Save the error number, level and the thread index to the log message
+        store.
+      - Post an application-specific message `guUMW_ERROR_IN_THREAD` which 
+        will gracefully shutdown the application.
+      - After all of the work threads have finished, log the first WARN, ERROR
+        or FATAL message (if any) via a `MessageBox`
   - Normal Shutdown
     - Call #goertzel_Stop to stop the threads.  #goertzel_Stop does not 
       return until all of the threads have stopped
@@ -275,6 +281,12 @@ Here's what I've learned about processes' end-of-life:
      - When threads have problems, they post a message to the custom message.  
      - The high part of WPARAM is the thread number.  The low part is a message number. 
      - LPARAM is not used  
+     
+   - Log messages as a string resource
+   
+   - Use #logSetMsg, #logGetMsgId, #logGetMsgLevel, #logResetMsg and #logHasMsg to
+     print messages when its safe to do so (probably as an application is 
+     shutting down.
      
    - (Done) **If the main window hasn't started**
      - Show a dialog box, then exit #wWinMain
