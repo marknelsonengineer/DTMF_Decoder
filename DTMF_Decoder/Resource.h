@@ -11,6 +11,7 @@
 #define IDI_DTMF_DECODER                107
 #define IDC_DTMFDECODER                 109
 #define IDR_MAINFRAME                   128
+#define IDS_DTMF_DECODER_STARTING       134
 #define IDC_PROGRAM_NAME                1000
 #define IDC_AUTHOR                      1001
 #define IDC_COPYRIGHT                   1002
@@ -23,7 +24,7 @@
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NO_MFC                     1
-#define _APS_NEXT_RESOURCE_VALUE        134
+#define _APS_NEXT_RESOURCE_VALUE        135
 #define _APS_NEXT_COMMAND_VALUE         32771
 #define _APS_NEXT_CONTROL_VALUE         1003
 #define _APS_NEXT_SYMED_VALUE           110
