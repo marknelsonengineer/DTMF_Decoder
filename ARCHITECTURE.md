@@ -91,6 +91,9 @@ Here's what I've learned about processes' end-of-life:
        recover on its own.
    - [Modern C++ Best Practices for Exceptions and Error Handling](https://learn.microsoft.com/en-us/cpp/cpp/errors-and-exception-handling-modern-cpp?view=msvc-170)
      - Note:  I do not plan to re-architect a Win32 program to use exceptions.  
+   - Work threads can't display `MessageBox`es, so we need to save the error, 
+     shutdown the app and then print a `MessageBox` in the main application
+     thread during shutdown.
    - [The WM_QUIT_Message](https://devblogs.microsoft.com/oldnewthing/20050222-00/?p=36393)
    - [The difference between WM_QUIT, WM_CLOSE, and WM_DESTROY](https://stackoverflow.com/questions/3155782/what-is-the-difference-between-wm-quit-wm-close-and-wm-destroy-in-a-windows-pr)
    - [Terminating a Process](https://learn.microsoft.com/en-us/windows/win32/procthread/terminating-a-process)
@@ -215,21 +218,18 @@ Here's what I've learned about processes' end-of-life:
   - Running Error Handler
   - Normal Shutdown
 
-- **Goertzel DFT Threads**
-  - (Done) Init Error Handler
+- **(Done) Goertzel DFT Threads**
+  - Init Error Handler
     - This is called in #audioInit... after some important audio data structures 
       are created but before the audio capture thread starts.
     - Propagate errors up the call stack as `BOOL`s
-  - (Done) Running Error Handler
-    - Work threads can't display `MessageBox`es, so we need to save the error, 
-      shutdown the app and then print a `MessageBox` in the main application
-      thread during shutdown.
-      - Save the error number, level and the thread index to the log message
-        store.
-      - Post an application-specific message `guUMW_ERROR_IN_THREAD` which 
-        will gracefully shutdown the application.
-      - After all of the work threads have finished, log the first WARN, ERROR
-        or FATAL message (if any) via a `MessageBox`
+  - Running Error Handler
+    - Save the error number, level and the thread index to the log message
+      store.
+    - Post an application-specific message `guUMW_ERROR_IN_THREAD` which 
+      will gracefully shutdown the application.
+    - After all of the work threads have finished, log the first WARN, ERROR
+      or FATAL message (if any)
   - Normal Shutdown
     - Call #goertzel_Stop to stop the threads.  #goertzel_Stop does not 
       return until all of the threads have stopped

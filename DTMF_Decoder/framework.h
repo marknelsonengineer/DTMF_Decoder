@@ -91,13 +91,26 @@
 ///
 /// - Set #giApplicationReturnValue to #EXIT_FAILURE
 /// - Call #gracefulShutdown
-/// - Call #LOG_FATAL and print a message on the screen
+/// - Call #LOG_FATAL and display a message
 ///
 /// @see https://learn.microsoft.com/en-us/windows/win32/com/using-macros-for-error-handling
 #define PROCESS_FATAL( message )  \
    giApplicationReturnValue = EXIT_FAILURE; \
    gracefulShutdown();            \
    LOG_FATAL( message );          \
+
+
+/// Standardized macro for processing a fatal error using a resource string
+///
+/// - Set #giApplicationReturnValue to #EXIT_FAILURE
+/// - Call #gracefulShutdown
+/// - Call #LOG_FATAL_R to display a message
+///
+/// @see https://learn.microsoft.com/en-us/windows/win32/com/using-macros-for-error-handling
+#define PROCESS_FATAL_R( resource_id )      \
+   giApplicationReturnValue = EXIT_FAILURE; \
+   gracefulShutdown();                      \
+   LOG_FATAL_R( resource_id );              \
 
 
 /// Standardized macro for returning on a fatal error
@@ -108,6 +121,17 @@
 /// @see https://learn.microsoft.com/en-us/windows/win32/com/using-macros-for-error-handling
 #define RETURN_FATAL( message )  \
    PROCESS_FATAL( message );     \
+   return FALSE;                 \
+
+
+/// Standardized macro for returning on a fatal error using a resource string
+///
+/// - Use #PROCESS_FATAL_R to tell the application about the problem
+/// - Return `FALSE`
+///
+/// @see https://learn.microsoft.com/en-us/windows/win32/com/using-macros-for-error-handling
+#define RETURN_FATAL_R( resource_id )  \
+   PROCESS_FATAL_R( resource_id );     \
    return FALSE;                 \
 
 
@@ -133,6 +157,19 @@
 #define CHECK_BR( message )    \
    if ( !br ) {                \
       RETURN_FATAL( message ); \
+   }
+
+
+/// Standardized macro for checking the return value of GDI functions that
+/// return `BOOL`s.  For example,
+/// If the function succeeds, the return value is nonzero.
+/// If the function fails, the return value is zero.
+///
+/// Failing a `CHECK_` macro will terminate the application with an #EXIT_FAILURE.
+///
+#define CHECK_BR_R( resource_id )    \
+   if ( !br ) {                      \
+      RETURN_FATAL_R( resource_id ); \
    }
 
 

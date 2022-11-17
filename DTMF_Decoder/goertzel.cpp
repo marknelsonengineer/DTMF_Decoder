@@ -62,7 +62,7 @@
        HANDLE ghDoneDFTevent[ NUMBER_OF_DTMF_TONES ];   ///< Handles to events.  Declared external to support inlining.
 static HANDLE shWorkThreads[ NUMBER_OF_DTMF_TONES ];    ///< Handles to the worker threads
 
-extern "C" float fScaleFactor = 0;  ///< Set in goertzel_Init() and used in goertzel_Magnitude()
+extern "C" float fScaleFactor = 0;  ///< Set in #goertzel_Init and used in #goertzel_Magnitude
 
 
 #ifdef _WIN64
@@ -148,7 +148,7 @@ DWORD WINAPI goertzelWorkThread( _In_ LPVOID pContext ) {
    /// Set the multimedia class scheduler service, which will set the CPU
    /// priority for this thread
    ///
-   /// Note:  Uses the exported #gdwMmcssTaskIndex originally set in audio.cpp
+   /// Uses the exported #gdwMmcssTaskIndex originally set in audio.cpp
    ///
    /// @see https://learn.microsoft.com/en-us/windows/win32/api/avrt/nf-avrt-avsetmmthreadcharacteristicsa
    mmcssHandle = AvSetMmThreadCharacteristicsW( L"Capture", &gdwMmcssTaskIndex );
@@ -237,18 +237,18 @@ BOOL goertzel_Init( _In_ const int iSampleRate ) {
 
       ghStartDFTevent[ i ] = CreateEventA( NULL, FALSE, FALSE, NULL );
       if ( ghStartDFTevent[ i ] == NULL ) {
-         RETURN_FATAL( "Failed to create a ghStartDFTevent event handle.  Exiting." );
+         RETURN_FATAL_R( IDS_GOERTZEL_FAILED_TO_CREATE_STARTDFT_HANDLES );  // "Failed to create a ghStartDFTevent event handle.  Exiting."
       }
 
       ghDoneDFTevent[ i ] = CreateEventA( NULL, FALSE, FALSE, NULL );
       if ( ghDoneDFTevent[ i ] == NULL ) {
-         RETURN_FATAL( "Failed to create a ghDoneDFTevent event handle.  Exiting." );
+         RETURN_FATAL_R( IDS_GOERTZEL_FAILED_TO_CREATE_DONEDFT_HANDLES );  // "Failed to create a ghDoneDFTevent event handle.  Exiting."
       }
 
       /// Start the threads
       shWorkThreads[i] = CreateThread(NULL, 0, goertzelWorkThread, &gDtmfTones[i].index, 0, NULL);
       if ( shWorkThreads[ i ] == NULL ) {
-         RETURN_FATAL( "Failed to create a Goertzel work thread.  Exiting." );
+         RETURN_FATAL_R( IDS_GOERTZEL_FAILED_TO_CREATE_WORK_THREAD );  // "Failed to create a Goertzel work thread.  Exiting."
       }
    }
 
@@ -279,14 +279,14 @@ BOOL goertzel_Stop() {
       /// Trigger all of the threads to run... which will spin their loops
       /// with #gbIsRunning `== FALSE` causing all of the threads to terminate
       br = SetEvent( ghStartDFTevent[ i ] );
-      CHECK_BR( "Failed to signal a ghStartDFTevent.  Exiting." );
+      CHECK_BR_R( IDS_GOERTZEL_FAILED_TO_SIGNAL_START_DFT );  // "Failed to signal a ghStartDFTevent.  Exiting."
    }
 
    /// Wait for the threads to terminate
    DWORD   dwWaitResult;  // Result from WaitForMultipleObjects
    dwWaitResult = WaitForMultipleObjects( NUMBER_OF_DTMF_TONES, shWorkThreads, TRUE, INFINITE );
    if ( !( dwWaitResult >= WAIT_OBJECT_0 && dwWaitResult <= ( WAIT_OBJECT_0 + NUMBER_OF_DTMF_TONES - 1 ) ) ) {
-      RETURN_FATAL( "Wait for all Goertzel threads to end failed.  Exiting." );
+      RETURN_FATAL_R( IDS_GOERTZEL_THREAD_END_FAILED );  // "Wait for all Goertzel threads to end failed.  Exiting."
    }
 
    /// Cleanup the thread handles
@@ -294,7 +294,7 @@ BOOL goertzel_Stop() {
       shWorkThreads[ i ] = NULL;
    }
 
-   LOG_TRACE( "All Goertzel threads ended normally" );
+   LOG_TRACE_R( IDS_GOERTZEL_ENDED_NORMALLY );  // "All Goertzel threads ended normally"
 
    return TRUE;
 }
@@ -309,13 +309,13 @@ BOOL goertzel_Cleanup() {
    for ( int i = 0 ; i < NUMBER_OF_DTMF_TONES ; i++ ) {
       if ( ghStartDFTevent[ i ] != NULL ) {
          br = CloseHandle( ghStartDFTevent[ i ] );
-         CHECK_BR( "Failed to close ghStartDFTevent handle" );
+         CHECK_BR_R( IDS_GOERTZEL_CLOSE_STARTDFT_HANDLES );  //  "Failed to close ghStartDFTevent handle"
          ghStartDFTevent[ i ] = NULL;
       }
 
       if ( ghDoneDFTevent[ i ] != NULL ) {
          br = CloseHandle( ghDoneDFTevent[ i ] );
-         CHECK_BR( "Failed to close ghDoneDFTevent handle" );
+         CHECK_BR_R( IDS_GOERTZEL_CLOSE_DONEDFT_HANDLES );  // "Failed to close ghDoneDFTevent handle"
          ghDoneDFTevent[ i ] = NULL;
       }
    }
