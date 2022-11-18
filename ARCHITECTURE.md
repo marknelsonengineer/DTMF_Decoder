@@ -209,7 +209,12 @@ Here's what I've learned about processes' end-of-life:
   - Init Error Handler
     - It's so simple that it's always successful (but we check it anyways)
   - Running Error Handler
-    - The logging functions can throw `ASSERT`s but they don't return error codes
+    - When Log functions throw exceptions, they will:
+      ````
+           OutputDebugStringA( "VIOLATED STACK GUARD in Logger.  Exiting immediately." );
+           _ASSERT_EXPR( FALSE, L"VIOLATED STACK GUARD in Logger.  Exiting immediately." );
+      ````
+    ... (because they terminate immediately, they don't return error codes)
   - Normal Shutdown
     - At the very end of the program
 

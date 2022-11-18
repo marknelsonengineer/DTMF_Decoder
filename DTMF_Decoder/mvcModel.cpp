@@ -97,7 +97,7 @@ BOOL pcmSetQueueSize( _In_ const size_t size ) {
 
    gPcmQueue = (BYTE*)_malloc_dbg(size, _CLIENT_BLOCK, __FILE__, __LINE__);
    if ( gPcmQueue == NULL ) {
-      LOG_ERROR( "Failed to allocate memory for PCM queue" );
+      LOG_ERROR_R( IDS_MODEL_FAILED_TO_MALLOC );  // "Failed to allocate memory for PCM queue"
       return FALSE;
    }
 

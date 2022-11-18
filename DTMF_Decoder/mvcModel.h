@@ -261,6 +261,9 @@ __forceinline BOOL mvcInvalidateColumn( _In_ const size_t column ) {
    }
 
    br = InvalidateRect( ghMainWindow, &rectToRedraw, FALSE );
+   if ( !br ) {
+
+   }
    CHECK_BR( "Failed to invalidate rectangle" );
 
    return TRUE;
@@ -288,6 +291,9 @@ __forceinline void mvcModelToggleToneDetectedStatus(
          br = mvcInvalidateColumn( toneIndex - 4 );  // toneIndex is between 4 and 7,
       }                                              // which turns into columns 0 through 3
 
-      WARN_BR( "Failed to invalidate region of screen" );
+      if ( !br ) {
+         logSetMsg( LOG_LEVEL_WARN, IDS_MODEL_FAILED_TO_INVALIDATE_REGION, MAKEWPARAM( 0, toneIndex ) );  // "Failed to invalidate region of screen"
+         PostMessageA( ghMainWindow, guUMW_ERROR_IN_THREAD, 0, 0 );
+      }
    }
 }
