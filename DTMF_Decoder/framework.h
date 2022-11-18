@@ -209,11 +209,11 @@
 #endif
 
 
-/// Post a custom message #guUMW_ERROR_IN_THREAD, passing in the resource string
+/// Post a custom message #guUMW_CLOSE_FATAL, passing in the resource string
 /// ID and a number (usually a thread index).  Then, let the message handler
 /// save the fatal error to the message log.
 #define FAIL_AND_LOG_LATER( resource_id, hiWord ) \
 PostMessageA( ghMainWindow,                       \
-              guUMW_ERROR_IN_THREAD,              \
+              guUMW_CLOSE_FATAL,              \
               MAKEWPARAM( resource_id, hiWord ),  \
               0 );

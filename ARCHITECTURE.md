@@ -207,11 +207,11 @@ Here's what I've learned about processes' end-of-life:
     - Doesn't do anything.  Always returns `TRUE` (for now).
   - Running Error Handler
     - Call #FAIL_AND_LOG_LATER, which:
-      - Posts an application-specific message `guUMW_ERROR_IN_THREAD` which 
+      - Posts an application-specific message `guUMW_CLOSE_FATAL` which 
         will gracefully shutdown the application by:
         - The message's `WPARAM` sends a resource string ID and an index 
           (usually a thread).
-        - In the #guUMW_ERROR_IN_THREAD message handler:
+        - In the #guUMW_CLOSE_FATAL message handler:
           - Set #giApplicationReturnValue to #EXIT_FAILURE
           - Store a string resource ID and index to the logger via #logSetMsg
           - Call #gracefulShutdown
