@@ -155,7 +155,7 @@ DWORD WINAPI goertzelWorkThread( _In_ LPVOID pContext ) {
    if ( mmcssHandle == NULL ) {
       LOG_WARN_R( IDS_GOERTZEL_FAILED_TO_SET_MMCSS, iIndex );  // "Goertzel DFT thread: %zu   Failed to set MMCSS on Goertzel work thread.  Continuing."
    }
-   // LOG_INFO( "Goertzel DFT thread: %zu   Set MMCSS on Goertzel work thread." );
+   // LOG_INFO_R( IDS_GOERTZEL_SET_MMCSS, iIndex );  // "Goertzel DFT thread: %zu   Set MMCSS on Goertzel work thread."
 
    while ( gbIsRunning ) {
       DWORD dwWaitResult;

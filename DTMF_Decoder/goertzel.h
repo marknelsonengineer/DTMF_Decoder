@@ -44,21 +44,21 @@ __forceinline BOOL goertzel_compute_dtmf_tones() {
 
    /// Start each of the worker threads (loop unrolled for performance)
    br = SetEvent( ghStartDFTevent[ 0 ] );
-   CHECK_BR( "Failed to start a DFT worker thread" );
+   CHECK_BR( "Failed to signal a DFT worker thread" );  
    br = SetEvent( ghStartDFTevent[ 1 ] );
-   CHECK_BR( "Failed to start a DFT worker thread" );
+   CHECK_BR( "Failed to signal a DFT worker thread" );
    br = SetEvent( ghStartDFTevent[ 2 ] );
-   CHECK_BR( "Failed to start a DFT worker thread" );
+   CHECK_BR( "Failed to signal a DFT worker thread" );
    br = SetEvent( ghStartDFTevent[ 3 ] );
-   CHECK_BR( "Failed to start a DFT worker thread" );
+   CHECK_BR( "Failed to signal a DFT worker thread" );
    br = SetEvent( ghStartDFTevent[ 4 ] );
-   CHECK_BR( "Failed to start a DFT worker thread" );
+   CHECK_BR( "Failed to signal a DFT worker thread" );
    br = SetEvent( ghStartDFTevent[ 5 ] );
-   CHECK_BR( "Failed to start a DFT worker thread" );
+   CHECK_BR( "Failed to signal a DFT worker thread" );
    br = SetEvent( ghStartDFTevent[ 6 ] );
-   CHECK_BR( "Failed to start a DFT worker thread" );
+   CHECK_BR( "Failed to signal a DFT worker thread" );
    br = SetEvent( ghStartDFTevent[ 7 ] );
-   CHECK_BR( "Failed to start a DFT worker thread" );
+   CHECK_BR( "Failed to signal a DFT worker thread" );
 
    /// Wait for all of the worker threads to signal their ghDoneDFTevent
    dwWaitResult = WaitForMultipleObjects( NUMBER_OF_DTMF_TONES, ghDoneDFTevent, TRUE, INFINITE );
