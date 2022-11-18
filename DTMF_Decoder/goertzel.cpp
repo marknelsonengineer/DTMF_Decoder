@@ -177,11 +177,9 @@ DWORD WINAPI goertzelWorkThread( _In_ LPVOID pContext ) {
             }
          }
       } else if ( dwWaitResult == WAIT_FAILED ) {
-         logSetMsg( LOG_LEVEL_FATAL, IDS_GOERTZEL_WAITFORSINGLEOBJECT_FAILED, MAKEWPARAM( 0, iIndex ) );          // "WaitForSingleObject in Goertzel thread failed.  Exiting.  Investigate!"
-         PostMessageA( ghMainWindow, guUMW_ERROR_IN_THREAD, 0, 0 );
+         FAIL_AND_LOG_LATER( IDS_GOERTZEL_WAITFORSINGLEOBJECT_FAILED, iIndex );  // "WaitForSingleObject in Goertzel thread %zu failed.  Exiting.  Investigate!"
       } else {
-         logSetMsg( LOG_LEVEL_FATAL, IDS_GOERTZEL_WAITFORSINGLEOBJECT_FAILED_UNKNOWN, MAKEWPARAM( 0, iIndex ) );  // "WaitForSingleObject in Goertzel thread ended for an unknown reason.  Exiting.  Investigate!"
-         PostMessageA( ghMainWindow, guUMW_ERROR_IN_THREAD, 0, 0 );
+         FAIL_AND_LOG_LATER( IDS_GOERTZEL_WAITFORSINGLEOBJECT_FAILED_UNKNOWN, iIndex );  // "WaitForSingleObject in Goertzel thread %zu ended for an unknown reason.  Exiting.  Investigate!"
       }
 
       SetEvent( ghDoneDFTevent[ index ] );

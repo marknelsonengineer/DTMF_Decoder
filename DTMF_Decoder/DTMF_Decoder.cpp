@@ -261,8 +261,9 @@ int APIENTRY wWinMain(
       } else if ( bRet == 0 ) {
          gracefulShutdown();  // This is a normal exit
       } else {  // bRet < 0
-         logSetMsg( LOG_LEVEL_FATAL, IDS_DTMF_DECODER_FAILED_TO_GET_MESSAGE, 0 );  // "Failed to get a message.  Ending program."
-         gracefulShutdown();
+         // There's a risk of an infinite loop here.  If that happens, then 
+         // change this to #logSetMsg and break out of the loop.
+         FAIL_AND_LOG_LATER( IDS_DTMF_DECODER_FAILED_TO_GET_MESSAGE, 0 );  // "Failed to get a message.  Ending program."
       }
    }
 
@@ -410,9 +411,14 @@ LRESULT CALLBACK WndProc( HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam 
          PostQuitMessage( giApplicationReturnValue );
 
          break;
-      default:
-         if ( message == guUMW_ERROR_IN_THREAD ) {   // Because guUMW_ERROR_IN_THREAD is a variable, it can't be tested in a switch statement
+      default:                                      // Because guUMW_ERROR_IN_THREAD is a variable
+         if ( message == guUMW_ERROR_IN_THREAD ) {  // it can't be tested in a switch statement
             giApplicationReturnValue = EXIT_FAILURE;
+
+            WORD resource_id = LOWORD( wParam );
+
+            logSetMsg( LOG_LEVEL_FATAL, resource_id, wParam );
+
             gracefulShutdown();
             break;
          }
