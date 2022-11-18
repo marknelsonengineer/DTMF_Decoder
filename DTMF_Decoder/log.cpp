@@ -522,6 +522,8 @@ static WPARAM      sMsgWParam = 0;                ///< A WPARAM parameter associ
 void logSetMsg( _In_ const logLevels_t level, _In_ const UINT msgId, _In_ const WPARAM msgWParam ) {
    _ASSERTE( msgId != NO_MESSAGE );
 
+   /// @todo If a message has already been set, we should (at least) log to the
+   ///       debug log
    if ( logHasMsg() )
       return;           /// Do nothing if a message has already been set
 
