@@ -78,7 +78,8 @@ program.  There are so many scenarios to consider!  For example, shutting down..
    - During the program's initialization (before the message loop has started)
    - In a thread (that has its own synchronization and doesn't spin the
      message loop)
-   - A failure while cleaning up during shutdown
+   - A failure while cleaning up during shutdown (after the main window
+     has been destroyed)
    - ...and a normal shutdown
 
 Yikes!
@@ -90,10 +91,9 @@ Here's what I've learned about processes' end-of-life:
        application may need to request user intervention, or it may be able to
        recover on its own.
    - [Modern C++ Best Practices for Exceptions and Error Handling](https://learn.microsoft.com/en-us/cpp/cpp/errors-and-exception-handling-modern-cpp?view=msvc-170)
-     - Note:  I do not plan to re-architect a Win32 program to use exceptions.  
-   - Work threads can't display `MessageBox`es, so we need to save the error, 
-     shutdown the app and then print a `MessageBox` in the main application
-     thread during shutdown.
+     - I do not plan to re-architect a Win32 program to use exceptions.  
+   - Work threads shouldn't display `MessageBox`es, so we need to save the error, 
+     initiate a shutdown and then print a `MessageBox` as it's winding down.
    - [The WM_QUIT_Message](https://devblogs.microsoft.com/oldnewthing/20050222-00/?p=36393)
    - [The difference between WM_QUIT, WM_CLOSE, and WM_DESTROY](https://stackoverflow.com/questions/3155782/what-is-the-difference-between-wm-quit-wm-close-and-wm-destroy-in-a-windows-pr)
    - [Terminating a Process](https://learn.microsoft.com/en-us/windows/win32/procthread/terminating-a-process)
@@ -150,7 +150,7 @@ Here's what I've learned about processes' end-of-life:
      in Windows is:
      - `0` means success
      - Anything else means failure
-   - [Standard Windows application return codes](https://stackoverflow.com/questions/1538884/what-standard-application-return-exit-codes-should-an-application-support)
+     - [Standard Windows application return codes](https://stackoverflow.com/questions/1538884/what-standard-application-return-exit-codes-should-an-application-support)
    - Win32 functions that return `BOOL` will return `0` on failure and non-`0` on 
      success...  A program's exit code does the opposite -- they return `0` on 
      success and non-`0` on failure.
@@ -164,7 +164,7 @@ Here's what I've learned about processes' end-of-life:
       - Each function has a custom error handler that calls a 
         unique set of cleanups depending on how deep the initialization
         has progressed.  Finally, the handler calls `return EXIT_FAILURE`
-      - The `initWhatever` functions should return `BOOL`s that bubble up
+      - The `somethingInit` functions should return `BOOL`s that bubble up
         problems
 
   - Running Error Handler
@@ -202,16 +202,21 @@ Here's what I've learned about processes' end-of-life:
   - Normal Shutdown
     - Cleaned up in `WM_DESTROY` immediately after the window is destroyed
 
-- **(Done) Model**
+- (Done) **Model**
   - Init Error Handler
     - Doesn't do anything.  Always returns `TRUE` (for now).
   - Running Error Handler
-    - Save the error number, level and the thread index to the log message
-      store.
-    - Post an application-specific message `guUMW_ERROR_IN_THREAD` which 
-      will gracefully shutdown the application.
-    - After all of the work threads have finished, log the first WARN, ERROR
-      or FATAL message (if any)
+    - Call #FAIL_AND_LOG_LATER, which:
+      - Posts an application-specific message `guUMW_ERROR_IN_THREAD` which 
+        will gracefully shutdown the application by:
+        - The message's `WPARAM` sends a resource string ID and an index 
+          (usually a thread).
+        - In the #guUMW_ERROR_IN_THREAD message handler:
+          - Set #giApplicationReturnValue to #EXIT_FAILURE
+          - Store a string resource ID and index to the logger via #logSetMsg
+          - Call #gracefulShutdown
+        - After all of the work threads have finished, the first WARN, ERROR
+          or FATAL message
   - Normal Shutdown
     - Go through each item in the model and zero it out (or keep/ignore it)
     - Calls #pcmReleaseQueue
@@ -234,18 +239,13 @@ Here's what I've learned about processes' end-of-life:
   - Running Error Handler
   - Normal Shutdown
 
-- **(Done) Goertzel DFT Threads**
+- (Done) **Goertzel DFT Threads**
   - Init Error Handler
-    - This is called in #audioInit... after some important audio data structures 
-      are created but before the audio capture thread starts.
+    - #goertzel_Init is called in #audioInit... after some important audio 
+      data structures are created but before the audio capture thread starts
     - Propagate errors up the call stack as `BOOL`s
   - Running Error Handler
-    - Save the error number, level and the thread index to the log message
-      store.
-    - Post an application-specific message `guUMW_ERROR_IN_THREAD` which 
-      will gracefully shutdown the application.
-    - After all of the work threads have finished, log the first WARN, ERROR
-      or FATAL message (if any)
+    - Same as the Model's Running Error Handler
   - Normal Shutdown
     - Call #goertzel_Stop to stop the threads.  #goertzel_Stop does not 
       return until all of the threads have stopped
@@ -256,29 +256,31 @@ Here's what I've learned about processes' end-of-life:
 
 
 ### Error Handling Policy
-   - (Done) We will not use [TerminateProcess](https://learn.microsoft.com/en-us/windows/win32/api/processthreadsapi/nf-processthreadsapi-terminateprocess),
-     [TerminateThread](https://learn.microsoft.com/en-us/windows/win32/api/processthreadsapi/nf-processthreadsapi-terminatethread)
-     or [FatalAppExitA](https://learn.microsoft.com/en-us/windows/win32/api/errhandlingapi/nf-errhandlingapi-fatalappexita)
-     they are too big of a gun for this application.
-   - Instead of using [ExitProcess](https://learn.microsoft.com/en-us/windows/win32/api/processthreadsapi/nf-processthreadsapi-exitprocess),
-     the preference would be for [wWinMain](https://learn.microsoft.com/en-us/windows/win32/learnwin32/winmain--the-application-entry-point)
-     to exit.
-     - (Done) A normal exit returns #EXIT_SUCCESS (`0`)
-     - (Done) An abnormal exit returns #EXIT_FAILURE... We don't need unique error
-       codes for every type of error
-     - (Done) The model will hold #giApplicationReturnValue, which will initially
-       be set to #EXIT_SUCCESS (`0`).  Then, any function/error handler can set it
-       which will then get passed out when the program terminates.
+   - (Done) **If the main window hasn't started**
+     - Show a dialog box, then exit #wWinMain
+
+   - **Inside the `initSomething` functions**
+     - Unwind, returning `FALSE` until you get to the top, then show a `MessageBox`,
+       set #giApplicationReturnValue and bubble up the error
+
+   - **After the message loop has started**
+     - Set #giApplicationReturnValue and call #gracefulShutdown
+
+   - Log all messages as a string resource
+   
    - (Done) #gbIsRunning is set to `true` at exactly one place:  The start of #wWinMain
+
    - (Done) I've considered using [FlashWindow](https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-flashwindow)
      for errors or warnings, but that's not really what it's for, so I'm
      not using it.  The `MessageBox` approach used in log.cpp is closer to 
      the [Principle of Least Astonishment](https://en.wikipedia.org/wiki/Principle_of_least_astonishment)
+
    - (Done) `cleanupSomething` methods should always work and not `ASSERT`, even if
      their corresponding `initSomething` methods haven't run yet.  This allows
      us to call all of the `cleanupSomething` methods during initialization
      failures.
-   - There's an assymetry around starting and ending threads that needs
+
+   - (Audio capture needs doing) There's an assymetry around starting and ending threads that needs
      explaining.  We start threads in #audioInit and #goertzel_Init (in
      addition to initializing their data structures).  However, we stop the 
      threads in #audioStopDevice and #goertzel_Stop.  Lastly we release
@@ -288,32 +290,25 @@ Here's what I've learned about processes' end-of-life:
      both subsystems, then release their resources.
      
    - Worker threads should not create windows.  This bears repeating.  Worker 
-     threads should not create windows.  They don't have message loops.  
-     They will get out of sync and the controlling process will loose control 
+     threads should not create windows.  They don't have message loops, so   
+     they will get out of sync and the controlling process will loose control 
      of them.  
      
-     So, how can they communicate problems and safely shutdown the app?  Lets 
-     post a custom message back to the main thread.  Heres the plan:
+     So, how can they communicate problems and safely shutdown the app?  Let's
+     post a custom message back to the main thread.  Here's the plan:
 
      - Create a GUID
      - Register the app name + GUID
      - When threads have problems, they post a message to the custom message.  
-     - The high part of WPARAM is the thread number.  The low part is a message number. 
-     - LPARAM is not used.
+       - The high part of WPARAM is the thread number.  The low part is a
+         resource string ID number. 
+       - The macro #FAIL_AND_LOG_LATER does this in one line
+       - LPARAM is not used.
      
-   - Log all messages as a string resource
-   
    - Use #logSetMsg, #logGetMsgId, #logGetMsgLevel, #logResetMsg and #logHasMsg to
-     print messages when its safe to do so (probably as the application is 
+     print messages when its safe to do so (as the application is 
      shutting down).
      
-   - (Done) **If the main window hasn't started**
-     - Show a dialog box, then exit #wWinMain
-   - **Inside the `initSomething` functions**
-     - Unwind, returning `FALSE` until you get to the top, then show a `MessageBox`,
-       set #giApplicationReturnValue and bubble up the error
-   - **After the message loop has started**
-     - Set #giApplicationReturnValue and call #gracefulShutdown
    - **A normal close operation**
      - On `WM_CLOSE` - The start of a normal close... start unwinding things
        - Set #gbIsRunning to `false`
@@ -326,6 +321,21 @@ Here's what I've learned about processes' end-of-life:
      - On `WM_DESTROY`
        - Cleanup the view
        - Call `PostQuitMessate( giApplicationReturnValue )` - This is standard Win32 behavior
+
+   - (Done) We will not use [TerminateProcess](https://learn.microsoft.com/en-us/windows/win32/api/processthreadsapi/nf-processthreadsapi-terminateprocess),
+     [TerminateThread](https://learn.microsoft.com/en-us/windows/win32/api/processthreadsapi/nf-processthreadsapi-terminatethread)
+     or [FatalAppExitA](https://learn.microsoft.com/en-us/windows/win32/api/errhandlingapi/nf-errhandlingapi-fatalappexita)
+     they are too big of a gun for this application.
+
+   - (Done) Instead of using [ExitProcess](https://learn.microsoft.com/en-us/windows/win32/api/processthreadsapi/nf-processthreadsapi-exitprocess),
+     we use the return value of [wWinMain](https://learn.microsoft.com/en-us/windows/win32/learnwin32/winmain--the-application-entry-point)
+     to exit.
+     - A normal exit returns #EXIT_SUCCESS (`0`)
+     - An abnormal exit returns #EXIT_FAILURE... We don't need unique error
+       codes for every type of error
+     - The model will hold #giApplicationReturnValue, which will initially
+       be set to #EXIT_SUCCESS (`0`).  Then, any function/error handler can set it
+       which will then get passed out when the program terminates.
 
 |                               | Normal Shutdown         | Abnormal Shutdown |
 |-------------------------------|-------------------------|-------------------|
