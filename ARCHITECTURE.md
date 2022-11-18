@@ -156,20 +156,22 @@ Here's what I've learned about processes' end-of-life:
      success and non-`0` on failure.
    - Be mindful that Win32's `BOOL` datatype is an `INT`, not a `bool`.
 
+
 ### Subsystems to Consider
 - (Done) **Main Window Thread**
   - Init Error Handler
     - In #wWinMain, before the message loop starts...
-      - Each function call has a custom error handler that calls a 
-        custom set of cleanups depending on how deep the initialization
+      - Each function has a custom error handler that calls a 
+        unique set of cleanups depending on how deep the initialization
         has progressed.  Finally, the handler calls `return EXIT_FAILURE`
-      - The `initSomething` functions should return `BOOL`s that bubble up
+      - The `initWhatever` functions should return `BOOL`s that bubble up
         problems
 
-  - (??? - CHECK) Running Error Handler
+  - Running Error Handler
     - Mostly, this happens in the other subsystems, however:
-      - Problems in the message loop will log an error and call #gracefulShutdown
-      - Problems in the message handlers will also log a message and call
+      - Problems in the message loop will log an error in the log store 
+        and call #gracefulShutdown
+      - (NOT DONE) Problems in the message handlers will also log a message and call
         #gracefulShutdown if necessary
 
   - Normal Shutdown
@@ -178,12 +180,12 @@ Here's what I've learned about processes' end-of-life:
       - Post `WM_CLOSE`
     - WM_CLOSE will
       - Set #gbIsRunning to `false`
-      - Call #goertzel_Stop
       - Cause the Audio capture thread to loop (and terminate) by setting 
         #ghAudioSamplesReadyEvent
       - Stop the audio capture device
       - Call `DestroyWindow`
     - WM_DESTROY will:
+      - `NULL` out #ghMainWindow 
       - Call #mvcViewCleanup 
       - Call `PostQuitMessage`
     - WM_QUIT will:
@@ -252,6 +254,7 @@ Here's what I've learned about processes' end-of-life:
     - After the threads are done, call #goertzel_Cleanup to close out the 
       resources it created
 
+
 ### Error Handling Policy
    - (Done) We will not use [TerminateProcess](https://learn.microsoft.com/en-us/windows/win32/api/processthreadsapi/nf-processthreadsapi-terminateprocess),
      [TerminateThread](https://learn.microsoft.com/en-us/windows/win32/api/processthreadsapi/nf-processthreadsapi-terminatethread)
@@ -261,15 +264,16 @@ Here's what I've learned about processes' end-of-life:
      the preference would be for [wWinMain](https://learn.microsoft.com/en-us/windows/win32/learnwin32/winmain--the-application-entry-point)
      to exit.
      - (Done) A normal exit returns #EXIT_SUCCESS (`0`)
-     - An abnormal exit returns #EXIT_FAILURE... We don't need unique error
-       codes for each type of error
+     - (Done) An abnormal exit returns #EXIT_FAILURE... We don't need unique error
+       codes for every type of error
      - (Done) The model will hold #giApplicationReturnValue, which will initially
        be set to #EXIT_SUCCESS (`0`).  Then, any function/error handler can set it
        which will then get passed out when the program terminates.
    - (Done) #gbIsRunning is set to `true` at exactly one place:  The start of #wWinMain
    - (Done) I've considered using [FlashWindow](https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-flashwindow)
-     for errors or warnings, but that's not really what it's for.
-     The `MessageBox` approach used in log.cpp is closer to the [Principle of Least Astonishment](https://en.wikipedia.org/wiki/Principle_of_least_astonishment)
+     for errors or warnings, but that's not really what it's for, so I'm
+     not using it.  The `MessageBox` approach used in log.cpp is closer to 
+     the [Principle of Least Astonishment](https://en.wikipedia.org/wiki/Principle_of_least_astonishment)
    - (Done) `cleanupSomething` methods should always work and not `ASSERT`, even if
      their corresponding `initSomething` methods haven't run yet.  This allows
      us to call all of the `cleanupSomething` methods during initialization
@@ -284,8 +288,9 @@ Here's what I've learned about processes' end-of-life:
      both subsystems, then release their resources.
      
    - Worker threads should not create windows.  This bears repeating.  Worker 
-     threads should not create windows.  They dont have message loops.  They will 
-     get out of sync and the controlling process will loose control of them.  
+     threads should not create windows.  They don't have message loops.  
+     They will get out of sync and the controlling process will loose control 
+     of them.  
      
      So, how can they communicate problems and safely shutdown the app?  Lets 
      post a custom message back to the main thread.  Heres the plan:
@@ -294,13 +299,13 @@ Here's what I've learned about processes' end-of-life:
      - Register the app name + GUID
      - When threads have problems, they post a message to the custom message.  
      - The high part of WPARAM is the thread number.  The low part is a message number. 
-     - LPARAM is not used  
+     - LPARAM is not used.
      
-   - Log messages as a string resource
+   - Log all messages as a string resource
    
    - Use #logSetMsg, #logGetMsgId, #logGetMsgLevel, #logResetMsg and #logHasMsg to
-     print messages when its safe to do so (probably as an application is 
-     shutting down.
+     print messages when its safe to do so (probably as the application is 
+     shutting down).
      
    - (Done) **If the main window hasn't started**
      - Show a dialog box, then exit #wWinMain
@@ -341,7 +346,7 @@ Here's what I've learned about processes' end-of-life:
                       
 - #gbIsRunning - A global `bool` that all of the worker threads watch
 
-- Helper macros for checking the result of function calls (both to Win32 and 
+- (NEEDS UPDATING) Helper macros for checking the result of function calls (both to Win32 and 
   internal calls)
   - #RETURN_FATAL is called when a `CHECK_` macro fails, it:
     - Sets #giApplicationReturnValue to #EXIT_FAILURE
