@@ -169,10 +169,19 @@ Here's what I've learned about processes' end-of-life:
 
   - Running Error Handler
     - Mostly, this happens in the other subsystems, however:
-      - Problems in the message loop will log an error in the log store 
-        and call #gracefulShutdown
-      - (NOT DONE) Problems in the message handlers will also log a message and call
-        #gracefulShutdown if necessary
+      - Problems in the message loop will:
+        - Call #CLOSE_FATAL, which:
+          - Posts an application-specific message `guUMW_CLOSE_FATAL` which 
+            will gracefully shutdown the application by:
+            - The message's `WPARAM` sends a resource string ID and an index 
+              (usually a thread).
+            - In the #guUMW_CLOSE_FATAL message handler:
+              - Set #giApplicationReturnValue to #EXIT_FAILURE
+              - Store a string resource ID and index to the logger via #logSetMsg
+              - Call #gracefulShutdown
+            - After all of the work threads have finished, the first WARN, ERROR
+              or FATAL message
+      - Problems in the message handlers will also call #CLOSE_FATAL
 
   - Normal Shutdown
     - #gracefulShutdown
@@ -206,17 +215,7 @@ Here's what I've learned about processes' end-of-life:
   - Init Error Handler
     - Doesn't do anything.  Always returns `TRUE` (for now).
   - Running Error Handler
-    - Call #FAIL_AND_LOG_LATER, which:
-      - Posts an application-specific message `guUMW_CLOSE_FATAL` which 
-        will gracefully shutdown the application by:
-        - The message's `WPARAM` sends a resource string ID and an index 
-          (usually a thread).
-        - In the #guUMW_CLOSE_FATAL message handler:
-          - Set #giApplicationReturnValue to #EXIT_FAILURE
-          - Store a string resource ID and index to the logger via #logSetMsg
-          - Call #gracefulShutdown
-        - After all of the work threads have finished, the first WARN, ERROR
-          or FATAL message
+    - See the Main Window Thread's Running Error Handler
   - Normal Shutdown
     - Go through each item in the model and zero it out (or keep/ignore it)
     - Calls #pcmReleaseQueue
@@ -302,7 +301,7 @@ Here's what I've learned about processes' end-of-life:
      - When threads have problems, they post a message to the custom message.  
        - The high part of WPARAM is the thread number.  The low part is a
          resource string ID number. 
-       - The macro #FAIL_AND_LOG_LATER does this in one line
+       - The macro #CLOSE_FATAL does this in one line
        - LPARAM is not used.
      
    - Use #logSetMsg, #logGetMsgId, #logGetMsgLevel, #logResetMsg and #logHasMsg to

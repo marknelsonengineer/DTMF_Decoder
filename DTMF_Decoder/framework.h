@@ -185,6 +185,18 @@
    }
 
 
+/// Standardized macro for checking the return value of GDI functions that
+/// return `BOOL`s.  For example,
+/// If the function succeeds, the return value is nonzero.
+/// If the function fails, the return value is zero.
+///
+/// Failing a `WARN_` macro will just print a warning.  It won't change the program flow
+#define WARN_BR_R( resource_id )  \
+   if ( !br ) {                   \
+      LOG_WARN_R( resource_id );  \
+   }
+
+
 /// Standardized macro for checking the return value of functions that return
 /// `INT`s.  For example,
 /// If the function succeeds, the return value is nonzero.
@@ -217,3 +229,16 @@ PostMessageA( ghMainWindow,                       \
               guUMW_CLOSE_FATAL,                  \
               MAKEWPARAM( resource_id, hiWord ),  \
               0 );
+
+
+/// Standardized macro for checking the return value of GDI functions that
+/// return `BOOL`s.  For example,
+/// If the function succeeds, the return value is nonzero.
+/// If the function fails, the return value is zero.
+///
+/// Failing a `CHECK_` macro will terminate the application with an #EXIT_FAILURE.
+///
+#define CHECK_BR_C( resource_id, wParam )  \
+   if ( !br ) {                            \
+      CLOSE_FATAL( resource_id, wParam );  \
+   }
