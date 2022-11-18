@@ -219,7 +219,7 @@ __forceinline BOOL mvcInvalidateRow( _In_ const size_t row ) {
 
    br = InvalidateRect( ghMainWindow, &rectToRedraw, FALSE );
    if ( !br ) {
-      FAIL_AND_LOG_LATER( IDS_MODEL_FAILED_TO_INVALIDATE_ROW, row );  // "Failed to invalidate row %zu"
+      CLOSE_FATAL( IDS_MODEL_FAILED_TO_INVALIDATE_ROW, row );  // "Failed to invalidate row %zu"
       return FALSE;
    }
 
@@ -265,7 +265,7 @@ __forceinline BOOL mvcInvalidateColumn( _In_ const size_t column ) {
 
    br = InvalidateRect( ghMainWindow, &rectToRedraw, FALSE );
    if ( !br ) {
-      FAIL_AND_LOG_LATER( IDS_MODEL_FAILED_TO_INVALIDATE_COLUMN, column );  // "Failed to invalidate column %zu"
+      CLOSE_FATAL( IDS_MODEL_FAILED_TO_INVALIDATE_COLUMN, column );  // "Failed to invalidate column %zu"
       return FALSE;
    }
 
@@ -295,7 +295,7 @@ __forceinline void mvcModelToggleToneDetectedStatus(
       }                                              // which turns into columns 0 through 3
 
       if ( !br ) {
-         FAIL_AND_LOG_LATER( IDS_MODEL_FAILED_TO_INVALIDATE_REGION, toneIndex );  // "Goertzel DFT thread %zu   Failed to invalidate region of screen"
+         CLOSE_FATAL( IDS_MODEL_FAILED_TO_INVALIDATE_REGION, toneIndex );  // "Goertzel DFT thread %zu   Failed to invalidate region of screen"
       }
    }
 }

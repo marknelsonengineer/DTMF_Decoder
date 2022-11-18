@@ -263,7 +263,7 @@ int APIENTRY wWinMain(
       } else {  // bRet < 0
          // There's a risk of an infinite loop here.  If that happens, then 
          // change this to #logSetMsg and break out of the loop.
-         FAIL_AND_LOG_LATER( IDS_DTMF_DECODER_FAILED_TO_GET_MESSAGE, 0 );  // "Failed to get a message.  Ending program."
+         CLOSE_FATAL( IDS_DTMF_DECODER_FAILED_TO_GET_MESSAGE, 0 );  // "Failed to get a message.  Ending program."
       }
    }
 

@@ -97,7 +97,7 @@
 #define PROCESS_FATAL( message )  \
    giApplicationReturnValue = EXIT_FAILURE; \
    gracefulShutdown();            \
-   LOG_FATAL( message );          \
+   LOG_FATAL( message );
 
 
 /// Standardized macro for processing a fatal error using a resource string
@@ -110,7 +110,7 @@
 #define PROCESS_FATAL_R( resource_id )      \
    giApplicationReturnValue = EXIT_FAILURE; \
    gracefulShutdown();                      \
-   LOG_FATAL_R( resource_id );              \
+   LOG_FATAL_R( resource_id );
 
 
 /// Standardized macro for returning on a fatal error
@@ -121,7 +121,7 @@
 /// @see https://learn.microsoft.com/en-us/windows/win32/com/using-macros-for-error-handling
 #define RETURN_FATAL( message )  \
    PROCESS_FATAL( message );     \
-   return FALSE;                 \
+   return FALSE;
 
 
 /// Standardized macro for returning on a fatal error using a resource string
@@ -132,7 +132,7 @@
 /// @see https://learn.microsoft.com/en-us/windows/win32/com/using-macros-for-error-handling
 #define RETURN_FATAL_R( resource_id )  \
    PROCESS_FATAL_R( resource_id );     \
-   return FALSE;                 \
+   return FALSE;
 
 
 /// Standardized macro for checking the return value of COM functions that
@@ -212,8 +212,8 @@
 /// Post a custom message #guUMW_CLOSE_FATAL, passing in the resource string
 /// ID and a number (usually a thread index).  Then, let the message handler
 /// save the fatal error to the message log.
-#define FAIL_AND_LOG_LATER( resource_id, hiWord ) \
+#define CLOSE_FATAL( resource_id, hiWord )        \
 PostMessageA( ghMainWindow,                       \
-              guUMW_CLOSE_FATAL,              \
+              guUMW_CLOSE_FATAL,                  \
               MAKEWPARAM( resource_id, hiWord ),  \
               0 );
