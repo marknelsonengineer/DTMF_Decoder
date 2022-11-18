@@ -166,7 +166,7 @@ Here's what I've learned about processes' end-of-life:
       - The `initSomething` functions should return `BOOL`s that bubble up
         problems
 
-  - Running Error Handler
+  - (??? - CHECK) Running Error Handler
     - Mostly, this happens in the other subsystems, however:
       - Problems in the message loop will log an error and call #gracefulShutdown
       - Problems in the message handlers will also log a message and call
@@ -187,8 +187,12 @@ Here's what I've learned about processes' end-of-life:
       - Call #mvcViewCleanup 
       - Call `PostQuitMessage`
     - WM_QUIT will:
-      - Exit the message loop and let #wWinMain run to the end... Cleaning
-        up resources in the reverse order they were created
+      - Exit the message loop
+    - As #wWinMain runs to the end... it will:
+      - Stop the worker threads
+      - Log the first WARN, ERROR or FATAL message (if any)
+      - Cleanup resources in the reverse order they were created
+      - Return with #giApplicationReturnValue
 
 - **GDI / Direct2D**
   - Init Error Handler
@@ -196,12 +200,17 @@ Here's what I've learned about processes' end-of-life:
   - Normal Shutdown
     - Cleaned up in `WM_DESTROY` immediately after the window is destroyed
 
-- **Model**
-  - (Done) Init Error Handler
+- **(Done) Model**
+  - Init Error Handler
     - Doesn't do anything.  Always returns `TRUE` (for now).
   - Running Error Handler
-    - Propagate errors up the call stack as `BOOL`s
-  - (Done) Normal Shutdown
+    - Save the error number, level and the thread index to the log message
+      store.
+    - Post an application-specific message `guUMW_ERROR_IN_THREAD` which 
+      will gracefully shutdown the application.
+    - After all of the work threads have finished, log the first WARN, ERROR
+      or FATAL message (if any)
+  - Normal Shutdown
     - Go through each item in the model and zero it out (or keep/ignore it)
     - Calls #pcmReleaseQueue
 
