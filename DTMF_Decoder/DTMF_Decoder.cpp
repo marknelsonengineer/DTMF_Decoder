@@ -253,16 +253,16 @@ int APIENTRY wWinMain(
                                 NULL,  // Get messages for any window that belongs to the current thread
                                 0, 0   // Retrieve all available messages
                               ) ) != 0 ) {
-      if ( bRet <= 0 ) {
-         if ( bRet <= -1 ) {
-            LOG_FATAL( "Failed to get a message.  Ending program." );
+      if ( bRet > 0 ) {
+         if ( !TranslateAccelerator( msg.hwnd, hAccelTable, &msg ) ) {
+            TranslateMessage( &msg );
+            DispatchMessage( &msg );
          }
+      } else if ( bRet == 0 ) {
+         gracefulShutdown();  // This is a normal exit
+      } else {  // bRet < 0
+         logSetMsg( LOG_LEVEL_FATAL, IDS_DTMF_DECODER_FAILED_TO_GET_MESSAGE, 0 );  // "Failed to get a message.  Ending program."
          gracefulShutdown();
-      }
-
-      if ( !TranslateAccelerator( msg.hwnd, hAccelTable, &msg ) ) {
-         TranslateMessage( &msg );
-         DispatchMessage( &msg );
       }
    }
 
@@ -377,7 +377,7 @@ LRESULT CALLBACK WndProc( HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam 
             switch ( wParam ) {
                case VK_ESCAPE:
                   // logTest();      // This is a good place to test the logger
-                  PostMessageA( hWnd, WM_CLOSE, 0, 0 );
+                  gracefulShutdown();
                   break ;
                default:
                   break ;
