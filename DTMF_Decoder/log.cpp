@@ -169,11 +169,11 @@ BOOL logInit( _In_ HINSTANCE* phInst, _In_ HWND* phWindow ) {
          char tmpChar = *(char*) phInst;
          (void) tmpChar;  // Suppress a compiler warning that tmpChar is not checked after this.  No code is generated.
       } __except ( EXCEPTION_EXECUTE_HANDLER ) {
-         OutputDebugStringA( "The instance handle passed to logInit points to an invalid memory region.  Exiting." );
+         OutputDebugStringW( L"The instance handle passed to logInit points to an invalid memory region.  Exiting." );
          return FALSE;
       }
    } else {
-      OutputDebugStringA( "The instance handle passed to logInit is NULL.  Exiting." );
+      OutputDebugStringW( L"The instance handle passed to logInit is NULL.  Exiting." );
       return FALSE;
    }
 
@@ -184,7 +184,7 @@ BOOL logInit( _In_ HINSTANCE* phInst, _In_ HWND* phWindow ) {
          char tmpChar = *(char*) phWindow;
          (void) tmpChar;  // Suppress a compiler warning that tmpChar is not checked after this.  No code is generated.
       } __except ( EXCEPTION_EXECUTE_HANDLER ) {
-         OutputDebugStringA( "The window handle passed to logInit points to an invalid memory region.  Exiting." );
+         OutputDebugStringW( L"The window handle passed to logInit points to an invalid memory region.  Exiting." );
          return FALSE;
       }
    }
