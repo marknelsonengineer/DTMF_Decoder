@@ -90,14 +90,14 @@
 /// Standardized macro for processing a fatal error
 ///
 /// - Set #giApplicationReturnValue to #EXIT_FAILURE
-/// - Call #gracefulShutdown
 /// - Call #LOG_FATAL and display a message
+/// - Call #gracefulShutdown
 ///
 /// @see https://learn.microsoft.com/en-us/windows/win32/com/using-macros-for-error-handling
-#define PROCESS_FATAL( message )  \
+#define PROCESS_FATAL( message )            \
    giApplicationReturnValue = EXIT_FAILURE; \
-   gracefulShutdown();            \
-   LOG_FATAL( message );
+   LOG_FATAL( message );                    \
+   gracefulShutdown();
 
 
 /// Standardized macro for processing a fatal error using a resource string
@@ -109,8 +109,8 @@
 /// @see https://learn.microsoft.com/en-us/windows/win32/com/using-macros-for-error-handling
 #define PROCESS_FATAL_R( resource_id )      \
    giApplicationReturnValue = EXIT_FAILURE; \
+   LOG_FATAL_R( resource_id );              \
    gracefulShutdown();                      \
-   LOG_FATAL_R( resource_id );
 
 
 /// Standardized macro for returning on a fatal error
@@ -144,6 +144,18 @@
 #define CHECK_HR( message )    \
    if ( FAILED( hr ) ) {       \
       RETURN_FATAL( message ); \
+   }
+
+
+/// Standardized macro for checking the return value of COM functions that
+/// return `HRESULT`s.
+///
+/// Failing a `CHECK_` macro will terminate the application with an #EXIT_FAILURE.
+///
+/// @see https://learn.microsoft.com/en-us/windows/win32/com/using-macros-for-error-handling
+#define CHECK_HR_R( resource_id )    \
+   if ( FAILED( hr ) ) {             \
+      RETURN_FATAL_R( resource_id ); \
    }
 
 
@@ -240,5 +252,17 @@ PostMessageA( ghMainWindow,                       \
 ///
 #define CHECK_BR_C( resource_id, wParam )  \
    if ( !br ) {                            \
+      CLOSE_FATAL( resource_id, wParam );  \
+   }
+
+
+/// Standardized macro for checking the return value of COM functions that
+/// return `HRESULT`s.
+///
+/// Failing a `CHECK_` macro will terminate the application with an #EXIT_FAILURE.
+///
+/// @see https://learn.microsoft.com/en-us/windows/win32/com/using-macros-for-error-handling
+#define CHECK_HR_C( resource_id, wParam )  \
+   if ( FAILED( hr ) ) {                   \
       CLOSE_FATAL( resource_id, wParam );  \
    }

@@ -215,7 +215,7 @@ int APIENTRY wWinMain(
    br = mvcViewInit();
    if ( !br ) {
       LOG_FATAL_R( IDS_DTMF_DECODER_FAILED_TO_INITIALIZE_VIEW );  // "Failed to initialize the view.  Exiting."
-      mvcModelCleanup();
+      mvcModelCleanup();      // Unwind mvcViewInit
       CoUninitialize();       // Unwind COM
       return EXIT_FAILURE;
    }

@@ -107,17 +107,17 @@ BOOL mvcViewInit() {
    /// Initialize Direct2D
    _ASSERTE( spD2DFactory == NULL );
    hr = D2D1CreateFactory( D2D1_FACTORY_TYPE_MULTI_THREADED, &spD2DFactory );
-   CHECK_HR( "Failed to create Direct2D Factory" );
+   CHECK_HR_R( IDS_VIEW_FAILED_TO_CREATE_DIRECT2D_FACTORY );  // "Failed to create Direct2D Factory"
    _ASSERTE( spD2DFactory != NULL );
 
    /// Initialize DirectWrite
    _ASSERTE( spDWriteFactory == NULL );
    hr = DWriteCreateFactory(
-      DWRITE_FACTORY_TYPE_SHARED,
-      __uuidof( IDWriteFactory ),
-      reinterpret_cast<IUnknown**>( &spDWriteFactory )
+      DWRITE_FACTORY_TYPE_SHARED,                       // Is factory shared or isolated
+      __uuidof( IDWriteFactory ),                       // GUID that identifies the DirectWrite factory interface
+      reinterpret_cast<IUnknown**>( &spDWriteFactory )  // An address of a pointer to the newly created DirectWrite factory object
    );
-   CHECK_HR( "Failed to create DirectWrite Factory" );
+   CHECK_HR_R( IDS_VIEW_FAILED_TO_CREATE_DIRECTWRITE_FACTORY );  // "Failed to create DirectWrite Factory"
    _ASSERTE( spDWriteFactory != NULL );
 
    /// Create the font for the digits
@@ -132,17 +132,17 @@ BOOL mvcViewInit() {
       L"en-us",                     // Local
       &spDigitTextFormat            // Pointer to recieve the created object
    );
-   CHECK_HR( "Failed to create a font resource (digit text format)" );
+   CHECK_HR_R( IDS_VIEW_FAILED_TO_CREATE_FONT_RESOURCE );  // "Failed to create a font resource"
    _ASSERTE( spDigitTextFormat != NULL );
 
    hr = spDigitTextFormat->SetWordWrapping( DWRITE_WORD_WRAPPING_WRAP );
-   CHECK_HR( "Failed to set word wrap mode (digit text format)" );
+   CHECK_HR_R( IDS_VIEW_FAILED_TO_SET_WORD_WRAP );  // "Failed to set word wrap"
 
    hr = spDigitTextFormat->SetTextAlignment( DWRITE_TEXT_ALIGNMENT_CENTER );  // Horizontal alignment
-   CHECK_HR( "Failed to set text alignment (digit text format)" );
+   CHECK_HR_R( IDS_VIEW_FAILED_TO_SET_TEXT_ALIGNMENT );  // "Failed to set text alignment"
 
    hr = spDigitTextFormat->SetParagraphAlignment( DWRITE_PARAGRAPH_ALIGNMENT_CENTER );  // Vertical alignment
-   CHECK_HR( "Failed to set paragraph alighment (digit text format)" );
+   CHECK_HR_R( IDS_VIEW_FAILED_TO_SET_PARAGRAPH_ALIGNMENT );  // "Failed to set paragraph alignment"
 
    /// Create the font for the letters
    _ASSERTE( spLettersTextFormat == NULL );
@@ -156,17 +156,17 @@ BOOL mvcViewInit() {
       L"en-us",                     // Local
       &spLettersTextFormat          // Pointer to recieve the created object
    );
-   CHECK_HR( "Failed to create a font resource (letters text format)" );
+   CHECK_HR_R( IDS_VIEW_FAILED_TO_CREATE_FONT_RESOURCE );  // "Failed to create a font resource"
    _ASSERTE( spLettersTextFormat != NULL );
 
    hr = spLettersTextFormat->SetWordWrapping( DWRITE_WORD_WRAPPING_WRAP );
-   CHECK_HR( "Failed to set word wrap mode (letters text format)" );
+   CHECK_HR_R( IDS_VIEW_FAILED_TO_SET_WORD_WRAP );  // "Failed to set word wrap"
 
    hr = spLettersTextFormat->SetTextAlignment( DWRITE_TEXT_ALIGNMENT_CENTER );  // Horizontal alignment
-   CHECK_HR( "Failed to set text alignment (letters text format)" );
+   CHECK_HR_R( IDS_VIEW_FAILED_TO_SET_TEXT_ALIGNMENT );  // "Failed to set text alignment"
 
    hr = spLettersTextFormat->SetParagraphAlignment( DWRITE_PARAGRAPH_ALIGNMENT_CENTER );  // Vertical alignment
-   CHECK_HR( "Failed to set paragraph alighment (letters text format)" );
+   CHECK_HR_R( IDS_VIEW_FAILED_TO_SET_PARAGRAPH_ALIGNMENT );  // "Failed to set paragraph alignment"
 
    /// Create the font for the frequency labels
    _ASSERTE( spFreqTextFormat == NULL );
@@ -180,22 +180,22 @@ BOOL mvcViewInit() {
       L"en-us",                     // Local
       &spFreqTextFormat             // Pointer to recieve the created object
    );
-   CHECK_HR( "Failed to create a font resource (frequency text format)" );
+   CHECK_HR_R( IDS_VIEW_FAILED_TO_CREATE_FONT_RESOURCE );  // "Failed to create a font resource"
    _ASSERTE( spFreqTextFormat != NULL );
 
    hr = spFreqTextFormat->SetWordWrapping( DWRITE_WORD_WRAPPING_WRAP );
-   CHECK_HR( "Failed to set word wrap mode (frequency text format)" );
+   CHECK_HR_R( IDS_VIEW_FAILED_TO_SET_WORD_WRAP );  // "Failed to set word wrap"
 
    hr = spFreqTextFormat->SetTextAlignment( DWRITE_TEXT_ALIGNMENT_TRAILING );  // Horizontal alignment
-   CHECK_HR( "Failed to set text alignment (frequency text format)" );
+   CHECK_HR_R( IDS_VIEW_FAILED_TO_SET_TEXT_ALIGNMENT );  // "Failed to set text alignment"
 
    hr = spFreqTextFormat->SetParagraphAlignment( DWRITE_PARAGRAPH_ALIGNMENT_CENTER );  // Vertical alignment
-   CHECK_HR( "Failed to set paragraph alighment (frequency text format)" );
+   CHECK_HR_R( IDS_VIEW_FAILED_TO_SET_PARAGRAPH_ALIGNMENT );  // "Failed to set paragraph alignment"
 
    /// Create the Direct2D render target
    RECT clientRectangle ;
    br = GetClientRect( ghMainWindow, &clientRectangle );
-   CHECK_BR( "Failed to get the window size" );
+   CHECK_BR_R( IDS_VIEW_FAILED_TO_GET_WINDOW_SIZE );  // "Failed to get the window size"
 
    _ASSERTE( spRenderTarget == NULL );
    hr = spD2DFactory->CreateHwndRenderTarget(
@@ -203,7 +203,7 @@ BOOL mvcViewInit() {
       D2D1::HwndRenderTargetProperties( ghMainWindow, D2D1::SizeU( clientRectangle.right - clientRectangle.left, clientRectangle.bottom - clientRectangle.top ) ),
       &spRenderTarget
    );
-   CHECK_HR( "Failed to create Direct2D Render Target" );
+   CHECK_HR_R( IDS_VIEW_FAILED_TO_CREATE_DIRECT2D_RENDER_TARGET );  // "Failed to create Direct2D Render Target"
    _ASSERTE( spRenderTarget != NULL );
 
 
@@ -213,7 +213,7 @@ BOOL mvcViewInit() {
       D2D1::ColorF( D2D1::ColorF( FOREGROUND_COLOR, 1.0f ) ),
       &spBrushForeground
    );
-   CHECK_HR( "Failed to create Direct2D Brush (Foreground)" );
+   CHECK_HR_R( IDS_VIEW_FAILED_TO_CREATE_DIRECT2D_BRUSH );  // "Failed to create Direct2D Brush"
    _ASSERTE( spBrushForeground != NULL );
 
 
@@ -222,7 +222,7 @@ BOOL mvcViewInit() {
       D2D1::ColorF( D2D1::ColorF( HIGHLIGHT_COLOR, 1.0f ) ),
       &spBrushHighlight
    );
-   CHECK_HR( "Failed to create Direct2D Brush (Highlight)" );
+   CHECK_HR_R( IDS_VIEW_FAILED_TO_CREATE_DIRECT2D_BRUSH );  // "Failed to create Direct2D Brush"
    _ASSERTE( spBrushHighlight != NULL );
 
 
@@ -231,7 +231,7 @@ BOOL mvcViewInit() {
       D2D1::ColorF( D2D1::ColorF( BACKGROUND_COLOR, 1.0f ) ),
       &spBrushBackground
    );
-   CHECK_HR( "Failed to create Direct2D Brush (Background)" );
+   CHECK_HR_R( IDS_VIEW_FAILED_TO_CREATE_DIRECT2D_BRUSH );  // "Failed to create Direct2D Brush"
    _ASSERTE( spBrushBackground != NULL );
 
    return TRUE;
@@ -245,8 +245,8 @@ BOOL mvcViewInit() {
 ///
 /// @return `TRUE` if successful.  `FALSE` if there was a problem.
 BOOL mvcViewCleanup() {
-   SAFE_RELEASE( spBrushForeground );
-   SAFE_RELEASE( spBrushHighlight );
+   SAFE_RELEASE( spBrushForeground );  // SAFE_RELEASE returns a reference
+   SAFE_RELEASE( spBrushHighlight );   // count, but not an error code
    SAFE_RELEASE( spBrushBackground );
    SAFE_RELEASE( spRenderTarget );
    SAFE_RELEASE( spD2DFactory );
@@ -305,7 +305,7 @@ static __forceinline BOOL makeFloatRect(
    pRect_F->right = static_cast<FLOAT>( right );
    pRect_F->bottom = static_cast<FLOAT>( bottom );
 
-   // LOG_TRACE( "Drawing rectangle:  left=%ld  top=%ld  right=%ld  bottom=%ld", left, top, right, bottom );
+   // LOG_TRACE_R( IDS_VIEW_DRAW_RECTANGLE, left, top, right, bottom );  // "Draw rectangle:  left=%ld  top=%ld  right=%ld  bottom=%ld"
 
    return TRUE;
 }
@@ -330,8 +330,8 @@ static __forceinline void paintRowFreqs( _In_ const size_t index, _In_ const REC
    _ASSERTE( spFreqTextFormat    != NULL );
    _ASSERTE( pUpdateRect         != NULL );
 
-   keypad_t* pKey = &keypad[ ( 4 * index ) + index ];  // The diaganol DTMF digits 1, 5, 9 and D
-   size_t iFreq = pKey->row;
+   keypad_t* pKey  = &keypad[ ( 4 * index ) + index ];  // The diaganol DTMF digits 1, 5, 9 and D
+   size_t    iFreq = pKey->row;
 
    ID2D1SolidColorBrush* pBrush;
 
@@ -391,8 +391,8 @@ static __forceinline void paintColFreqs( _In_ const size_t index, _In_ const REC
    _ASSERTE( spFreqTextFormat    != NULL );
    _ASSERTE( pUpdateRect         != NULL );
 
-   keypad_t* pKey = &keypad[ ( 4 * index ) + index ];  // The diaganol DTMF digits 1, 5, 9 and D
-   size_t iFreq = pKey->column;
+   keypad_t* pKey  = &keypad[ ( 4 * index ) + index ];  // The diaganol DTMF digits 1, 5, 9 and D
+   size_t    iFreq = pKey->column;
 
    ID2D1SolidColorBrush* pBrush;
 
@@ -462,7 +462,7 @@ static __forceinline void paintKeys( _In_ const size_t index, _In_ const RECT* p
    }
 
    D2D1_RECT_F drawingRect;
-   UINT32 cTextLength;
+   UINT32      cTextLength;
 
    /// Draw the box around the keypad
    if ( makeFloatRect( &drawingRect, pUpdateRect, keypad[ index ].x, keypad[ index ].y, keypad[ index ].x + BOX_WIDTH, keypad[ index ].y + BOX_HEIGHT ) ) {
@@ -518,9 +518,9 @@ BOOL mvcViewPaintWindow( _In_ const RECT* pUpdateRect ) {
    _ASSERTE( spRenderTarget != NULL );
    _ASSERTE( pUpdateRect != NULL );
 
-   // LOG_TRACE( "Update region:  (%d, %d) to (%d, %d)", pUpdateRect->left, pUpdateRect->top, pUpdateRect->right, pUpdateRect->bottom );
+   // LOG_TRACE_R( IDS_VIEW_UPDATE_REGION, pUpdateRect->left, pUpdateRect->top, pUpdateRect->right, pUpdateRect->bottom );  // "Update region:  (%d, %d) to (%d, %d)"
 
-   spRenderTarget->BeginDraw();          // No return value to check for errors
+   spRenderTarget->BeginDraw();  // No return value for error checking
 
    /// Paint the background color into the update region.
    _ASSERTE( spBrushBackground != NULL );
@@ -530,18 +530,18 @@ BOOL mvcViewPaintWindow( _In_ const RECT* pUpdateRect ) {
       static_cast<FLOAT>( pUpdateRect->top ),
       static_cast<FLOAT>( pUpdateRect->right ),
       static_cast<FLOAT>( pUpdateRect->bottom )
-   );                                     // No return value to check for erors
+   );                       // No return value for error checking
 
    spRenderTarget->FillRectangle(
       updateRect_F,         // The rectangle to fill
       spBrushBackground     // The background brush
-   );                                     // No return value to check for erors
+   );                       // No return value to check for erors
 
    /// Draw the main window... starting with the column and row labels
    ///
    /// Loops are unrolled for performance.
    ///
-   /// @internal For now, and mostly for the sake of efficiency, we are not checking
+   /// @internal For now, mostly for the sake of efficiency, we are not checking
    ///           the results of these drawing functions.  None of the methods these
    ///           functions call/use return any error messages, so (right now)
    ///           they return `void`.
@@ -565,7 +565,7 @@ BOOL mvcViewPaintWindow( _In_ const RECT* pUpdateRect ) {
    paintKeys( 14, pUpdateRect );  paintKeys( 15, pUpdateRect );
 
    hr = spRenderTarget->EndDraw();
-   CHECK_HR( "Failed to end drawing operations on the render target " );
+   CHECK_HR_C( IDS_VIEW_FAILED_TO_END_DRAW, 0 );  // "Failed to end drawing operations on render target"
 
    return TRUE;
 }

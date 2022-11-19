@@ -206,10 +206,18 @@ Here's what I've learned about processes' end-of-life:
       - Return with #giApplicationReturnValue
 
 - **GDI / Direct2D**
-  - Init Error Handler
+  - (Done) Init Error Handler
+    - Set #giApplicationReturnValue to #EXIT_FAILURE
+    - Call #LOG_FATAL 
+    - Call #gracefulShutdown
+    - Return `FAKSE` that bubbles up to the main thread
+    - Because #gracefulShutdown was called, the main loop's 
+      messages won't display
   - Running Error Handler
+    - See the Main Window Thread's Running Error Handler
   - Normal Shutdown
     - Cleaned up in `WM_DESTROY` immediately after the window is destroyed
+    - The cleanup method is very simple and never fails
 
 - (Done) **Model**
   - Init Error Handler
@@ -244,7 +252,7 @@ Here's what I've learned about processes' end-of-life:
       data structures are created but before the audio capture thread starts
     - Propagate errors up the call stack as `BOOL`s
   - Running Error Handler
-    - Same as the Model's Running Error Handler
+    - See the Main Window Thread's Running Error Handler
   - Normal Shutdown
     - Call #goertzel_Stop to stop the threads.  #goertzel_Stop does not 
       return until all of the threads have stopped
