@@ -72,6 +72,7 @@
 #define IDS_STRING160                   160
 #define IDS_STRING161                   161
 #define IDS_STRING162                   162
+#define IDS_GOERTZEL_FAILED_TO_RESET_STARTDFT_EVENT 162
 #define IDC_PROGRAM_NAME                1000
 #define IDC_AUTHOR                      1001
 #define IDC_COPYRIGHT                   1002
