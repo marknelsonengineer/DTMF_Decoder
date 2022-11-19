@@ -200,10 +200,10 @@ __forceinline static BOOL processAudioFrame(
 
 /// Get audio frames from the device and process them
 ///
-/// On virtualized systems, the hypervisor can play Merry Hell with this...
-/// This is a realtime application.  Windows has several features to ensure
-/// that realtime applications (like audio capture) have high proitory, but
-/// the hypervisor doesn't really have visibility to that.
+/// On virtualized systems, the hypervisor can play Merry Hell with realtime
+/// applications like this.  Windows has several features to ensure that
+/// realtime applications (like audio capture) have high proitory, but the
+/// hypervisor doesn't have visibility to that.
 ///
 /// My observations are:  On bare-metal systems, the scheduling/performance of
 /// this loop are OK.  On virtualized systems, you may see lots of
@@ -256,31 +256,28 @@ __forceinline static void audioCapture() {
          /// Note:  This thread will wait, signal 8 DFT threads to run, then
          ///        will continue after the DFT threads are done
          br = goertzel_compute_dtmf_tones();
-         if ( !br ) {
-            LOG_FATAL( "Failed to compute DTMF tones.  Exiting.  Investigate!" );
-            gracefulShutdown();
-         }
+         CHECK_BR_C( IDS_AUDIO_FAILED_TO_COMPUTE_DTMF_TONES, 0 );  // "Failed to compute DTMF tones.  Exiting.  Investigate!"
       }
 
       /// Carefully analyze the flags returned by GetBuffer
       if ( flags & AUDCLNT_BUFFERFLAGS_SILENT ) {
-         LOG_INFO( "Buffer flag set: SILENT" );
+         LOG_INFO_R( IDS_AUDIO_BUFFER_SILENT );  // "Buffer flag set: SILENT"
          // Nothing so see here.  Move along.
-         flags &= !AUDCLNT_BUFFERFLAGS_SILENT;  // Clear AUDCLNT_BUFFERFLAGS_SILENT from flags
+         flags &= ~AUDCLNT_BUFFERFLAGS_SILENT;  // Clear AUDCLNT_BUFFERFLAGS_SILENT from flags
       }
       if ( flags & AUDCLNT_BUFFERFLAGS_DATA_DISCONTINUITY ) {
-         LOG_INFO( "Buffer flag set: DATA_DISCONTINUITY" );
+         LOG_INFO_R( IDS_AUDIO_BUFFER_DISCONTINUOUS );  // "Buffer flag set: DATA_DISCONTINUITY"
          // Throw these packets out
-         flags &= !AUDCLNT_BUFFERFLAGS_DATA_DISCONTINUITY;  // Clear AUDCLNT_BUFFERFLAGS_DATA_DISCONTINUITY from flags
+         flags &= ~AUDCLNT_BUFFERFLAGS_DATA_DISCONTINUITY;  // Clear AUDCLNT_BUFFERFLAGS_DATA_DISCONTINUITY from flags
       }
       if ( flags & AUDCLNT_BUFFERFLAGS_TIMESTAMP_ERROR ) {
-         LOG_INFO( "Buffer flag set: TIMESTAMP_ERROR" );
-         // Throw these packets out as well
-         flags &= !AUDCLNT_BUFFERFLAGS_TIMESTAMP_ERROR;  // Clear AUDCLNT_BUFFERFLAGS_TIMESTAMP_ERROR from flags
+         LOG_INFO_R( IDS_AUDIO_BUFFER_TIMESTAMP_MISALIGNED );  // "Buffer flag set: TIMESTAMP_ERROR"
+         // Throw these packets out
+         flags &= ~AUDCLNT_BUFFERFLAGS_TIMESTAMP_ERROR;  // Clear AUDCLNT_BUFFERFLAGS_TIMESTAMP_ERROR from flags
       }
       if ( flags != 0 ) {
-         LOG_WARN( ":  Some other bufer flags are set.  Investigate!" );
-         // Throw these packets
+         CLOSE_FATAL( IDS_AUDIO_BUFFER_OTHER_ISSUE, 0 );  // "Some other bufer flags are set.  Investigate!"
+         // Throw these packets out
       }
 
       if ( framesAvailable > 0 ) {
@@ -323,22 +320,20 @@ processAudioFrame: Channel 1:  Min: 125   Max: 129
 
          hr = spCaptureClient->ReleaseBuffer( framesAvailable );
          if ( hr != S_OK ) {
-            LOG_FATAL( "ReleaseBuffer didn't return S_OK.  Exiting.  Investigate!" );
-            gracefulShutdown();
+            CLOSE_FATAL( IDS_AUDIO_FAILED_TO_RELEASE_AUDIO_BUFFER, 0 );  // "ReleaseBuffer didn't return S_OK.  Exiting.  Investigate!"
          }
       }
 
    } else if ( hr == AUDCLNT_S_BUFFER_EMPTY ) {
-      LOG_INFO( "GetBuffer returned an empty buffer.  Continue." );
+      LOG_INFO_R( IDS_AUDIO_GETBUFFER_EMPTY );  // "GetBuffer returned an empty buffer.  Continue."
    } else if ( hr == AUDCLNT_E_OUT_OF_ORDER ) {
-      LOG_INFO( "GetBuffer returned out of order data.  Continue." );
+      LOG_INFO_R( IDS_AUDIO_GETBUFFER_NOT_SEQUENTIAL );  // "GetBuffer returned out of order data.  Continue."
    } else {
       /// If the audio device changes (unplugged, for example) then GetBuffer
       /// will return something unexpected and we should see it here.  If this
       /// happens, gracefully shutdown the app.
 
-      LOG_FATAL( "GetBuffer did not return S_OK.  Exiting.  Investigate!" );
-      gracefulShutdown();
+      CLOSE_FATAL( IDS_AUDIO_GETBUFFER_NOT_OK, 0 );  // "GetBuffer did not return S_OK.  Exiting.  Investigate!"
    }
 }
 
@@ -351,7 +346,7 @@ processAudioFrame: Channel 1:  Min: 125   Max: 129
 /// @param Context Not used
 /// @return Return `0` if successful.  `0xFFFF `if there was a problem.
 DWORD WINAPI audioCaptureThread( LPVOID Context ) {
-   LOG_TRACE( "Start capture thread" );
+   LOG_TRACE_R( IDS_AUDIO_START_THREAD );  // "Start capture thread"
 
    HRESULT hr;                  // HRESULT result
    HANDLE  mmcssHandle = NULL;
@@ -359,7 +354,7 @@ DWORD WINAPI audioCaptureThread( LPVOID Context ) {
    /// Initialize COM for the thread
    hr = CoInitializeEx( NULL, COINIT_MULTITHREADED );
    if ( hr != S_OK ) {
-      LOG_FATAL( "Failed to initialize COM in thread." );
+      CLOSE_FATAL( IDS_DTMF_DECODER_FAILED_TO_INITIALIZE_COM, 0 );  // "Failed to initialize COM."
       ExitThread( 0xFFFF );
    }
 
@@ -367,9 +362,10 @@ DWORD WINAPI audioCaptureThread( LPVOID Context ) {
    /// priority for this thread
    mmcssHandle = AvSetMmThreadCharacteristicsW( L"Capture", &gdwMmcssTaskIndex );
    if ( mmcssHandle == NULL ) {
-      LOG_WARN( "Failed to set MMCSS on the audio capture thread.  Continuing." );
+      LOG_INFO_R( IDS_AUDIO_FAILED_TO_SET_MMCSS );  // "Failed to set MMCSS on the audio capture thread.  Continuing."
+   } else {
+      LOG_TRACE_R( IDS_AUDIO_SET_MMCSS );  // "Set MMCSS on the audio capture thread."
    }
-   LOG_TRACE( "Set MMCSS on the audio capture thread." );
 
    #ifdef MONITOR_PCM_AUDIO
       suFramesToMonitor = (UINT64) MONITOR_INTERVAL_SECONDS * spMixFormat->nSamplesPerSec;
@@ -384,13 +380,8 @@ DWORD WINAPI audioCaptureThread( LPVOID Context ) {
          if ( gbIsRunning ) {
             audioCapture();
          }
-      } else if ( dwWaitResult == WAIT_FAILED ) {
-         LOG_FATAL( "WaitForSingleObject in audio capture thread failed.  Exiting.  Investigate!" );
-         gracefulShutdown();
-         break;  // While loop
       } else {
-         LOG_FATAL( "WaitForSingleObject in audio capture thread failed.  Exiting.  Investigate!" );
-         gracefulShutdown();
+         CLOSE_FATAL( IDS_AUDIO_WAIT_FAILED, 0 );  // "WaitForSingleObject in audio capture thread failed.  Exiting.  Investigate!"
          break;  // While loop
       }
    }
@@ -399,14 +390,14 @@ DWORD WINAPI audioCaptureThread( LPVOID Context ) {
 
    if ( mmcssHandle != NULL ) {
       if ( !AvRevertMmThreadCharacteristics( mmcssHandle ) ) {
-         LOG_WARN( "Failed to revert MMCSS on the audio capture thread.  Continuing." );
+         LOG_INFO_R( IDS_AUDIO_FAILED_TO_REVERT_MMCSS );  // "Failed to revert MMCSS on the audio capture thread.  Continuing."
       }
       mmcssHandle = NULL;
    }
 
    CoUninitialize();
 
-   LOG_TRACE( "End capture thread" );
+   LOG_TRACE_R( IDS_AUDIO_END_THREAD );  // "End capture thread"
 
    ExitThread( 0 );
 }
