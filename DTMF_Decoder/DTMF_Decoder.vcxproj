@@ -138,7 +138,6 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <TargetName>$(ProjectName)_$(PlatformTarget)_$(Configuration)</TargetName>
-    <LinkIncremental>false</LinkIncremental>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Profile|Win32'">
     <TargetName>$(ProjectName)_$(PlatformTarget)_$(Configuration)</TargetName>
@@ -157,7 +156,6 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <TargetName>$(ProjectName)_$(PlatformTarget)_$(Configuration)</TargetName>
-    <LinkIncremental>false</LinkIncremental>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">
     <TargetName>$(ProjectName)_$(PlatformTarget)_$(Configuration)</TargetName>
