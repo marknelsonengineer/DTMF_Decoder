@@ -4,7 +4,7 @@
 //
 //  A Windows Desktop C program that decodes DTMF tones
 //
-/// Windows Audio Driver code
+/// Initialize and process audio from the default Windows audio capture device
 ///
 /// @see https://learn.microsoft.com/en-us/windows/win32/api/_coreaudio/
 ///
@@ -137,7 +137,7 @@ static audio_format_t sAudioFormat = UNKNOWN_AUDIO_FORMAT;
 /// Process the audio frameIndex, converting it into #PCM_8, adding the sample to
 /// #gPcmQueue and monitoring the values (if desired)
 ///
-/// The function is inlined for performane reasons.
+/// Inlined for performance.
 ///
 /// @param pData      Pointer to the head of the audio bufer
 /// @param frameIndex The frameIndex number to process
@@ -218,7 +218,7 @@ __forceinline static BOOL processAudioFrame(
 /// If I did process discontinuous frames, I'd have the right frequency, but
 /// I'd introduce phasing issues which could distort our results.
 ///
-/// The function is inlined for performane reasons.
+/// Inlined for performance.
 ///
 /// It's normal for the first buffer to have DATA_DISCONTINUITY set
 __forceinline static void audioCapture() {

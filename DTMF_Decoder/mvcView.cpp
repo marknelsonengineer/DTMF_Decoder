@@ -263,7 +263,7 @@ BOOL mvcViewCleanup() {
 /// @see https://stackoverflow.com/questions/306316/determine-if-two-rectangles-overlap-each-other
 /// @see https://silentmatt.com/rectangle-intersection/
 ///
-/// The function is inlined for performane reasons.
+/// Inlined for performance.
 ///
 /// @param pRect_F      Pointer to the floating-point rectangle structure that
 ///                     will be populated **if** the rectangle needs updating.
@@ -318,7 +318,7 @@ static __forceinline BOOL makeFloatRect(
 ///
 /// This function won't update content that's outside pUpdateRect.
 ///
-/// The function is inlined for performane reasons.
+/// Inlined for performance.
 ///
 /// @param index The row to update
 /// @param pUpdateRect The rectangle to update (from WM_PAINT)
@@ -354,7 +354,7 @@ static __forceinline void paintRowFreqs( _In_ const size_t index, _In_ const REC
          spFreqTextFormat,          // Text format
          freqTextRect,	            // The region of the window where the text will be rendered
          pBrush                     // The brush used to draw the text
-      );                            // No return value to check for erors
+      );                            // No return value for error checking
    }
 
    if ( makeFloatRect( &freqTextRect, pUpdateRect, COL0 - 32, pKey->y - 4, COL0 - 12, pKey->y + BOX_HEIGHT - 4 ) ) {
@@ -367,7 +367,7 @@ static __forceinline void paintRowFreqs( _In_ const size_t index, _In_ const REC
          spLettersTextFormat,  // Text format
          freqTextRect,	       // The region of the window where the text will be rendered
          pBrush                // The brush used to draw the text
-      );                       // No return value to check for erors
+      );                       // No return value for error checking
    }
 }
 
@@ -379,7 +379,7 @@ static __forceinline void paintRowFreqs( _In_ const size_t index, _In_ const REC
 ///
 /// This function won't update content that's outside pUpdateRect.
 ///
-/// The function is inlined for performane reasons.
+/// Inlined for performance.
 ///
 /// @param index The column to update
 /// @param pUpdateRect The rectangle to update (from WM_PAINT)
@@ -415,7 +415,7 @@ static __forceinline void paintColFreqs( _In_ const size_t index, _In_ const REC
          spFreqTextFormat,          // Text format
          freqTextRect,	            // The region of the window where the text will be rendered
          pBrush                     // The brush used to draw the text
-      );                            // No return value to check for erors
+      );                            // No return value for error checking
    }
 
    if ( makeFloatRect( &freqTextRect, pUpdateRect, pKey->x + 47, ROW0 - 36, pKey->x + 71, ROW0 - 20 ) ) {
@@ -428,7 +428,7 @@ static __forceinline void paintColFreqs( _In_ const size_t index, _In_ const REC
          spLettersTextFormat,  // Text format
          freqTextRect,	       // The region of the window where the text will be rendered
          pBrush                // The brush used to draw the text
-      );                       // No return value to check for erors
+      );                       // No return value for error checking
    }
 }
 
@@ -441,7 +441,7 @@ static __forceinline void paintColFreqs( _In_ const size_t index, _In_ const REC
 ///
 /// This function won't update content that's outside pUpdateRect.
 ///
-/// The function is inlined for performane reasons.
+/// Inlined for performance.
 ///
 /// @param index The key to repaint
 /// @param pUpdateRect The rectangle to update (from WM_PAINT)
@@ -470,7 +470,7 @@ static __forceinline void paintKeys( _In_ const size_t index, _In_ const RECT* p
          D2D1::RoundedRect( drawingRect, 8.0f, 8.0f ),  // const D2D1_ROUNDED_RECT
          pBrush,     // Brush
          2.f ) ;     // Stroke width
-         // No return value to check for erors
+         // No return value for error checking
    }
 
 
@@ -485,7 +485,7 @@ static __forceinline void paintKeys( _In_ const size_t index, _In_ const RECT* p
          spDigitTextFormat,     // Text format
          drawingRect,	        // The region of the window where the text will be rendered
          pBrush                 // The brush used to draw the text
-      );                        // No return value to check for erors
+      );                        // No return value for error checking
    }
 
 
@@ -500,7 +500,7 @@ static __forceinline void paintKeys( _In_ const size_t index, _In_ const RECT* p
             spLettersTextFormat,      // Text format
             drawingRect,              // The region of the window where the text will be rendered
             pBrush                    // The brush used to draw the text
-         );                           // No return value to check for erors
+         );                           // No return value for error checking
       }
    }
 }
@@ -535,7 +535,7 @@ BOOL mvcViewPaintWindow( _In_ const RECT* pUpdateRect ) {
    spRenderTarget->FillRectangle(
       updateRect_F,         // The rectangle to fill
       spBrushBackground     // The background brush
-   );                       // No return value to check for erors
+   );                       // No return value for error checking
 
    /// Draw the main window... starting with the column and row labels
    ///

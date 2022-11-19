@@ -148,7 +148,7 @@ extern BOOL pcmSetQueueSize( _In_ const size_t size );
 
 /// Enqueue a byte of PCM data to `gPcmQueue`
 ///
-/// The function is inlined for performane reasons.
+/// Inlined for performance.
 ///
 /// Delcared `inline` for performance reasons
 __forceinline void pcmEnqueue( _In_ const BYTE data ) {
@@ -276,7 +276,7 @@ __forceinline BOOL mvcInvalidateColumn( _In_ const size_t column ) {
 /// Determine if the state of a DTMF tone detection has changed.  If it has,
 /// then we need to invalidate that region of the display.
 ///
-/// The function is inlined for performane reasons.
+/// Inlined for performance.
 __forceinline void mvcModelToggleToneDetectedStatus(
    _In_ const size_t toneIndex,
    _In_ const bool   detectedStatus ) {

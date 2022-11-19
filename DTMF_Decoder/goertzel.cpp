@@ -85,7 +85,7 @@ extern "C" float fScaleFactor = 0;  ///< Set in #goertzel_Init and used in #goer
 /// The original version of this algorithm came from:
 /// https://github.com/Harvie/Programs/blob/master/c/goertzel/goertzel.c
 ///
-/// Inlined for performance reasons.
+/// Inlined for performance.
 ///
 /// @param index       The index into the DTMF tones array
 /// @param toneStruct  A pointer to #gDtmfTones (so it doesn't have to

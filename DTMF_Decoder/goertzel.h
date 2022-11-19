@@ -35,7 +35,7 @@ extern HANDLE ghDoneDFTevent[ NUMBER_OF_DTMF_TONES ];
 /// Signal the Goertzel DFT worker threads to start, then wait for all 8 of
 /// them to finish their analysis
 ///
-/// Inlined for performance
+/// Inlined for performance.
 ///
 /// @return `TRUE` if successful.  `FALSE` if there was a problem.
 __forceinline BOOL goertzel_compute_dtmf_tones() {

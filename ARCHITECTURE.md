@@ -205,8 +205,8 @@ Here's what I've learned about processes' end-of-life:
       - Cleanup resources in the reverse order they were created
       - Return with #giApplicationReturnValue
 
-- **GDI / Direct2D**
-  - (Done) Init Error Handler
+- (Done) **GDI / Direct2D**
+  - Init Error Handler
     - Set #giApplicationReturnValue to #EXIT_FAILURE
     - Call #LOG_FATAL 
     - Call #gracefulShutdown

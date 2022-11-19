@@ -4,7 +4,7 @@
 //
 //  A Windows Desktop C program that decodes DTMF tones
 //
-/// Windows Audio Driver code
+/// Initialize and process audio from the default Windows audio capture device
 ///
 /// @file    audio.h
 /// @author  Mark Nelson <marknels@hawaii.edu>
@@ -12,7 +12,7 @@
 
 #pragma once
 
-#include <Windows.h>      // For BOOL, HWND, etc.
+#include <Windows.h>  // For BOOL
 
 
 extern BOOL audioInit();
