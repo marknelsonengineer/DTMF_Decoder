@@ -127,8 +127,8 @@ research to write DTMF_Decoder.
 | API                      | Link                                                                                                    |
 |--------------------------|---------------------------------------------------------------------------------------------------------|
 | `CreateThread`           | https://learn.microsoft.com/en-us/windows/win32/api/processthreadsapi/nf-processthreadsapi-createthread |
-| `CreateEventA`           | https://learn.microsoft.com/en-us/windows/win32/api/synchapi/nf-synchapi-createeventa                   |
-| `CreateEventEx`          | https://learn.microsoft.com/en-us/windows/win32/api/synchapi/nf-synchapi-createeventexa                 |
+| `CreateEventW`           | https://learn.microsoft.com/en-us/windows/win32/api/synchapi/nf-synchapi-createeventw                   |
+| `CreateEventExW`         | https://learn.microsoft.com/en-us/windows/win32/api/synchapi/nf-synchapi-createeventexw                 |
 | `ThreadProc`             | https://learn.microsoft.com/en-us/previous-versions/windows/desktop/legacy/ms686736(v=vs.85)            |
 | `SetEvent`               | https://learn.microsoft.com/en-us/windows/win32/api/synchapi/nf-synchapi-setevent                       |
 | `ResetEvent`             | https://learn.microsoft.com/en-us/windows/win32/api/synchapi/nf-synchapi-resetevent                     |

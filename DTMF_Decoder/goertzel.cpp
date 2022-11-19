@@ -26,7 +26,7 @@
 /// | `ResetEvent`                      | https://learn.microsoft.com/en-us/windows/win32/api/synchapi/nf-synchapi-resetevent              |
 /// | `WaitForSingleObject`             | https://learn.microsoft.com/en-us/windows/win32/api/synchapi/nf-synchapi-waitforsingleobject     |
 /// | `WaitForMultipleObjects`          | https://learn.microsoft.com/en-us/windows/win32/api/synchapi/nf-synchapi-waitformultipleobjects  |
-/// | `CreateEventA`                    | https://learn.microsoft.com/en-us/windows/win32/api/synchapi/nf-synchapi-createeventa            |
+/// | `CreateEventW`                    | https://learn.microsoft.com/en-us/windows/win32/api/synchapi/nf-synchapi-createeventw            |
 ///
 /// ## Audio API
 /// | API                               | Link                                                                                             |
@@ -233,12 +233,20 @@ BOOL goertzel_Init( _In_ const int iSampleRate ) {
       _ASSERTE( ghDoneDFTevent[ i ] == NULL );
       _ASSERTE( shWorkThreads[ i ] == NULL );
 
-      ghStartDFTevent[ i ] = CreateEventA( NULL, FALSE, FALSE, NULL );
+      ghStartDFTevent[ i ] = CreateEventW(
+         NULL,                            // Default security attributes
+         FALSE,                           // Manual-reset option
+         FALSE,                           // Initial state
+         NULL );                          // Object name
       if ( ghStartDFTevent[ i ] == NULL ) {
          RETURN_FATAL_R( IDS_GOERTZEL_FAILED_TO_CREATE_STARTDFT_HANDLES );  // "Failed to create a ghStartDFTevent event handle.  Exiting."
       }
 
-      ghDoneDFTevent[ i ] = CreateEventA( NULL, FALSE, FALSE, NULL );
+      ghDoneDFTevent[ i ] = CreateEventW(
+         NULL,                            // Default security attributes
+         FALSE,                           // Manual-reset option
+         FALSE,                           // Initial state
+         NULL );                          // Object name
       if ( ghDoneDFTevent[ i ] == NULL ) {
          RETURN_FATAL_R( IDS_GOERTZEL_FAILED_TO_CREATE_DONEDFT_HANDLES );  // "Failed to create a ghDoneDFTevent event handle.  Exiting."
       }

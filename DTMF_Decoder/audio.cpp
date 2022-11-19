@@ -53,7 +53,7 @@
 /// | API                      | Link                                                                                                    |
 /// |--------------------------|---------------------------------------------------------------------------------------------------------|
 /// | `CreateThread`           | https://learn.microsoft.com/en-us/windows/win32/api/processthreadsapi/nf-processthreadsapi-createthread |
-/// | `CreateEventA`           | https://learn.microsoft.com/en-us/windows/win32/api/synchapi/nf-synchapi-createeventa                   |
+/// | `CreateEventExW`         | https://learn.microsoft.com/en-us/windows/win32/api/synchapi/nf-synchapi-createeventexw                 |
 /// | `ThreadProc`             | https://learn.microsoft.com/en-us/previous-versions/windows/desktop/legacy/ms686736(v=vs.85)            |
 /// | `WaitForSingleObject`    | https://learn.microsoft.com/en-us/windows/win32/api/synchapi/nf-synchapi-waitforsingleobject            |
 /// | `ExitThread`             | https://learn.microsoft.com/en-us/windows/win32/api/processthreadsapi/nf-processthreadsapi-exitthread   |
@@ -648,7 +648,11 @@ BOOL audioInit() {
 
 
    /// Create the callback events
-   ghAudioSamplesReadyEvent = CreateEventEx( NULL, NULL, 0, EVENT_MODIFY_STATE | SYNCHRONIZE );
+   ghAudioSamplesReadyEvent = CreateEventExW(
+      NULL,                                // Default security attributes
+      NULL,                                // Object name
+      0,                                   // Configuration flags
+      EVENT_MODIFY_STATE | SYNCHRONIZE );  // Desired access
    if ( ghAudioSamplesReadyEvent == NULL ) {
       LOG_FATAL( "Failed to create an audio samples ready event" );
       return FALSE;
