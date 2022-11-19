@@ -368,7 +368,7 @@ Here's what I've learned about processes' end-of-life:
 
 - (NEEDS UPDATING) Helper macros for checking the result of function calls (both to Win32 and 
   internal calls)
-  - #RETURN_FATAL is called when a `CHECK_` macro fails, it:
+  - #RETURN_FATAL_R is called when a `CHECK_` macro fails, it:
     - Sets #giApplicationReturnValue to #EXIT_FAILURE
     - Calls #gracefulShutdown
     - Calls #LOG_FATAL
@@ -380,12 +380,11 @@ Here's what I've learned about processes' end-of-life:
       `BOOL br`, `HRESULT hr` and `INT ir` _and_ they depend on the 
       function being tested to set the return value
   - The helper macros are:
-    - #PROCESS_FATAL - Centralized macro to tell the application about a fatal error
-    - #RETURN_FATAL - Prepare for a fatal exit, then `return FALSE`
-    - #CHECK_HR - Check an `HRESULT` return value
-    - #CHECK_BR - Check a `BOOL` return value
-    - #CHECK_IR - Check an `int` return value
-    - #WARN_BR - Check a `BOOL` return value
+    - #PROCESS_FATAL_R - Centralized macro to tell the application about a fatal error
+    - #RETURN_FATAL_R - Prepare for a fatal exit, then `return FALSE`
+    - #CHECK_HR_R - Check an `HRESULT` return value
+    - #CHECK_BR_R - Check a `BOOL` return value
+    - #WARN_BR_R - Check a `BOOL` return value
 
 
 ## Coding Conventions
