@@ -185,6 +185,10 @@
     <PreBuildEvent>
       <Message>Python-based pre-build script</Message>
     </PreBuildEvent>
+    <ResourceCompile>
+      <ShowProgress>false</ShowProgress>
+      <NullTerminateStrings>true</NullTerminateStrings>
+    </ResourceCompile>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Analyze|Win32'">
     <ClCompile>
@@ -209,6 +213,9 @@
     <PreBuildEvent>
       <Message>Python-based pre-build script</Message>
     </PreBuildEvent>
+    <ResourceCompile>
+      <NullTerminateStrings>true</NullTerminateStrings>
+    </ResourceCompile>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
@@ -247,6 +254,9 @@
     <PreBuildEvent>
       <Message>Python-based pre-build script</Message>
     </PreBuildEvent>
+    <ResourceCompile>
+      <NullTerminateStrings>true</NullTerminateStrings>
+    </ResourceCompile>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Profile|Win32'">
     <ClCompile>
@@ -279,6 +289,9 @@
     <PreBuildEvent>
       <Message>Python-based pre-build script</Message>
     </PreBuildEvent>
+    <ResourceCompile>
+      <NullTerminateStrings>true</NullTerminateStrings>
+    </ResourceCompile>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
@@ -305,6 +318,10 @@
     <PreBuildEvent>
       <Message>Python-based pre-build script</Message>
     </PreBuildEvent>
+    <ResourceCompile>
+      <ShowProgress>false</ShowProgress>
+      <NullTerminateStrings>true</NullTerminateStrings>
+    </ResourceCompile>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Analyze|x64'">
     <ClCompile>
@@ -332,6 +349,9 @@
     <PreBuildEvent>
       <Message>Python-based pre-build script</Message>
     </PreBuildEvent>
+    <ResourceCompile>
+      <NullTerminateStrings>true</NullTerminateStrings>
+    </ResourceCompile>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
@@ -376,6 +396,9 @@
     <PreBuildEvent>
       <Message>Python-based pre-build script</Message>
     </PreBuildEvent>
+    <ResourceCompile>
+      <NullTerminateStrings>true</NullTerminateStrings>
+    </ResourceCompile>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">
     <ClCompile>
@@ -414,6 +437,9 @@
     <PreBuildEvent>
       <Message>Python-based pre-build script</Message>
     </PreBuildEvent>
+    <ResourceCompile>
+      <NullTerminateStrings>true</NullTerminateStrings>
+    </ResourceCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="audio.h" />
