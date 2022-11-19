@@ -87,10 +87,9 @@ int APIENTRY wWinMain(
    _In_     LPWSTR    lpCmdLine,     ///< Command line arguments as a Unicode string
    _In_     int       nCmdShow )     ///< How the application window should be shown
    {
-
    // This is a test... but I'm going to keep it in for now.
    gracefulShutdown();  // This does not shutdown a program during init
-   _ASSERTE( audioCleanup() );
+// _ASSERTE( audioCleanup() );    // Can not call this before audioInit();
    _ASSERTE( goertzel_Cleanup() );
    _ASSERTE( logCleanup() );
    _ASSERTE( mvcModelCleanup() );
@@ -102,6 +101,7 @@ int APIENTRY wWinMain(
    _ASSERTE( hInstance != NULL );
 
    shInst = hInstance;  /// Store the instance handle in a global variable
+
 
    BOOL    br;  // BOOL result
    HRESULT hr;  // HRESULT result

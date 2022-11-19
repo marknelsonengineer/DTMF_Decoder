@@ -713,11 +713,11 @@ BOOL audioCleanup() {
    SAFE_RELEASE( spAudioClient );
 
    hr = PropVariantClear( &sDeviceFriendlyName );
-   CHECK_HR_R( IDS_AUDIO_FAILED_TO_RELEASE_PROPERTY );  // "Failed to release property"
+   CHECK_HR_R( IDS_AUDIO_FAILED_TO_RELEASE_PROPERTY, L"Device Friendly Name");  // "Failed to release property: %s"
    hr = PropVariantClear( &sDeviceDescription );
-   CHECK_HR_R( IDS_AUDIO_FAILED_TO_RELEASE_PROPERTY );  // "Failed to release property"
+   CHECK_HR_R( IDS_AUDIO_FAILED_TO_RELEASE_PROPERTY, L"Device Description");  // "Failed to release property: %s"
    hr = PropVariantClear( &sDeviceInterfaceFriendlyName );
-   CHECK_HR_R( IDS_AUDIO_FAILED_TO_RELEASE_PROPERTY );  // "Failed to release property"
+   CHECK_HR_R( IDS_AUDIO_FAILED_TO_RELEASE_PROPERTY, L"Device Interface Friendly Name");  // "Failed to release property: %s"
 
    SAFE_RELEASE( spPropertyStore );
 
