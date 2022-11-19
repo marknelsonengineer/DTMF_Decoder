@@ -243,7 +243,7 @@ BOOL mvcViewInit() {
 /// The IUnknown::Release() method does not have a meaningful result code
 /// @see https://learn.microsoft.com/en-us/windows/win32/api/unknwn/nf-unknwn-iunknown-release
 ///
-/// @return `TRUE` if successful.  `FALSE` if something went wrong.
+/// @return `TRUE` if successful.  `FALSE` if there was a problem.
 BOOL mvcViewCleanup() {
    SAFE_RELEASE( spBrushForeground );
    SAFE_RELEASE( spBrushHighlight );
@@ -511,7 +511,7 @@ static __forceinline void paintKeys( _In_ const size_t index, _In_ const RECT* p
 /// @see  http://www.catch22.net/tuts/win32/flicker-free-drawing#
 ///
 /// @param pUpdateRect The rectangle to update (from WM_PAINT)
-/// @return `true` if successful.  `false` if there were problems.
+/// @return `TRUE` if successful.  `FALSE` if there was a problem.
 BOOL mvcViewPaintWindow( _In_ const RECT* pUpdateRect ) {
    HRESULT hr;  // HRESULT result
 

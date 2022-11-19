@@ -187,7 +187,7 @@ extern HANDLE ghAudioSamplesReadyEvent;
 ///
 /// @param row Index of the row... 0 through 3.
 ///
-/// @return `true` if successful.  `false` if there was a problem.
+/// @return `TRUE` if successful.  `FALSE` if there was a problem.
 __forceinline BOOL mvcInvalidateRow( _In_ const size_t row ) {
    _ASSERTE( row <= 3 );
    _ASSERTE( ghMainWindow != NULL );
@@ -233,7 +233,7 @@ __forceinline BOOL mvcInvalidateRow( _In_ const size_t row ) {
 ///
 /// @param column Index of the column... 0 through 3.
 ///
-/// @return `true` if successful.  `false` if there was a problem.
+/// @return `TRUE` if successful.  `FALSE` if there was a problem.
 __forceinline BOOL mvcInvalidateColumn( _In_ const size_t column ) {
    _ASSERTE( column <= 3 );
    _ASSERTE( ghMainWindow != NULL );

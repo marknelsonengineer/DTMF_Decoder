@@ -141,7 +141,7 @@ static audio_format_t sAudioFormat = UNKNOWN_AUDIO_FORMAT;
 ///
 /// @param pData      Pointer to the head of the audio bufer
 /// @param frameIndex The frameIndex number to process
-/// @return `true` if successful.  `false` if there were problems.
+/// @return `TRUE` if successful.  `FALSE` if there was a problem.
 __forceinline static BOOL processAudioFrame(
    _In_     const BYTE*    pData,
    _In_     const UINT32   frameIndex ) {
@@ -685,7 +685,7 @@ BOOL audioInit() {
 
 
 /// Stop the audio device
-/// @return `true` if successful.  `false` if there was a problem.
+/// @return `TRUE` if successful.  `FALSE` if there was a problem.
 BOOL audioStopDevice() {
    HRESULT hr;  // HRESULT result
 
