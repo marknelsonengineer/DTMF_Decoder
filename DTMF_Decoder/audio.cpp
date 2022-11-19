@@ -420,39 +420,39 @@ static BOOL audioPrintWaveFormat( _In_ const WAVEFORMATEX* pFmt ) {
    _ASSERTE( pFmt != NULL );
 
    if ( pFmt->wFormatTag == WAVE_FORMAT_EXTENSIBLE ) {
-      LOG_DEBUG( "Using WAVE_FORMAT_EXTENSIBLE format");
+      LOG_DEBUG_R( IDS_AUDIO_USING_WAVE_FORMAT_EXTENSIBLE );  // "Using WAVE_FORMAT_EXTENSIBLE format"
       WAVEFORMATEXTENSIBLE* const pFmtEx = (WAVEFORMATEXTENSIBLE*) pFmt;
 
-      LOG_DEBUG( "Channels=%" PRIu16,              pFmtEx->Format.nChannels );
-      LOG_DEBUG( "Samples per Second=%" PRIu32,    pFmtEx->Format.nSamplesPerSec );
-      LOG_DEBUG( "Bytes per Second=%" PRIu32,      pFmtEx->Format.nAvgBytesPerSec );
-      LOG_DEBUG( "Block (frame) alignment, in bytes=%" PRIu32, pFmtEx->Format.nBlockAlign );
-      LOG_DEBUG( "Bits per sample=%" PRIu32,       pFmtEx->Format.wBitsPerSample );
-      LOG_DEBUG( "Valid bits per sample=%" PRIu16, pFmtEx->Samples.wValidBitsPerSample );
+      LOG_DEBUG_R( IDS_AUDIO_FORMAT_CHANNELS,              pFmtEx->Format.nChannels );             // "Channels=%" PRIu16
+      LOG_DEBUG_R( IDS_AUDIO_FORMAT_SAMPLES_PER_SECOND,    pFmtEx->Format.nSamplesPerSec );        // "Samples per Second=%" PRIu32
+      LOG_DEBUG_R( IDS_AUDIO_FORMAT_BYTES_PER_SECOND,      pFmtEx->Format.nAvgBytesPerSec );       // "Bytes per Second=%" PRIu32
+      LOG_DEBUG_R( IDS_AUDIO_FORMAT_FRAME_ALIGNMENT,       pFmtEx->Format.nBlockAlign );           // "Block (frame) alignment, in bytes=%" PRIu32
+      LOG_DEBUG_R( IDS_AUDIO_FORMAT_BITS_PER_SAMPLE,       pFmtEx->Format.wBitsPerSample );        // "Bits per sample=%" PRIu32
+      LOG_DEBUG_R( IDS_AUDIO_FORMAT_VALID_BITS_PER_SAMPLE, pFmtEx->Samples.wValidBitsPerSample );  // "Valid bits per sample=%" PRIu16
 
       if ( pFmtEx->SubFormat == KSDATAFORMAT_SUBTYPE_PCM ) {
-         LOG_DEBUG( "Extended wave format is PCM" );
+         LOG_DEBUG_R( IDS_AUDIO_EXTENDED_FORMAT_PCM );      // "Extended wave format is PCM"
       } else if ( pFmtEx->SubFormat == KSDATAFORMAT_SUBTYPE_IEEE_FLOAT ) {
-         LOG_DEBUG( "Extended wave format is IEEE Float" );
+         LOG_DEBUG_R( IDS_AUDIO_EXTENDED_FORMAT_FLOAT );    // "Extended wave format is IEEE Float"
       } else {
-         LOG_DEBUG( "Extended wave format is not PCM" );
+         LOG_DEBUG_R( IDS_AUDIO_EXTENDED_FORMAT_UNKNOWN );  // "Extended wave format is not recognized"
       }
    } else {
-      LOG_DEBUG( "Using WAVE_FORMAT format");
+      LOG_DEBUG_R( IDS_AUDIO_USING_WAVE_FORMAT );  // "Using WAVE_FORMAT format"
 
       if ( pFmt->wFormatTag == WAVE_FORMAT_PCM ) {
-         LOG_DEBUG( "Wave format is PCM" );
+         LOG_DEBUG_R( IDS_AUDIO_FORMAT_PCM );      // "Wave format is PCM"
       } else if ( pFmt->wFormatTag == WAVE_FORMAT_IEEE_FLOAT ) {
-         LOG_DEBUG( "Wave format is IEEE Float" );
+         LOG_DEBUG_R( IDS_AUDIO_FORMAT_FLOAT );    // "Wave format is IEEE Float"
       } else {
-         LOG_DEBUG( "Wave format is not PCM" );
+         LOG_DEBUG_R( IDS_AUDIO_FORMAT_UNKNOWN );  // "Wave format is not recognized"
       }
 
-      LOG_DEBUG( "Channels=%" PRIu16,           pFmt->nChannels );
-      LOG_DEBUG( "Samples per Second=%" PRIu32, pFmt->nSamplesPerSec );
-      LOG_DEBUG( "Bytes per Second=%" PRIu32,   pFmt->nAvgBytesPerSec );
-      LOG_DEBUG( "Block (frame) alignment, in bytes=%" PRIu32, pFmt->nBlockAlign );
-      LOG_DEBUG( "Bits per sample=%" PRIu32,    pFmt->wBitsPerSample );
+      LOG_DEBUG_R( IDS_AUDIO_FORMAT_CHANNELS,           pFmt->nChannels );        // "Channels=%" PRIu16
+      LOG_DEBUG_R( IDS_AUDIO_FORMAT_SAMPLES_PER_SECOND, pFmt->nSamplesPerSec );   // "Samples per Second=%" PRIu32
+      LOG_DEBUG_R( IDS_AUDIO_FORMAT_BYTES_PER_SECOND,   pFmt->nAvgBytesPerSec );  // "Bytes per Second=%" PRIu32
+      LOG_DEBUG_R( IDS_AUDIO_FORMAT_FRAME_ALIGNMENT,    pFmt->nBlockAlign );      // "Block (frame) alignment, in bytes=%" PRIu32
+      LOG_DEBUG_R( IDS_AUDIO_FORMAT_BITS_PER_SAMPLE,    pFmt->wBitsPerSample );   // "Bits per sample=%" PRIu32
    }
 
    return TRUE;
@@ -467,7 +467,7 @@ BOOL audioInit() {
    BOOL    br;  // BOOL result
 
    if ( sShareMode == AUDCLNT_SHAREMODE_EXCLUSIVE ) {
-      RETURN_FATAL( "Exclusive mode not supported right now.  Exiting." );
+      RETURN_FATAL_R( IDS_AUDIO_EXCLUSIVE_MODE_UNSUPPORTED );  // "Exclusive mode not supported right now.  Exiting."
    }
 
    _ASSERTE( sShareMode == AUDCLNT_SHAREMODE_SHARED );
@@ -476,42 +476,38 @@ BOOL audioInit() {
    IMMDeviceEnumerator* deviceEnumerator = NULL;
 
    hr = CoCreateInstance( __uuidof( MMDeviceEnumerator ), NULL, CLSCTX_INPROC_SERVER, IID_PPV_ARGS( &deviceEnumerator ) );
-   CHECK_HR( "Failed to instantiate the multimedia device enumerator via COM.  Exiting." );
+   CHECK_HR_R( IDS_AUDIO_FAILED_TO_CREATE_DEVICE );  // "Failed to instantiate the multimedia device enumerator via COM.  Exiting."
 
    /// Get the IMMDevice
    _ASSERTE( spDevice == NULL );
 
    hr = deviceEnumerator->GetDefaultAudioEndpoint( eCapture, eMultimedia, &spDevice );
-   CHECK_HR( "Failed to get default audio device" );
+   CHECK_HR_R( IDS_AUDIO_FAILED_TO_GET_DEFAULT_DEVICE );  // "Failed to get default audio device"
 
    _ASSERTE( spDevice != NULL );
 
    /// Get the ID from IMMDevice
    hr = spDevice->GetId( &spwstrDeviceId );
    if ( hr != S_OK || spwstrDeviceId == NULL ) {
-      LOG_FATAL( "Failed to get the device's ID string" );
-      return FALSE;
+      RETURN_FATAL_R( IDS_AUDIO_FAILED_TO_GET_DEVICE_ID );  // "Failed to get the device's ID string"
    }
 
-   LOG_INFO_W( L":  Device ID=%s", spwstrDeviceId );
+   LOG_INFO_R( IDS_AUDIO_DEVICE_ID, spwstrDeviceId );  // "Device ID = %s"
 
    /// Get the State from IMMDevice
    hr = spDevice->GetState( &sdwState );
    if ( hr != S_OK || sdwState == NULL ) {
-      LOG_FATAL( "Failed to get the device's state" );
-      return FALSE;
+      RETURN_FATAL_R( IDS_AUDIO_FAILED_TO_GET_DEVICE_STATE );  // "Failed to get the device's state"
    }
 
    if ( sdwState != DEVICE_STATE_ACTIVE ) {
-      LOG_FATAL( "The audio device state is not active" );
-      return FALSE;
+      RETURN_FATAL_R( IDS_AUDIO_DEVICE_NOT_ACTIVE );  // "The audio device state is not active"
    }
 
    /// Get the Property Store from IMMDevice
    hr = spDevice->OpenPropertyStore( STGM_READ, &spPropertyStore );
    if ( hr != S_OK || spPropertyStore == NULL ) {
-      LOG_FATAL( "Failed to open device property store" );
-      return FALSE;
+      RETURN_FATAL_R( IDS_AUDIO_FAILED_TO_OPEN_PROPERTIES );  // "Failed to open device property store"
    }
 
    /// Get the device's properties from the property store
@@ -521,33 +517,32 @@ BOOL audioInit() {
 
    hr = spPropertyStore->GetValue( PKEY_DeviceInterface_FriendlyName, &sDeviceInterfaceFriendlyName );
    if ( hr != S_OK ) {
-      LOG_WARN( "Failed to retrieve the friendly name of the audio adapter for the device.  Continuing." );
+      LOG_WARN_R( IDS_AUDIO_FAILED_TO_RETRIEVE_PROPERTY, L"Device Interface Friendly Name" );  // "Failed to retrieve the [%s] property from the audio driver for this device.  Continuing."
       sDeviceInterfaceFriendlyName.pcVal = NULL;
    } else {
-      LOG_INFO_W( L":  Device audio adapter friendly name=%s", sDeviceInterfaceFriendlyName.pwszVal );
+      LOG_INFO_R( IDS_AUDIO_DEVICE_INTERFACE_NAME, sDeviceInterfaceFriendlyName.pwszVal );  // "Device interface friendly name=%s"
    }
 
    hr = spPropertyStore->GetValue( PKEY_Device_DeviceDesc, &sDeviceDescription );
    if ( hr != S_OK ) {
-      LOG_WARN( "Failed to retrieve the device's description.  Continuing." );
+      LOG_WARN_R( IDS_AUDIO_FAILED_TO_RETRIEVE_PROPERTY, L"Device Description" );  // "Failed to retrieve the [%s] property from the audio driver for this device.  Continuing."
       sDeviceDescription.pcVal = NULL;
    } else {
-      LOG_INFO_W( L":  Device description=%s", sDeviceDescription.pwszVal );
+      LOG_INFO_R( IDS_AUDIO_DEVICE_DESCRIPTION, sDeviceDescription.pwszVal );  // "Device description=%s"
    }
 
    hr = spPropertyStore->GetValue( PKEY_Device_FriendlyName, &sDeviceFriendlyName );
    if ( hr != S_OK ) {
-      LOG_WARN( "Failed to retrieve the friendly name of the device.  Continuing." );
+      LOG_WARN_R( IDS_AUDIO_FAILED_TO_RETRIEVE_PROPERTY, L"Device Friendly Name" );  // "Failed to retrieve the [%s] property from the audio driver for this device.  Continuing."
       sDeviceFriendlyName.pcVal = NULL;
    } else {
-      LOG_INFO_W( L":  Device friendly name=%s", sDeviceFriendlyName.pwszVal );
+      LOG_INFO_R( IDS_AUDIO_DEVICE_NAME, sDeviceFriendlyName.pwszVal );  // "Device friendly name=%s"
    }
 
    /// Use Activate on IMMDevice to create an IAudioClient
    hr = spDevice->Activate( __uuidof( IAudioClient ), CLSCTX_ALL, NULL, (void**) &spAudioClient );
    if ( hr != S_OK || spAudioClient == NULL ) {
-      LOG_FATAL( "Failed to create an audio client" );
-      return FALSE;
+      RETURN_FATAL_R( IDS_AUDIO_FAILED_TO_ACTIVATE );  // "Failed to activate an audio client"
    }
 
    _ASSERTE( spAudioClient != NULL );
@@ -555,28 +550,25 @@ BOOL audioInit() {
    /// Get the default audio format that the audio driver wants to use
    hr = spAudioClient->GetMixFormat( &spMixFormat );
    if ( hr != S_OK || spMixFormat == NULL ) {
-      LOG_FATAL( "Failed to retrieve mix format" );
-      return FALSE;
+      RETURN_FATAL_R( IDS_AUDIO_FAILED_TO_GET_MIX_FORMAT );  // "Failed to retrieve mix format"
    }
 
    _ASSERTE( spMixFormat != NULL );
 
-   LOG_DEBUG( "The mix format follows:" );
+   LOG_DEBUG_R( IDS_AUDIO_MIX_FORMAT );  // "The mix format follows:"
    audioPrintWaveFormat( spMixFormat );
 
    hr = spAudioClient->IsFormatSupported( sShareMode, spMixFormat, &spAudioFormatUsed );
    if ( hr == S_OK ) {
-      LOG_INFO( "The requested format is supported");
+      LOG_INFO_R( IDS_AUDIO_FORMAT_SUPPORTED );  // "The requested format is supported"
    } else if ( hr == AUDCLNT_E_UNSUPPORTED_FORMAT ) {
-      LOG_FATAL( "The requested format is is not supported" );
-      return FALSE;
+      RETURN_FATAL_R( IDS_AUDIO_FORMAT_UNSUPPORTED );  // "The requested format is is not supported"
    } else if( hr == S_FALSE && spAudioFormatUsed != NULL) {
-      LOG_DEBUG( "The requested format is not available, but this format is..." );
+      LOG_DEBUG_R( IDS_AUDIO_FORMAT_NOT_AVAILABLE );  // "The requested format is not available, but this format is:"
       audioPrintWaveFormat( spAudioFormatUsed );
       return FALSE;
    } else {
-      LOG_FATAL( "Failed to validate the requested format" );
-      return FALSE;
+      RETURN_FATAL_R( IDS_AUDIO_FORMAT_INVALID );  // "Failed to validate the requested format"
    }
 
    /// Determine the audio format
@@ -597,8 +589,7 @@ BOOL audioInit() {
    }
 
    if ( sAudioFormat == UNKNOWN_AUDIO_FORMAT ) {
-      LOG_FATAL( "Failed to match with the audio format" );
-      return FALSE;
+      RETURN_FATAL_R( IDS_AUDIO_FAILED_TO_MATCH_FORMAT );  // "Failed to match with the audio format"
    }
 
    _ASSERTE( sAudioFormat != UNKNOWN_AUDIO_FORMAT );
@@ -609,33 +600,34 @@ BOOL audioInit() {
                                               | AUDCLNT_STREAMFLAGS_AUTOCONVERTPCM, 0, 0, spMixFormat, NULL );
    if ( hr != S_OK ) {
       /// @todo Look at more error codes and print out higher-fidelity error messages
-      LOG_FATAL( "Failed to initialize the audio client" );
-      return FALSE;
+      RETURN_FATAL_R( IDS_AUDIO_FAILED_TO_INITIALIZE );  // "Failed to initialize the audio client"
    }
 
    hr = spAudioClient->GetBufferSize( &suBufferSize );
-   CHECK_HR( "Failed to get buffer size" );
-   LOG_INFO( "The maximum capacity of the buffer is %" PRIu32" frames or %i ms", suBufferSize, (int) (1.0 / spMixFormat->nSamplesPerSec * 1000 * suBufferSize ) );
+   CHECK_HR_R( IDS_AUDIO_FAILED_TO_GET_BUFFER_SIZE );  // "Failed to get buffer size"
+   LOG_INFO_R( IDS_AUDIO_BUFFER_CAPACITY,  // "The maximum capacity of the buffer is %" PRIu32" frames or %i ms"
+      suBufferSize,
+      (int) (1.0 / spMixFormat->nSamplesPerSec * 1000 * suBufferSize ) );
    /// Right now, the buffer is ~22ms or about the perfect size to capture
    /// VoIP voice, which is 20ms.
 
    /// Get the device period
    hr = spAudioClient->GetDevicePeriod( &sDefaultDevicePeriod, &sMinimumDevicePeriod );
-   CHECK_HR( "Failed to get audio client device periods" );
+   CHECK_HR_R( IDS_AUDIO_FAILED_TO_GET_DEVICE_PERIODS );  // "Failed to get audio client device periods"
 
-   LOG_INFO( "%s:  Default device period=%lli ms", __FUNCTION__, sDefaultDevicePeriod / 10000 );
-   LOG_INFO( "%s:  Minimum device period=%lli ms", __FUNCTION__, sMinimumDevicePeriod / 10000 );
+   LOG_INFO_R( IDS_AUDIO_DEFAULT_DEVICE_PERIOD, sDefaultDevicePeriod / 10000 );  // "Default device period=%lli ms"
+   LOG_INFO_R( IDS_AUDIO_MINIMUM_DEVICE_PERIOD, sMinimumDevicePeriod / 10000 );  // "Minimum device period=%lli ms"
 
 
    /// Initialize the DTMF buffer
    br = pcmSetQueueSize( (size_t) spMixFormat->nSamplesPerSec / 1000 * SIZE_OF_QUEUE_IN_MS );
-   CHECK_BR( "Failed to allocate PCM queue" );
+   CHECK_BR_R( IDS_AUDIO_FAILED_PCM_MALLOC );  // "Failed to allocate PCM queue"
 
-   LOG_INFO( "%s:  Queue size=%zu bytes or %d ms", __FUNCTION__, gstQueueSize, SIZE_OF_QUEUE_IN_MS );
+   LOG_INFO_R( IDS_AUDIO_QUEUE_SIZE, gstQueueSize, SIZE_OF_QUEUE_IN_MS );  // "Queue size=%zu bytes or %d ms"
 
    /// Initialize the Goertzel module (and associated threads)
    br = goertzel_Init( spMixFormat->nSamplesPerSec );
-   CHECK_BR( "Failed to initialioze Goertzel module (and associated threads)" );
+   CHECK_BR_R( IDS_AUDIO_FAILED_TO_INITIALIZE_GOERTZEL );  // "Failed to initialize Goertzel module (and associated threads)"
 
 
    /// Create the callback events
@@ -645,29 +637,27 @@ BOOL audioInit() {
       0,                                   // Configuration flags
       EVENT_MODIFY_STATE | SYNCHRONIZE );  // Desired access
    if ( ghAudioSamplesReadyEvent == NULL ) {
-      LOG_FATAL( "Failed to create an audio samples ready event" );
-      return FALSE;
+      RETURN_FATAL_R( IDS_AUDIO_FAILED_TO_CREATE_READY_EVENT );  // "Failed to create an audio samples ready event"
    }
 
    hr = spAudioClient->SetEventHandle( ghAudioSamplesReadyEvent );
-   CHECK_HR( "Failed to set audio capture ready event" );
+   CHECK_HR_R( IDS_AUDIO_FAILED_TO_SET_EVENT_CALLBACK );  // "Failed to set audio capture ready event"
 
    /// Get the Capture Client
    hr = spAudioClient->GetService( IID_PPV_ARGS( &spCaptureClient ) );
-   CHECK_HR( "Failed to get capture client" )
+   CHECK_HR_R( IDS_AUDIO_FAILED_TO_GET_CAPTURE_CLIENT );  // "Failed to get capture client"
 
    /// Start the thread
    shCaptureThread = CreateThread( NULL, 0, audioCaptureThread, NULL, 0, NULL );
    if ( shCaptureThread == NULL ) {
-      LOG_FATAL( "Failed to create the capture thread" );
-      return FALSE;
+      RETURN_FATAL_R( IDS_AUDIO_FAILED_TO_CREATE_CAPTURE_THREAD );  // "Failed to create the audio capture thread"
    }
 
    /// Start the audio processer
    hr = spAudioClient->Start();
-   CHECK_HR( "Failed to start capturing the audio stream" );
+   CHECK_HR_R( IDS_AUDIO_FAILED_TO_START_CAPTURE_STREAM );  // "Failed to start capturing the audio stream"
 
-   LOG_INFO( "The audio capture interface has been initialized" );
+   LOG_INFO_R( IDS_AUDIO_INIT_SUCCESSFUL );  // "The audio capture interface has been initialized"
 
    /// The thread of execution goes back to #wWinMain, which starts the main
    /// message loop
@@ -682,7 +672,7 @@ BOOL audioStopDevice() {
 
    if ( spAudioClient != NULL ) {
       hr = spAudioClient->Stop();
-      CHECK_HR( "Stopping the audio stream returned an odd value.  Investigate!!" );
+      CHECK_HR_R( IDS_AUDIO_STOP_FAILED );  // "Stopping the audio stream returned an odd value.  Investigate!!"
    }
 
    return TRUE;
@@ -699,21 +689,22 @@ BOOL audioCleanup() {
 
    if ( shCaptureThread != NULL ) {
       br = CloseHandle( shCaptureThread );
-      CHECK_BR( "Failed to close hCaptureThread" );
+      CHECK_BR_R( IDS_AUDIO_FAILED_CLOSING_THREAD );  // "Failed to close hCaptureThread"
       shCaptureThread = NULL;
    }
 
    SAFE_RELEASE( spCaptureClient );
 
+   /// @todo Do I need to unregister this event first?
    if ( ghAudioSamplesReadyEvent != NULL ) {
       br = CloseHandle( ghAudioSamplesReadyEvent );
-      CHECK_BR( "Failed to close gAudioSamplesReadyEvent" );
+      CHECK_BR_R( IDS_AUDIO_FAILED_CLOSING_EVENT );  // "Failed to close gAudioSamplesReadyEvent"
       ghAudioSamplesReadyEvent = NULL;
    }
 
    if ( spAudioClient != NULL ) {
       hr = spAudioClient->Reset();
-      CHECK_HR( "Failed to release the audio client")
+      CHECK_HR_R( IDS_AUDIO_FAILED_TO_RELEASE_CLIENT );  // "Failed to release the audio client"
       spAudioClient = NULL;
    }
 
@@ -722,11 +713,11 @@ BOOL audioCleanup() {
    SAFE_RELEASE( spAudioClient );
 
    hr = PropVariantClear( &sDeviceFriendlyName );
-   CHECK_HR( "Failed to release gDeviceFriendlyName" );
+   CHECK_HR_R( IDS_AUDIO_FAILED_TO_RELEASE_PROPERTY );  // "Failed to release property"
    hr = PropVariantClear( &sDeviceDescription );
-   CHECK_HR( "Failed to release gDeviceDescription" );
+   CHECK_HR_R( IDS_AUDIO_FAILED_TO_RELEASE_PROPERTY );  // "Failed to release property"
    hr = PropVariantClear( &sDeviceInterfaceFriendlyName );
-   CHECK_HR( "Failed to release gDeviceInterfaceFriendlyName" );
+   CHECK_HR_R( IDS_AUDIO_FAILED_TO_RELEASE_PROPERTY );  // "Failed to release property"
 
    SAFE_RELEASE( spPropertyStore );
 

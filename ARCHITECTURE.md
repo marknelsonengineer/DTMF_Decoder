@@ -244,6 +244,9 @@ Here's what I've learned about processes' end-of-life:
 - **Audio Capture Thread**
   - Init Error Handler
   - Running Error Handler
+    - For TRACE, DEBUG and INFO, just log them
+    - No WARN allowed
+    - For ERROR and FATAL, see the Main Window Thread's Running Error Handler
   - Normal Shutdown
 
 - (Done) **Goertzel DFT Threads**
