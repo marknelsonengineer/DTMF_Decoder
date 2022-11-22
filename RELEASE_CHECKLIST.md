@@ -98,30 +98,29 @@ is available via the SDK.  Here's how it works...
   - Open the application to configure the tests to run (see below)
   - Don't configure all of the tests to run at once or the program will 
     definately keel over and die
+  - Run the verification layers separately.  For example, in one session enable 
+    all Basics and on another one enable all LuaPriv checks.
   - When you configure a program to run under the Application Verifier, you
     are looking for crashes or for the debugger to catch exceptions.  If 
     you run the app through its paces and don't get any exceptions, then
     you're good.
+  - Run ALL your tests exercising the application
+  - Analyze any debugger break(s) encountered.  If a break occurs you will 
+    need to understand it and fix it.
+  - When finished, delete all settings from the Application Verifier 
+
 
 Status of tests
 
-- Basics:  No problems
-- Compatability:  ?? What versions shgould I use??
-- Cuzz:  No problems
-- Low Resource Simulation:
-- LuaPriv
-- Miscellaneous:  No problems
-- Networking:  No problems
-- NTLM:  No problems
-- Printing:  No problems
-- Webservices:  No problems
-
-| Test                                                                                                                              | Status                          |
-|-----------------------------------------------------------------------------------------------------------------------------------|---------------------------------|
-| Features DTMF Decoder doesn't use: <ul><li>Networking</li> <li>NTLM</li> <li>NTLM</li><li>Printing</li><li>Webservices</li> </ul> | Tested 20 Nov 2022 - No crashes |
-| Miscellaneous                                                                                                                     | Tested 20 Nov 2022 - No crashes |
-| Basics (All)                                                                                                                      | Tested 20 Nov 2022 - No crashes |
-| Compatability                                                                                                                     | Not sure what versions to use   |
-| Cuzz                                                                                                                              | Tested 20 Nov 2022 - No crashes |
-| Low Resource Simulation                                                                                                           |                                 |
-| LuaPriv                                                                                                                           |                                 |
+| Test                              | Date        | Status                                                    |
+|-----------------------------------|-------------|-----------------------------------------------------------|
+| Basics (All)                      | 22 Nov 2022 | No crashes                                                |
+| Compatability                     | 22 Nov 2022 | Crashes - Not sure why                                    |
+| Cuzz (FuzzingLevel = 1)           | 22 Nov 2022 | No crashes                                                |
+| Low Resource Simulation           | 22 Nov 2022 | Crashes in `DefWindowProc` -- Not sure how to handle this |
+| LuaPriv (Limited User Privileges) | 22 Nov 2022 | No crashes                                                |
+| Miscellaneous                     | 22 Nov 2022 | No crashes                                                |
+| Networking                        | 22 Nov 2022 | No crashes - Tested with NTLM, Printing & Webservice      |
+| NTLM                              | 22 Nov 2022 | No crashes                                                |
+| Printing                          | 22 Nov 2022 | No crashes                                                |
+| Webservices                       | 22 Nov 2022 | No crashes                                                |

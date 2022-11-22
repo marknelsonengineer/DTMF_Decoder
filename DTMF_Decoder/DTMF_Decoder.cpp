@@ -424,7 +424,7 @@ LRESULT CALLBACK WndProc( HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam 
             gracefulShutdown();
             break;
          }
-         return DefWindowProc( hWnd, message, wParam, lParam );
+         return DefWindowProcW( hWnd, message, wParam, lParam );  // Can't check return value
    }
 
    return 0;
