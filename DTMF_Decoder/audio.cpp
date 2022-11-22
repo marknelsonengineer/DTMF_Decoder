@@ -7,6 +7,7 @@
 /// Initialize and process audio from the default Windows audio capture device
 ///
 /// @see https://learn.microsoft.com/en-us/windows/win32/api/_coreaudio/
+/// @see https://matthewvaneerde.wordpress.com/2017/10/17/how-to-negotiate-an-audio-format-for-a-windows-audio-session-api-wasapi-client/
 ///
 /// ## Audio API
 /// | API                                            | Link                                                                                                                           |
