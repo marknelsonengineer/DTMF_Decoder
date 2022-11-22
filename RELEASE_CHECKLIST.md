@@ -88,3 +88,40 @@ Clean the solution
 Rebuild the solution as **Release**
 
 Checkout the Release's profile database with:  `pgrmgr /summary .\DTMF_Decoder_x64_Release.pgd` and `pgomgr /summary /detail .\DTMF_Decoder_x64_Release.pgd`
+
+
+## Microsoft Application Verifier
+
+The [Microsoft Application Verifier](https://learn.microsoft.com/en-us/windows-hardware/drivers/devtest/application-verifier)
+is available via the SDK.  Here's how it works...
+
+  - Open the application to configure the tests to run (see below)
+  - Don't configure all of the tests to run at once or the program will 
+    definately keel over and die
+  - When you configure a program to run under the Application Verifier, you
+    are looking for crashes or for the debugger to catch exceptions.  If 
+    you run the app through its paces and don't get any exceptions, then
+    you're good.
+
+Status of tests
+
+- Basics:  No problems
+- Compatability:  ?? What versions shgould I use??
+- Cuzz:  No problems
+- Low Resource Simulation:
+- LuaPriv
+- Miscellaneous:  No problems
+- Networking:  No problems
+- NTLM:  No problems
+- Printing:  No problems
+- Webservices:  No problems
+
+| Test                                                                                                                              | Status                          |
+|-----------------------------------------------------------------------------------------------------------------------------------|---------------------------------|
+| Features DTMF Decoder doesn't use: <ul><li>Networking</li> <li>NTLM</li> <li>NTLM</li><li>Printing</li><li>Webservices</li> </ul> | Tested 20 Nov 2022 - No crashes |
+| Miscellaneous                                                                                                                     | Tested 20 Nov 2022 - No crashes |
+| Basics (All)                                                                                                                      | Tested 20 Nov 2022 - No crashes |
+| Compatability                                                                                                                     | Not sure what versions to use   |
+| Cuzz                                                                                                                              | Tested 20 Nov 2022 - No crashes |
+| Low Resource Simulation                                                                                                           |                                 |
+| LuaPriv                                                                                                                           |                                 |

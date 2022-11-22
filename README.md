@@ -21,10 +21,13 @@ DTMF Decoder for Windows
 - Write a good, general purpose logger that I can use with other projects
 
 
-## Links
+## Links & Downloads
 The project's home page (hosted by GitHub) is [here](https://github.com/marknelsonengineer/DTMF_Decoder)
 
-The source code documentation (hosted by UH) is [here](https://www2.hawaii.edu/~marknels/DTMF_Decoder/)
+The source code documentation (hosted by UH) is [here](https://www2.hawaii.edu/~marknels/DTMF_Decoder/docs/)
+
+The application can be downloaded from [here](https://www2.hawaii.edu/~marknels/DTMF_Decoder/app/)
+
 
 
 ## Design Decisions

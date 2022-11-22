@@ -88,13 +88,12 @@ int APIENTRY wWinMain(
    _In_     int       nCmdShow )     ///< How the application window should be shown
    {
    // This is a test... but I'm going to keep it in for now.
-   gracefulShutdown();  // This does not shutdown a program during init
-// _ASSERTE( audioCleanup() );    // Can not call this before audioInit();
+   gracefulShutdown();            // This does not shutdown a program during init
+// _ASSERTE( audioCleanup() );    // Can't call this before audioInit
    _ASSERTE( goertzel_Cleanup() );
    _ASSERTE( logCleanup() );
    _ASSERTE( mvcModelCleanup() );
    _ASSERTE( mvcViewCleanup() );
-
 
    // The program really starts here
 
