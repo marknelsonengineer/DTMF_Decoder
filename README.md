@@ -32,7 +32,7 @@ The application can be downloaded from [here](https://www2.hawaii.edu/~marknels/
 
 ## Design Decisions
 - **The Application Framework:**  After reviewing [An Overview of App Development Options](https://learn.microsoft.com/en-us/windows/apps/get-started/?tabs=net-maui%2Cwindows-forms)
-  I'm going with **Win32**.  Here's a brief summary of my options:
+  I'm going with **Win32**.  Here's a summary of my [options](https://en.wikipedia.org/wiki/List_of_Microsoft_Windows_application_programming_interfaces_and_frameworks):
   - **WinUI 3:**  This is the current recommended platform.  That said, it
   has a number of deficiencies:
     - It's cross-platform and I don't need cross-platform support.  I'm not
