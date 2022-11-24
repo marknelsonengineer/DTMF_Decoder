@@ -88,22 +88,24 @@
 #endif
 
 
-/// Post a custom message #guUMW_CLOSE_FATAL, passing in the resource string
-/// ID and a number (usually a thread index).  Then, let the message handler
-/// save the fatal error to the message log.
-#define CLOSE_FATAL( resource_id, hiWord )        \
-PostMessageA( ghMainWindow,                       \
-              guUMW_CLOSE_FATAL,                  \
-              MAKEWPARAM( resource_id, hiWord ),  \
-              0 );
+/// Standardized macro for queuing a fatal error using a `printf`-style
+/// resource string
+///
+/// - Set #giApplicationReturnValue to #EXIT_FAILURE
+/// - Call #LOG_FATAL_Q to queue the message
+/// - Call #gracefulShutdown
+///
+#define QUEUE_FATAL( resource_id, ... )      \
+   giApplicationReturnValue = EXIT_FAILURE;  \
+   LOG_FATAL_Q( resource_id, __VA_ARGS__ );  \
+   gracefulShutdown();
 
 
 /// Standardized macro for processing a fatal error using a `printf`-style
 /// resource string
 ///
 /// - Set #giApplicationReturnValue to #EXIT_FAILURE
-/// - Call #LOG_FATAL_R to display a message
-///   - Log the message before we shutdown the message loop
+/// - Call #LOG_FATAL_R to immediately display the message
 /// - Call #gracefulShutdown
 ///
 /// @see https://learn.microsoft.com/en-us/windows/win32/com/using-macros-for-error-handling
@@ -178,32 +180,32 @@ PostMessageA( ghMainWindow,                       \
 
 
 /// Standardized macro for checking the return value of GDI functions that
-/// return `BOOL`s.  For example,
+/// return `BOOL`s.  This macro uses resource strings and `printf`-style
+/// varargs.
 ///
 /// - If the check succeeds, continue processing
-/// - If the check fails, the macro will terminate the application via the
-///   #guUMW_CLOSE_FATAL message.
+/// - If the check fails, queue a message and close the program
 ///
 /// @see https://learn.microsoft.com/en-us/windows/win32/com/using-macros-for-error-handling
 ///
-#define CHECK_BR_C( resource_id, wParam )  \
-   if ( !br ) {                            \
-      CLOSE_FATAL( resource_id, wParam );  \
+#define CHECK_BR_C( resource_id, ... )          \
+   if ( !br ) {                                 \
+      QUEUE_FATAL( resource_id, __VA_ARGS__ );  \
    }
 
 
 /// Standardized macro for checking the return value of COM functions that
-/// return `HRESULT`s.
+/// return `HRESULT`s.  This macro uses resource strings and `printf`-style
+/// varargs.
 ///
 /// - If the check succeeds, continue processing
-/// - If the check fails, the macro will terminate the application via the
-///   #guUMW_CLOSE_FATAL message.
+/// - If the check fails, queue a message and close the program
 ///
 /// @see https://learn.microsoft.com/en-us/windows/win32/com/using-macros-for-error-handling
 ///
-#define CHECK_HR_C( resource_id, wParam )  \
-   if ( FAILED( hr ) ) {                   \
-      CLOSE_FATAL( resource_id, wParam );  \
+#define CHECK_HR_C( resource_id, ... )          \
+   if ( FAILED( hr ) ) {                        \
+      QUEUE_FATAL( resource_id, __VA_ARGS__ );  \
    }
 
 

@@ -277,7 +277,7 @@ __forceinline static void audioCapture() {
          flags &= ~AUDCLNT_BUFFERFLAGS_TIMESTAMP_ERROR;  // Clear AUDCLNT_BUFFERFLAGS_TIMESTAMP_ERROR from flags
       }
       if ( flags != 0 ) {
-         CLOSE_FATAL( IDS_AUDIO_BUFFER_OTHER_ISSUE, 0 );  // "Some other bufer flags are set.  Investigate!"
+         QUEUE_FATAL( IDS_AUDIO_BUFFER_OTHER_ISSUE );  // "Some other bufer flags are set.  Investigate!"
          // Throw these packets out
       }
 
@@ -321,7 +321,7 @@ processAudioFrame: Channel 1:  Min: 125   Max: 129
 
          hr = spCaptureClient->ReleaseBuffer( framesAvailable );
          if ( hr != S_OK ) {
-            CLOSE_FATAL( IDS_AUDIO_FAILED_TO_RELEASE_AUDIO_BUFFER, 0 );  // "ReleaseBuffer didn't return S_OK.  Exiting.  Investigate!"
+            QUEUE_FATAL( IDS_AUDIO_FAILED_TO_RELEASE_AUDIO_BUFFER );  // "ReleaseBuffer didn't return S_OK.  Exiting.  Investigate!"
          }
       }
 
@@ -334,7 +334,7 @@ processAudioFrame: Channel 1:  Min: 125   Max: 129
       /// will return something unexpected and we should see it here.  If this
       /// happens, gracefully shutdown the app.
 
-      CLOSE_FATAL( IDS_AUDIO_GETBUFFER_NOT_OK, 0 );  // "GetBuffer did not return S_OK.  Exiting.  Investigate!"
+      QUEUE_FATAL( IDS_AUDIO_GETBUFFER_NOT_OK );  // "GetBuffer did not return S_OK.  Exiting.  Investigate!"
    }
 }
 
@@ -355,7 +355,7 @@ DWORD WINAPI audioCaptureThread( LPVOID Context ) {
    /// Initialize COM for the thread
    hr = CoInitializeEx( NULL, COINIT_MULTITHREADED );
    if ( hr != S_OK ) {
-      CLOSE_FATAL( IDS_DTMF_DECODER_FAILED_TO_INITIALIZE_COM, 0 );  // "Failed to initialize COM."
+      QUEUE_FATAL( IDS_DTMF_DECODER_FAILED_TO_INITIALIZE_COM );  // "Failed to initialize COM."
       ExitThread( 0xFFFF );
    }
 
@@ -382,7 +382,7 @@ DWORD WINAPI audioCaptureThread( LPVOID Context ) {
             audioCapture();
          }
       } else {
-         CLOSE_FATAL( IDS_AUDIO_WAIT_FAILED, 0 );  // "WaitForSingleObject in audio capture thread failed.  Exiting.  Investigate!"
+         QUEUE_FATAL( IDS_AUDIO_WAIT_FAILED );  // "WaitForSingleObject in audio capture thread failed.  Exiting.  Investigate!"
          break;  // While loop
       }
    }

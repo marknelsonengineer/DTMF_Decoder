@@ -177,9 +177,9 @@ DWORD WINAPI goertzelWorkThread( _In_ LPVOID pContext ) {
             }
          }
       } else if ( dwWaitResult == WAIT_FAILED ) {
-         CLOSE_FATAL( IDS_GOERTZEL_WAITFORSINGLEOBJECT_FAILED, iIndex );  // "WaitForSingleObject in Goertzel thread %zu failed.  Exiting.  Investigate!"
+         QUEUE_FATAL( IDS_GOERTZEL_WAITFORSINGLEOBJECT_FAILED, iIndex );  // "WaitForSingleObject in Goertzel thread %zu failed.  Exiting.  Investigate!"
       } else {
-         CLOSE_FATAL( IDS_GOERTZEL_WAITFORSINGLEOBJECT_FAILED_UNKNOWN, iIndex );  // "WaitForSingleObject in Goertzel thread %zu ended for an unknown reason.  Exiting.  Investigate!"
+         QUEUE_FATAL( IDS_GOERTZEL_WAITFORSINGLEOBJECT_FAILED_UNKNOWN, iIndex );  // "WaitForSingleObject in Goertzel thread %zu ended for an unknown reason.  Exiting.  Investigate!"
       }
 
       SetEvent( ghDoneDFTevent[ index ] );
