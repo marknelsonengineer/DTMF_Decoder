@@ -207,25 +207,13 @@ Here's what I've learned about processes' end-of-life:
      both subsystems, then release their resources.
      
    - Worker threads should not create windows.  This bears repeating.  Worker 
-     threads should not create windows.  They don't have message loops, so   
-     they will get out of sync and the controlling process will loose control 
+     threads should not create windows (like `MessageBox`).  They will appear
+     to hang, get out of sync and the controlling process will loose control 
      of them.  
      
      So, how can they communicate problems and safely shutdown the app?  Let's
-     post a custom message back to the main thread.  Here's the plan:
+     queue some messages and then play them back from the main thread.
 
-     - Create a GUID
-     - Register the app name + GUID
-     - When threads have problems, they post a message to the custom message.  
-       - The high part of WPARAM is the thread number.  The low part is a
-         resource string ID number. 
-       - The macro #CLOSE_FATAL does this in one line
-       - LPARAM is not used.
-     
-   - Use #logSetMsg, #logGetMsgId, #logGetMsgLevel, #logQueueReset and #logQueueHasMsg to
-     print messages when its safe to do so (as the application is 
-     shutting down).
-     
    - **A normal close operation**
      - On `WM_CLOSE` - The start of a normal close... start unwinding things
        - Set #gbIsRunning to `false`
@@ -269,19 +257,8 @@ Here's what I've learned about processes' end-of-life:
 
   - Running Error Handler
     - Mostly, this happens in the other subsystems, however:
-      - Problems in the message loop will:
-        - Call #CLOSE_FATAL, which:
-          - Posts an application-specific message `guUMW_CLOSE_FATAL` which 
-            will gracefully shutdown the application by:
-            - The message's `WPARAM` sends a resource string ID and an index 
-              (usually a thread).
-            - In the #guUMW_CLOSE_FATAL message handler:
-              - Set #giApplicationReturnValue to #EXIT_FAILURE
-              - Store a string resource ID and index to the logger via #logSetMsg
-              - Call #gracefulShutdown
-            - After all of the work threads have finished, the first WARN, ERROR
-              or FATAL message
-      - Problems in the message handlers will also call #CLOSE_FATAL
+      - Problems in the message loop will call #QUEUE_FATAL
+      - Problems in the message handlers will also call #QUEUE_FATAL
 
   - Normal Shutdown
     - #gracefulShutdown

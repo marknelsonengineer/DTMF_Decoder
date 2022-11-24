@@ -69,11 +69,6 @@ extern bool gbIsRunning;
 extern HWND ghMainWindow;
 
 
-/// Custom message that worker threads can use to report problems back to the
-/// application's main thread.
-extern UINT guUMW_CLOSE_FATAL;
-
-
 /// The application's return value.  This defaults to 0 (success).  Any error
 /// handler can set this and it will be passed out of the program when it
 /// terminates.

@@ -76,9 +76,6 @@ bool gbIsRunning = false;
 HWND ghMainWindow = NULL;
 
 
-UINT guUMW_CLOSE_FATAL = 0;
-
-
 int giApplicationReturnValue = EXIT_SUCCESS;  // Default to SUCCESS
 
 

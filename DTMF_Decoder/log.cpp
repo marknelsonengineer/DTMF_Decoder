@@ -74,7 +74,7 @@
 /// and show the message later.  This is a common Windows design pattern...
 ///
 /// To that end, we will use the same design pattern to save messages with
-/// #logSetMsg, #logGetMsgId, #logGetMsgLevel, #logQueueReset and #logQueueHasEntry.
+/// #LOG_INFO_Q, #logQ, #logQueueHasEntry, et. al..
 ///
 /// The message IDs stored in this stateful holder should be the same IDs that
 /// can be displayed by the `_R` loggers.
