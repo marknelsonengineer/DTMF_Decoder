@@ -188,7 +188,7 @@ DWORD WINAPI goertzelWorkThread( _In_ LPVOID pContext ) {
    /// When the thread is done, put the CPU thread priority back
    if ( mmcssHandle != NULL ) {
       if( !AvRevertMmThreadCharacteristics( mmcssHandle ) ) {
-         logSetMsg( LOG_LEVEL_WARN, IDS_GOERTZEL_FAILED_TO_REVERT_MMCSS, MAKEWPARAM( 0, iIndex ) );  // "Goertzel DFT thread: %zu   Failed to revert MMCSS on Goertzel work thread.  Continuing."
+         LOG_WARN_Q( IDS_GOERTZEL_FAILED_TO_REVERT_MMCSS, iIndex );  // "Goertzel DFT thread: %zu   Failed to revert MMCSS on Goertzel work thread.  Continuing."
       }
       mmcssHandle = NULL;
    }

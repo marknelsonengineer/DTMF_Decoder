@@ -285,6 +285,11 @@ int APIENTRY wWinMain(
    br = goertzel_Cleanup();
    WARN_BR_R( IDS_DTMF_DECODER_FAILED_TO_CLEANUP_DFT );  // "Failed to cleanup Goertzel DFT"
 
+   /// Print any entries in the log queue
+   while ( logQueueHasEntry() ) {
+      logDequeueAndDisplayMessage();
+   }
+
    br = mvcModelCleanup();
    WARN_BR_R( IDS_DTMF_DECODER_FAILED_TO_CLEANUP_MODEL );  // "Failed to cleanup the model."
 
@@ -380,10 +385,7 @@ LRESULT CALLBACK WndProc( HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam 
 
             br = DestroyWindow( hWnd );
             if ( !br ) {
-               // At this point, the guUMW_CLOSE_FATAL message never makes it
-               // through the message loop, so we need to set the message directly
-               logSetMsg( LOG_LEVEL_FATAL, IDS_DTMF_DECODER_FAILED_TO_DESTROY_WINDOW, 0 );
-               LOG_FATAL_Q( IDS_DTMF_DECODER_FAILED_TO_DESTROY_WINDOW );
+               LOG_FATAL_Q( IDS_DTMF_DECODER_FAILED_TO_DESTROY_WINDOW );  // Failed to destroy window
             }
             break;
          }
@@ -399,7 +401,7 @@ LRESULT CALLBACK WndProc( HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam 
       default:                                  // Because guUMW_CLOSE_FATAL is a variable
          if ( message == guUMW_CLOSE_FATAL ) {  // it can't be tested in a switch statement
             giApplicationReturnValue = EXIT_FAILURE;
-
+            /// @todo Remove all of this junk
             WORD resource_id = LOWORD( wParam );
 
             logSetMsg( LOG_LEVEL_FATAL, resource_id, wParam );
