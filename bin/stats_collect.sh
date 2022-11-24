@@ -39,6 +39,10 @@ function get_all_files {
 		   ! -path "*/Analyze/*" \
 		   ! -path "*/Profile/*" \
 		   ! -path "./Ghidra/*"  \
+		   ! -path "./Installer/obj/*"              \
+		   ! -path "./Installer/BundleArtifacts/*"  \
+		   ! -path "./Installer/bin/*"              \
+		   ! -path "./Installer/AppPackages/*"      \
 		   ! -name ".DS_Store"   \
 		   ! -name "Thumbs.db"   \
 		     -type f > $ALL_FILES
