@@ -135,50 +135,39 @@
 /// throwing an `_ASSERT_EXPR( FALSE, ...`.
 #define BUFFER_GUARD 0xed539d63
 
-
 /// Standard message string buffer with a guard at the end
 struct wBuffer_t {
    WCHAR sBuf[ MAX_LOG_STRING ];  ///< A message string buffer
    DWORD dwGuard;                 ///< Guards the message in sBuf from overflowing
 };
 
-
 /// The ID when no resource has been identified.  When this is set, it is presumed
 /// to be an ID to the string table in the resource file.
 #define NO_RESOURCE 0
-
 
 /// Pointer to an application's global windows handle.  This window will "own"
 /// the message box popups.
 static HWND* sphMainWindow = NULL;
 
-
 /// Pointer to the application's current instance handle.  This is used to
 /// lookup resources (strings) in the application.
 static HINSTANCE* sphInst = NULL;
 
+static CHAR  sAppName [ MAX_LOG_STRING ] = "";   ///< The (narrow) application name set in #logInit and used as the window title in `MessageBoxA`
+static WCHAR swAppName[ MAX_LOG_STRING ] = L"";  ///< The (wide) application name set in #logInit and used as the window title in `MessageBoxW`
+
 
 #define MAX_LOG_QUEUE_DEPTH 16     /**< The maximum depth of the log queue.  Set to `4` when testing. */
-//#define MAX_LOG_QUEUE_DEPTH 4    /**< The maximum depth of the log queue (used for testing) */
+// #define MAX_LOG_QUEUE_DEPTH 4   /**< The maximum depth of the log queue (used for testing) */
 static size_t log_queue_tail = 0;  ///< If the queue is not empty, then point to the first valid node in the queue.
 static size_t log_queue_head = 0;  ///< If the queue is not full, then point to the next available entry in the queue.
 static size_t log_queue_size = 0;  ///< The number of valid entries in the queue
 
-
 static CRITICAL_SECTION log_queue_critical_section;  ///< Manage the queue in a thread-safe manner
-
 
 /// An array of log messages that can't be displayed at the time the log is
 /// generated (like in a worker thread or drawing a screen buffer).
 static logEntry_t logQueue[ MAX_LOG_QUEUE_DEPTH ];
-
-static UINT        uResourceId = NO_RESOURCE;     ///< The ID of the first valid message  @todo purgeme
-static logLevels_t logLevel    = LOG_LEVEL_TRACE; ///< The level of the first valid message  @todo purgeme
-static WPARAM      sMsgWParam  = 0;               ///< A WPARAM parameter associated with the first valid message  @todo purgeme
-
-static CHAR sAppName[ MAX_LOG_STRING ] = "";     ///< The (narrow) application name set in #logInit and used as the title in `MessageBoxA`
-static WCHAR swAppName[ MAX_LOG_STRING ] = L"";  ///< The (wide) application name set in #logInit and used as the title in `MessageBoxW`
-
 
 /// Process an error within the logging subsystem
 #define FATAL_IN_LOG( message )   \
@@ -771,10 +760,6 @@ void logQueueReset() {
 
    LeaveCriticalSection( &log_queue_critical_section );
 
-   uResourceId = NO_RESOURCE;
-   logLevel    = LOG_LEVEL_TRACE;
-   sMsgWParam  = 0;
-
    _ASSERTE( logValidate() );
    _ASSERTE( !logQueueHasEntry() );
 }
@@ -1088,44 +1073,4 @@ void logTest() {
 /// @param msgId     The ID of the message
 /// @param msgWParam A WPARAM passed into the message
 void logSetMsg( _In_ const logLevels_t level, _In_ const UINT msgId, _In_ const WPARAM msgWParam ) {
-   _ASSERTE( msgId != NO_RESOURCE );
-
-   /// @todo If a message has already been set, we should (at least) log to the
-   ///       debug log
-   if ( logQueueHasEntry() )
-      return;           /// Do nothing if a message has already been set
-
-   if ( level < LOG_LEVEL_WARN )
-      return;           /// Silently return if level is `<` #LOG_LEVEL_WARN
-
-   uResourceId = msgId;
-   logLevel    = level;
-   sMsgWParam  = msgWParam;
-}
-
-
-/// Get the ID of the first message.  The ID can then be used to loookup a
-/// string in the resource string table.
-///
-/// @return The ID of the first message.  If there are no messages, return
-///         #NO_RESOURCE
-UINT logGetMsgId() {
-   return uResourceId;
-}
-
-
-/// Get the level of the first message
-///
-/// @return The level of the first message.  If there are no messages, return
-///         #LOG_LEVEL_TRACE
-logLevels_t logGetMsgLevel() {
-   return logLevel;
-}
-
-
-/// Get a WPARAM parameter from the first message
-///
-/// @return A WPARAM associated with the first message.  IF there is none, return `0`
-WPARAM logGetMsgWParam() {
-   return sMsgWParam;
 }

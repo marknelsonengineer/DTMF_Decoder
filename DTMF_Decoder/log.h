@@ -157,6 +157,3 @@ extern size_t logDequeueAndDisplayMessage();
 extern BOOL   logPeekQueuedMessage( logEntry_t* logEntry );
 
 extern void        logSetMsg( _In_ const logLevels_t level, _In_ const UINT msgId, _In_ const WPARAM msgWParam );
-extern UINT        logGetMsgId();
-extern logLevels_t logGetMsgLevel();
-extern WPARAM      logGetMsgWParam();
