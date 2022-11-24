@@ -28,97 +28,135 @@ enum logLevels_t {
 #define MAX_LOG_STRING 256
 
 
+/// A log message that can be queued and displayed later
+struct logEntry_t {
+   UINT        uResourceId;             ///< The resoruce string ID of the log entry
+   logLevels_t logLevel;                ///< The level of the log entry
+   WCHAR       sBuf[ MAX_LOG_STRING ];  ///< A queued log message
+   DWORD       dwGuard;                 ///< Guards the message in sBuf
+};
+
+
 /// Log a narrow `printf`-style message at the the #LOG_LEVEL_TRACE level
-#define LOG_TRACE( format, ... ) logA( LOG_LEVEL_TRACE, APP_NAME, __FUNCTION__, format, __VA_ARGS__ )
+#define LOG_TRACE( format, ... ) logA( LOG_LEVEL_TRACE, __FUNCTION__, format, __VA_ARGS__ )
 
 /// Log a narrow `printf`-style message at the the #LOG_LEVEL_DEBUG level
-#define LOG_DEBUG( format, ... ) logA( LOG_LEVEL_DEBUG, APP_NAME, __FUNCTION__, format, __VA_ARGS__ )
+#define LOG_DEBUG( format, ... ) logA( LOG_LEVEL_DEBUG, __FUNCTION__, format, __VA_ARGS__ )
 
 /// Log a narrow `printf`-style message at the the #LOG_LEVEL_INFO level
-#define LOG_INFO( format, ... )  logA( LOG_LEVEL_INFO,  APP_NAME, __FUNCTION__, format, __VA_ARGS__ )
+#define LOG_INFO( format, ... )  logA( LOG_LEVEL_INFO,  __FUNCTION__, format, __VA_ARGS__ )
 
 /// Log a narrow `printf`-style message at the the #LOG_LEVEL_WARN level
-#define LOG_WARN( format, ... )  logA( LOG_LEVEL_WARN,  APP_NAME, __FUNCTION__, format, __VA_ARGS__ )
+#define LOG_WARN( format, ... )  logA( LOG_LEVEL_WARN,  __FUNCTION__, format, __VA_ARGS__ )
 
 /// Log a narrow `printf`-style message at the the #LOG_LEVEL_ERROR level
-#define LOG_ERROR( format, ... ) logA( LOG_LEVEL_ERROR, APP_NAME, __FUNCTION__, format, __VA_ARGS__ )
+#define LOG_ERROR( format, ... ) logA( LOG_LEVEL_ERROR, __FUNCTION__, format, __VA_ARGS__ )
 
 /// Log a narrow `printf`-style message at the the #LOG_LEVEL_FATAL level
-#define LOG_FATAL( format, ... ) logA( LOG_LEVEL_FATAL, APP_NAME, __FUNCTION__, format, __VA_ARGS__ )
+#define LOG_FATAL( format, ... ) logA( LOG_LEVEL_FATAL, __FUNCTION__, format, __VA_ARGS__ )
 
 
 /// Log a wide `printf`-style message at the the #LOG_LEVEL_TRACE level
-#define LOG_TRACE_W( format, ... ) logW( LOG_LEVEL_TRACE, APP_NAME_W, __FUNCTIONW__, format, __VA_ARGS__ )
+#define LOG_TRACE_W( format, ... ) logW( LOG_LEVEL_TRACE, __FUNCTIONW__, format, __VA_ARGS__ )
 
 /// Log a wide `printf`-style message at the the #LOG_LEVEL_DEBUG level
-#define LOG_DEBUG_W( format, ... ) logW( LOG_LEVEL_DEBUG, APP_NAME_W, __FUNCTIONW__, format, __VA_ARGS__ )
+#define LOG_DEBUG_W( format, ... ) logW( LOG_LEVEL_DEBUG, __FUNCTIONW__, format, __VA_ARGS__ )
 
 /// Log a wide `printf`-style message at the the #LOG_LEVEL_INFO level
-#define LOG_INFO_W( format, ... )  logW( LOG_LEVEL_INFO,  APP_NAME_W, __FUNCTIONW__, format, __VA_ARGS__ )
+#define LOG_INFO_W( format, ... )  logW( LOG_LEVEL_INFO,  __FUNCTIONW__, format, __VA_ARGS__ )
 
 /// Log a wide `printf`-style message at the the #LOG_LEVEL_WARN level
-#define LOG_WARN_W( format, ... )  logW( LOG_LEVEL_WARN,  APP_NAME_W, __FUNCTIONW__, format, __VA_ARGS__ )
+#define LOG_WARN_W( format, ... )  logW( LOG_LEVEL_WARN,  __FUNCTIONW__, format, __VA_ARGS__ )
 
 /// Log a wide `printf`-style message at the the #LOG_LEVEL_ERROR level
-#define LOG_ERROR_W( format, ... ) logW( LOG_LEVEL_ERROR, APP_NAME_W, __FUNCTIONW__, format, __VA_ARGS__ )
+#define LOG_ERROR_W( format, ... ) logW( LOG_LEVEL_ERROR, __FUNCTIONW__, format, __VA_ARGS__ )
 
 /// Log a wide `printf`-style message at the the #LOG_LEVEL_FATAL level
-#define LOG_FATAL_W( format, ... ) logW( LOG_LEVEL_FATAL, APP_NAME_W, __FUNCTIONW__, format, __VA_ARGS__ )
+#define LOG_FATAL_W( format, ... ) logW( LOG_LEVEL_FATAL, __FUNCTIONW__, format, __VA_ARGS__ )
 
 
 /// Log a wide `printf`-style resource string at the the #LOG_LEVEL_TRACE level
-#define LOG_TRACE_R( uId, ... ) logWMsg( LOG_LEVEL_TRACE,  APP_NAME_W, __FUNCTIONW__, uId, __VA_ARGS__ )
+#define LOG_TRACE_R( uId, ... ) logR( LOG_LEVEL_TRACE, __FUNCTIONW__, uId, __VA_ARGS__ )
 
 /// Log a wide `printf`-style resource string at the the #LOG_LEVEL_DEBUG level
-#define LOG_DEBUG_R( uId, ... ) logWMsg( LOG_LEVEL_DEBUG,  APP_NAME_W, __FUNCTIONW__, uId, __VA_ARGS__ )
+#define LOG_DEBUG_R( uId, ... ) logR( LOG_LEVEL_DEBUG, __FUNCTIONW__, uId, __VA_ARGS__ )
 
 /// Log a wide `printf`-style resource string at the the #LOG_LEVEL_INFO level
-#define LOG_INFO_R( uId, ... )  logWMsg( LOG_LEVEL_INFO,   APP_NAME_W, __FUNCTIONW__, uId, __VA_ARGS__ )
+#define LOG_INFO_R( uId, ... )  logR( LOG_LEVEL_INFO,  __FUNCTIONW__, uId, __VA_ARGS__ )
 
 /// Log a wide `printf`-style resource string at the the #LOG_LEVEL_WARN level
-#define LOG_WARN_R( uId, ... )  logWMsg( LOG_LEVEL_WARN,   APP_NAME_W, __FUNCTIONW__, uId, __VA_ARGS__ )
+#define LOG_WARN_R( uId, ... )  logR( LOG_LEVEL_WARN,  __FUNCTIONW__, uId, __VA_ARGS__ )
 
 /// Log a wide `printf`-style resource string at the the #LOG_LEVEL_ERROR level
-#define LOG_ERROR_R( uId, ... ) logWMsg( LOG_LEVEL_ERROR,  APP_NAME_W, __FUNCTIONW__, uId, __VA_ARGS__ )
+#define LOG_ERROR_R( uId, ... ) logR( LOG_LEVEL_ERROR, __FUNCTIONW__, uId, __VA_ARGS__ )
 
-/// Log a wide `printf`-style resource string at the the #LOG_LEVEL_WARN level
-#define LOG_FATAL_R( uId, ... ) logWMsg( LOG_LEVEL_WARN,   APP_NAME_W, __FUNCTIONW__, uId, __VA_ARGS__ )
+/// Log a wide `printf`-style resource string at the the #LOG_LEVEL_FATAL level
+#define LOG_FATAL_R( uId, ... ) logR( LOG_LEVEL_FATAL, __FUNCTIONW__, uId, __VA_ARGS__ )
 
 
-extern BOOL logInit( _In_ HINSTANCE* phInst, _In_ HWND* phWindow );
+/// Queue a wide `printf`-style resource string at the the #LOG_LEVEL_TRACE level
+#define LOG_TRACE_Q( uId, ... ) logQ( LOG_LEVEL_TRACE, __FUNCTIONW__, uId, __VA_ARGS__ )
+
+/// Queue a wide `printf`-style resource string at the the #LOG_LEVEL_DEBUG level
+#define LOG_DEBUG_Q( uId, ... ) logQ( LOG_LEVEL_DEBUG, __FUNCTIONW__, uId, __VA_ARGS__ )
+
+/// Queue a wide `printf`-style resource string at the the #LOG_LEVEL_INFO level
+#define LOG_INFO_Q( uId, ... )  logQ( LOG_LEVEL_INFO,  __FUNCTIONW__, uId, __VA_ARGS__ )
+
+/// Queue a wide `printf`-style resource string at the the #LOG_LEVEL_WARN level
+#define LOG_WARN_Q( uId, ... )  logQ( LOG_LEVEL_WARN,  __FUNCTIONW__, uId, __VA_ARGS__ )
+
+/// Queue a wide `printf`-style resource string at the the #LOG_LEVEL_ERROR level
+#define LOG_ERROR_Q( uId, ... ) logQ( LOG_LEVEL_ERROR, __FUNCTIONW__, uId, __VA_ARGS__ )
+
+/// Queue a wide `printf`-style resource string at the the #LOG_LEVEL_FATAL level
+#define LOG_FATAL_Q( uId, ... ) logQ( LOG_LEVEL_FATAL, __FUNCTIONW__, uId, __VA_ARGS__ )
+
+
+extern BOOL logInit(
+   _In_         HINSTANCE* phInst,
+   _In_         HWND*      phWindow,
+   _In_z_ const CHAR*      pAppName,
+   _In_z_ const WCHAR*     pwAppName
+);
 
 extern BOOL logCleanup();
 
 extern void logA(
-   _In_ const logLevels_t logLevel,
-   _In_ const CHAR* appName,
-   _In_ const CHAR* functionName,
-   _In_ const CHAR* format,
+   _In_   const logLevels_t logLevel,
+   _In_z_ const CHAR*       functionName,
+   _In_z_ const CHAR*       format,
    _In_ ... );
-
 
 extern void logW(
-   _In_ const logLevels_t logLevel,
-   _In_ const WCHAR* appName,
-   _In_ const WCHAR* functionName,
-   _In_ const WCHAR* format,
+   _In_   const logLevels_t logLevel,
+   _In_z_ const WCHAR*      functionName,
+   _In_z_ const WCHAR*      format,
    _In_ ... );
 
+extern void logR(
+   _In_   const logLevels_t logLevel,
+   _In_z_ const WCHAR*      functionName,
+   _In_   const UINT        resourceId,
+   _In_   ... );
 
-extern void logWMsg(
-   _In_ const logLevels_t logLevel,
-   _In_ const WCHAR* appName,
-   _In_ const WCHAR* functionName,
-   _In_ const UINT   msgId,
-   _In_ ... );
-
+extern void logQ(
+   _In_   const logLevels_t logLevel,
+   _In_z_ const WCHAR*      functionName,
+   _In_   const UINT        resourceId,
+   _In_   ... );
 
 extern void logTest();
 
+extern void   logQueueReset();
+extern bool   logQueueHasEntry();
+extern bool   logValidate();
+extern size_t logQueueSize();
+
+extern size_t logDequeueAndDisplayMessage();
+extern BOOL   logPeekQueuedMessage( logEntry_t* logEntry );
 
 extern void        logSetMsg( _In_ const logLevels_t level, _In_ const UINT msgId, _In_ const WPARAM msgWParam );
 extern UINT        logGetMsgId();
 extern logLevels_t logGetMsgLevel();
 extern WPARAM      logGetMsgWParam();
-extern void        logResetMsg();
-extern bool        logHasMsg();

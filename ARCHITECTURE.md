@@ -315,7 +315,7 @@ Here's what I've learned about processes' end-of-life:
        - The macro #CLOSE_FATAL does this in one line
        - LPARAM is not used.
      
-   - Use #logSetMsg, #logGetMsgId, #logGetMsgLevel, #logResetMsg and #logHasMsg to
+   - Use #logSetMsg, #logGetMsgId, #logGetMsgLevel, #logQueueReset and #logQueueHasMsg to
      print messages when its safe to do so (as the application is 
      shutting down).
      

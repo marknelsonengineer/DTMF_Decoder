@@ -96,10 +96,10 @@ research to write DTMF_Decoder.
 
 
 ## Debugging & Instrumentation API
-| API                  | Link                                                                                                                           |
-|----------------------|--------------------------------------------------------------------------------------------------------------------------------|
-| `_ASSERTE`           | https://learn.microsoft.com/en-us/cpp/c-runtime-library/reference/assert-asserte-assert-expr-macros?view=msvc-170              |
-| `wcslen`             | https://en.cppreference.com/w/c/string/wide/wcslen                                                                             |
+| API                  | Link                                                                                                                              |
+|----------------------|-----------------------------------------------------------------------------------------------------------------------------------|
+| `_ASSERTE`           | https://learn.microsoft.com/en-us/cpp/c-runtime-library/reference/assert-asserte-assert-expr-macros?view=msvc-170                 |
+| `wcslen`             | https://en.cppreference.com/w/c/string/wide/wcslen                                                                                |
 | `va_arg`             | https://learn.microsoft.com/en-us/cpp/c-runtime-library/reference/va-arg-va-copy-va-end-va-start?view=msvc-170                    |
 | `sprintf_s`          | https://learn.microsoft.com/en-us/cpp/c-runtime-library/reference/sprintf-s-sprintf-s-l-swprintf-s-swprintf-s-l?view=msvc-170     |
 | `vsprintf_s`         | https://learn.microsoft.com/en-us/cpp/c-runtime-library/reference/vsprintf-s-vsprintf-s-l-vswprintf-s-vswprintf-s-l?view=msvc-170 |
@@ -121,6 +121,9 @@ research to write DTMF_Decoder.
 | `ZeroMemory`       | https://learn.microsoft.com/en-us/previous-versions/windows/desktop/legacy/aa366920(v=vs.85) |
 | `_free_dbg`        | https://learn.microsoft.com/en-us/cpp/c-runtime-library/reference/free-dbg                   |
 | `_CrtCheckMemory`  | https://learn.microsoft.com/en-us/cpp/c-runtime-library/reference/crtcheckmemory             |
+| `CopyMemory`       | https://learn.microsoft.com/en-us/previous-versions/windows/desktop/legacy/aa366535(v=vs.85) |
+| `rand`             | https://learn.microsoft.com/en-us/cpp/c-runtime-library/reference/rand?view=msvc-170         |
+| `StringCchCopyW`   | https://learn.microsoft.com/en-us/windows/win32/api/strsafe/nf-strsafe-stringcchcopyw        |
 
 
 ## Threads & Synchronization API
@@ -135,6 +138,10 @@ research to write DTMF_Decoder.
 | `WaitForSingleObject`    | https://learn.microsoft.com/en-us/windows/win32/api/synchapi/nf-synchapi-waitforsingleobject            |
 | `WaitForMultipleObjects` | https://learn.microsoft.com/en-us/windows/win32/api/synchapi/nf-synchapi-waitformultipleobjects         |
 | `ExitThread`             | https://learn.microsoft.com/en-us/windows/win32/api/processthreadsapi/nf-processthreadsapi-exitthread   |
+| `InitializeCriticalSection` | https://learn.microsoft.com/en-us/windows/win32/api/synchapi/nf-synchapi-initializecriticalsection |
+| `DeleteCriticalSection`     | https://learn.microsoft.com/en-us/windows/win32/api/synchapi/nf-synchapi-deletecriticalsection |
+| `EnterCriticalSection`      | https://learn.microsoft.com/en-us/windows/win32/api/synchapi/nf-synchapi-entercriticalsection |
+| `LeaveCriticalSection`      | https://learn.microsoft.com/en-us/windows/win32/api/synchapi/nf-synchapi-leavecriticalsection |
 
 
 ## Pragmas

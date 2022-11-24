@@ -153,8 +153,16 @@
 #define IDS_AUDIO_FAILED_CLOSING_THREAD 232
 #define IDS_AUDIO_FAILED_CLOSING_EVENT  233
 #define IDS_AUDIO_FAILED_TO_RELEASE_CLIENT 234
-#define IDS_AUDIO_GENERIC_FAILED_TO_RELEASE 235
 #define IDS_AUDIO_FAILED_TO_RELEASE_PROPERTY 235
+#define IDS_LOG_MAXED_OUT_QUEUE         236
+#define IDS_LOG_TEST_BASIC              237
+#define IDS_LOG_TEST_PARAMETERS         238
+#define IDS_LOG_TEST_PARAMETERS_Q       239
+#define IDS_LOG_TEST_253                240
+#define IDS_LOG_TEST_254                241
+#define IDS_LOG_TEST_255                242
+#define IDS_STRING243                   243
+#define IDS_LOG_QUEUE_STRESS_TEST       243
 #define IDC_PROGRAM_NAME                1000
 #define IDC_AUTHOR                      1001
 #define IDC_COPYRIGHT                   1002

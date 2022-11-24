@@ -91,7 +91,7 @@ int APIENTRY wWinMain(
    gracefulShutdown();            // This does not shutdown a program during init
 // _ASSERTE( audioCleanup() );    // Can't call this before audioInit
    _ASSERTE( goertzel_Cleanup() );
-   _ASSERTE( logCleanup() );
+// _ASSERTE( logCleanup() );      // Can't call this before logInit
    _ASSERTE( mvcModelCleanup() );
    _ASSERTE( mvcViewCleanup() );
 
@@ -110,7 +110,7 @@ int APIENTRY wWinMain(
    ///
    /// Tell the logger about where we hold the main window handle.  It's not
    /// set initially, but as soon as it is, the logger can start using it.
-   br = logInit( &shInst, &ghMainWindow );
+   br = logInit( &shInst, &ghMainWindow, APP_NAME, APP_NAME_W );
    if ( !br ) {
       LOG_FATAL( "Failed to initialize the logger.  Exiting." );
       return EXIT_FAILURE;
@@ -271,26 +271,8 @@ int APIENTRY wWinMain(
 
    /// After all of the threads have stopped, see if they have any messages
    /// to report
-   if ( logHasMsg() ) {
-      UINT        msgId    = logGetMsgId();
-      logLevels_t msgLevel = logGetMsgLevel();
-      size_t      index    = HIWORD( logGetMsgWParam() );
-
-      logResetMsg();
-
-      switch ( msgLevel ) {
-         case LOG_LEVEL_WARN:
-            LOG_WARN_R( msgId, index );
-            break;
-         case LOG_LEVEL_ERROR:
-            LOG_ERROR_R( msgId, index );
-            break;
-         case LOG_LEVEL_FATAL:
-            LOG_FATAL_R( msgId, index );
-            break;
-         default:
-            _ASSERT_EXPR( FALSE, "Should never get here" );
-      }
+   if ( logQueueHasEntry() ) {
+      /// @todo This
    }
 
    /// Cleanup all resources in the reverse order they were created
@@ -401,6 +383,7 @@ LRESULT CALLBACK WndProc( HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam 
                // At this point, the guUMW_CLOSE_FATAL message never makes it
                // through the message loop, so we need to set the message directly
                logSetMsg( LOG_LEVEL_FATAL, IDS_DTMF_DECODER_FAILED_TO_DESTROY_WINDOW, 0 );
+               LOG_FATAL_Q( IDS_DTMF_DECODER_FAILED_TO_DESTROY_WINDOW );
             }
             break;
          }
