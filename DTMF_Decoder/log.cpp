@@ -24,7 +24,7 @@
 ///     immediately  (from a worker thread or in a paint window message
 ///     handler) and play them back later (must be thread safe)
 ///
-/// @see /// @see https://learn.microsoft.com/en-us/windows/win32/debug/error-handling
+/// @see https://learn.microsoft.com/en-us/windows/win32/debug/error-handling
 ///
 /// #### The Parent Window
 /// A Windows logger is hard because
@@ -151,7 +151,7 @@ static HWND* sphMainWindow = NULL;
 
 /// Pointer to the application's current instance handle.  This is used to
 /// lookup resources (strings) in the application.
-static HINSTANCE* sphInst = NULL;
+static HINSTANCE* sphInstance = NULL;
 
 static CHAR  sAppName [ MAX_LOG_STRING ] = "";   ///< The (narrow) application name set in #logInit and used as the window title in `MessageBoxA`
 static WCHAR swAppName[ MAX_LOG_STRING ] = L"";  ///< The (wide) application name set in #logInit and used as the window title in `MessageBoxW`
@@ -214,7 +214,7 @@ BOOL logInit(
 ) {
 
    /// The parameters are checked (validated) by #logValidate
-   sphInst       = phInst;
+   sphInstance   = phInst;
    sphMainWindow = phWindow;
 
    HRESULT hr;
@@ -250,7 +250,7 @@ BOOL logInit(
 BOOL logCleanup() {
    sphMainWindow = NULL;  /// Set #sphMainWindow to `NULL`
 
-   /// No need to clean/erase #sphInst.  It should be good for the lifetime
+   /// No need to clean/erase #sphInstance.  It should be good for the lifetime
    /// of the application.
 
    logQueueReset();
@@ -416,7 +416,7 @@ static void logGetStringFromResources(
 
    INT ir;  // INT result
 
-   ir = LoadStringW( *sphInst, resourceId, pString->sBuf, MAX_LOG_STRING );
+   ir = LoadStringW( *sphInstance, resourceId, pString->sBuf, MAX_LOG_STRING );
    /// Becuse we are in a log routine, it doesn't make sense to log an error
    /// message.  So, if there are problems, then fail fast by throwing an
    /// `_ASSERT_EXPR( FALSE, ...`.
@@ -547,7 +547,7 @@ void logR(
    _In_   const UINT        resourceId,
    _In_ ... ) {
 
-   _ASSERTE( sphInst != NULL );
+   _ASSERTE( sphInstance != NULL );
 
    /// Silently `return` if `functionName` is `NULL`
    if ( functionName == NULL )
@@ -592,7 +592,7 @@ void logQ(
    _In_   const UINT        resourceId,
    _In_ ... ) {
 
-   _ASSERTE( sphInst != NULL );
+   _ASSERTE( sphInstance != NULL );
 
    /// Silently `return` if `functionName` is `NULL`
    if ( functionName == NULL )
@@ -658,9 +658,9 @@ bool logValidate() {
    /// throw a "Read access violation".  We use a `__try` block to catch this.
    ///
    /// @see https://learn.microsoft.com/en-us/cpp/cpp/structured-exception-handling-c-cpp?view=msvc-170
-   if ( sphInst != NULL ) {
+   if ( sphInstance != NULL ) {
       __try {
-         char tmpChar = *(char*) sphInst;
+         char tmpChar = *(char*) sphInstance;
          (void) tmpChar;  // Suppress a compiler warning that tmpChar is not checked after this.  No code is generated.
       } __except ( EXCEPTION_EXECUTE_HANDLER ) {
          FATAL_IN_LOG( L"The log's instance handle points to an invalid memory region.  Exiting immediately." );
