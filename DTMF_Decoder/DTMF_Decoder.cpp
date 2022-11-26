@@ -66,7 +66,7 @@
 
 
 // Global Variables
-static HINSTANCE shInst = NULL;                       ///< Current instance
+static HINSTANCE shInstance = NULL;                   ///< Current instance
 static WCHAR     sswTitle[ MAX_LOADSTRING ];          ///< The title bar text
 static WCHAR     sswWindowClass[ MAX_LOADSTRING ];    ///< The main window class name
 
@@ -99,7 +99,7 @@ int APIENTRY wWinMain(
 
    _ASSERTE( hInstance != NULL );
 
-   shInst = hInstance;  /// Store the instance handle in a global variable
+   shInstance = hInstance;  /// Store the instance handle in a global variable
 
 
    BOOL    br;  // BOOL result
@@ -110,7 +110,7 @@ int APIENTRY wWinMain(
    ///
    /// Tell the logger about where we hold the main window handle.  It's not
    /// set initially, but as soon as it is, the logger can start using it.
-   br = logInit( &shInst, &ghMainWindow, APP_NAME, APP_NAME_W );
+   br = logInit( &shInstance, &ghMainWindow, APP_NAME, APP_NAME_W );
    if ( !br ) {
       LOG_FATAL( "Failed to initialize the logger.  Exiting." );
       return EXIT_FAILURE;
@@ -316,7 +316,7 @@ LRESULT CALLBACK WndProc( HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam 
             // Parse the menu selections
             switch ( wmId ) {
                case IDM_ABOUT:
-                  DialogBox( shInst, MAKEINTRESOURCE( IDD_ABOUTBOX ), hWnd, About );
+                  DialogBox( shInstance, MAKEINTRESOURCE( IDD_ABOUTBOX ), hWnd, About );
                   // DialogBox returns void -- nothing to check
                   break;
                case IDM_EXIT:
