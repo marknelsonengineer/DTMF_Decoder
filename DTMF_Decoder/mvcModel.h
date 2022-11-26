@@ -187,8 +187,8 @@ __forceinline BOOL mvcInvalidateRow( _In_ const size_t row ) {
    _ASSERTE( row <= 3 );
    _ASSERTE( ghMainWindow != NULL );
 
-   BOOL br;            // BOOL result
-   RECT rectToRedraw;  // The rectangle to redraw
+   BOOL br;                    // BOOL result
+   RECT rectToRedraw = { 0 };  // The rectangle to redraw
 
    rectToRedraw.left = 0;
    rectToRedraw.right = giWindowWidth;
@@ -233,8 +233,8 @@ __forceinline BOOL mvcInvalidateColumn( _In_ const size_t column ) {
    _ASSERTE( column <= 3 );
    _ASSERTE( ghMainWindow != NULL );
 
-   BOOL br;            // BOOL result
-   RECT rectToRedraw;  // The rectangle to redraw
+   BOOL br;                    // BOOL result
+   RECT rectToRedraw = { 0 };  // The rectangle to redraw
 
    rectToRedraw.top = 0;
    rectToRedraw.bottom = giWindowHeight;

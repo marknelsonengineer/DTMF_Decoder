@@ -193,7 +193,7 @@ BOOL mvcViewInit() {
    CHECK_HR_R( IDS_VIEW_FAILED_TO_SET_PARAGRAPH_ALIGNMENT );  // "Failed to set paragraph alignment"
 
    /// Create the Direct2D render target
-   RECT clientRectangle ;
+   RECT clientRectangle = { 0 };
    br = GetClientRect( ghMainWindow, &clientRectangle );
    CHECK_BR_R( IDS_VIEW_FAILED_TO_GET_WINDOW_SIZE );  // "Failed to get the window size"
 

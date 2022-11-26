@@ -328,7 +328,7 @@ LRESULT CALLBACK WndProc( HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam 
          }
          break;
       case WM_PAINT: { /// WM_PAINT - Paint the main window
-            RECT updateRect;
+            RECT updateRect = { 0 };
             br = GetUpdateRect( hWnd, &updateRect, FALSE );
             if ( !br ) {
                break;  /// If there is no update region, then don't paint anything
