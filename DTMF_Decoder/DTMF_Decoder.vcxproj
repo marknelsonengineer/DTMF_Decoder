@@ -445,6 +445,8 @@
     <ClInclude Include="framework.h" />
     <ClInclude Include="goertzel.h" />
     <ClInclude Include="log.h" />
+    <ClInclude Include="logWER.h" />
+    <ClInclude Include="log_ex.h" />
     <ClInclude Include="mvcModel.h" />
     <ClInclude Include="mvcView.h" />
     <ClInclude Include="resource.h" />
@@ -456,6 +458,7 @@
     <ClCompile Include="DTMF_Decoder.cpp" />
     <ClCompile Include="goertzel.cpp" />
     <ClCompile Include="log.cpp" />
+    <ClCompile Include="logWER.cpp" />
     <ClCompile Include="mvcModel.cpp" />
     <ClCompile Include="mvcView.cpp" />
   </ItemGroup>

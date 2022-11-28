@@ -57,6 +57,7 @@
 #include "version.h"      // For the application's version strings
 
 
+
 /// Defines the size of the wide-string buffer used to get strings from the
 /// resource file.  If MAX_LOADSTRING is 100, then it can hold at most 49
 /// characters.
@@ -87,7 +88,7 @@ int APIENTRY wWinMain(
    _In_     LPWSTR    lpCmdLine,     ///< Command line arguments as a Unicode string
    _In_     int       nCmdShow )     ///< How the application window should be shown
    {
-   // This is a test... but I'm going to keep it in for now.
+   // This test finds unsafe cleanup routines... but I'm going to keep it in for now.
    gracefulShutdown();            // This does not shutdown a program during init
 // _ASSERTE( audioCleanup() );    // Can't call this before audioInit
    _ASSERTE( goertzel_Cleanup() );

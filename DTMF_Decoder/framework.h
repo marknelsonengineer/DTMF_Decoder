@@ -68,9 +68,16 @@
 #include <Windows.h>      // For the standard Windows definitions
 #include <crtdbg.h>       // For the _ASSERTE macro and _malloc_dbg
 
+#include "resource.h"     // For the string table
 #include "DTMF_Decoder.h" // For APP_NAME
 #include "log.h"          // For our logging functions
-#include "resource.h"     // For the string table
+
+
+/// The application's return value.  This defaults to 0 (success).  Any error
+/// handler can set this and it will be passed out of the program when it
+/// terminates.
+//  Included here to avoid circular .h references with mvcModel.h
+extern int giApplicationReturnValue;
 
 
 /// Release the pointer P to a COM object by calling `IUnknown::Release`

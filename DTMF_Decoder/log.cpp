@@ -121,25 +121,13 @@
 
 #include "framework.h"    // Standard system include files
 #include "log.h"          // For yourself
+#include "log_ex.h"       // For extensions to the log
 
 #include <stdio.h>        // For sprintf_s
 #include <stdarg.h>       // For va_start
 #include <strsafe.h>      // For StringCchCopy
 #include <stdlib.h>       // For rand
 
-
-/// Save a random number at the end of the string buffers.  When we're done,
-/// make sure it's untouched.
-///
-/// If we overrun the buffer and violate the stack guard, then fail fast by
-/// throwing an `_ASSERT_EXPR( FALSE, ...`.
-#define BUFFER_GUARD 0xed539d63
-
-/// Standard message string buffer with a guard at the end
-struct wBuffer_t {
-   WCHAR sBuf[ MAX_LOG_STRING ];  ///< A message string buffer
-   DWORD dwGuard;                 ///< Guards the message in sBuf from overflowing
-};
 
 /// The ID when no resource has been identified.  When this is set, it is presumed
 /// to be an ID to the string table in the resource file.
@@ -353,7 +341,7 @@ void logA(
 /// @param format        `printf`-style formatting
 /// @param pBuffer       Pointer to a pBuffer (the stack guard should be pre-populated or this will assert)
 /// @param args          Varargs `va_list`
-static int vLogComposeW(
+int vLogComposeW(
    _In_    const logLevels_t logLevel,
    _In_z_  const WCHAR*      functionName,
    _In_z_  const WCHAR*      format,
@@ -408,7 +396,7 @@ static int vLogComposeW(
 ///
 /// @param resourceId An ID from the string section of the resource file
 /// @param pString    A guarded buffer to receive the string (#BUFFER_GUARD must be set before calling into this function)
-static void logGetStringFromResources(
+void logGetStringFromResources(
    _In_   const UINT       resourceId,
    _Inout_      wBuffer_t* pString ) {
 
@@ -436,7 +424,7 @@ static void logGetStringFromResources(
 ///
 /// @param logLevel The level of the log message
 /// @param message  The message to display
-static void logShowMessageW( logLevels_t logLevel, WCHAR* message ) {
+void logShowMessageW( logLevels_t logLevel, WCHAR* message ) {
    _ASSERTE( message != NULL );
 
    switch ( logLevel ) {
@@ -471,7 +459,7 @@ static void logShowMessageW( logLevels_t logLevel, WCHAR* message ) {
 /// @param functionName  The name of the function
 /// @param format        `printf`-style formatting
 /// @param args          Varargs `va_list`
-static void vLogW(
+void vLogW(
    _In_   const logLevels_t logLevel,
    _In_z_ const WCHAR*      functionName,
    _In_z_ const WCHAR*      format,
