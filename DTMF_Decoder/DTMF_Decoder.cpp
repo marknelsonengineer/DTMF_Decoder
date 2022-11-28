@@ -128,7 +128,8 @@ int APIENTRY wWinMain(
    }
 
    // Now that the logger is initialized, we can start using the _R log functions
-   LOG_TRACE_R( IDS_DTMF_DECODER_STARTING, sswTitle );  // "Starting %s"
+   LOG_TRACE_R( IDS_DTMF_DECODER_STARTING, sswTitle, L"" FULL_VERSION, L"" __DATE__ L" " __TIME__ );  // "Starting %s   Version:  %s   Built:  %s"
+
 
 
    /// Set #gbIsRunning to `true`.  Set it to `false` if we need to shutdown.
@@ -431,12 +432,13 @@ INT_PTR CALLBACK About( HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam ) 
 
    switch ( message ) {
       case WM_INITDIALOG:
-         /// @todo this needs refactoring
-         br = SetDlgItemTextA( hDlg, IDC_PROGRAM_NAME, APP_NAME ", " FULL_VERSION );
-         WARN_BR_R( IDS_DTMF_DECODER_ABOUT_FAILED_TO_SET_NAME );  // "Failed to set the name and version of the app"
+         br = SetDlgItemTextW( hDlg, IDC_PROGRAM_NAME, sswTitle );
+         WARN_BR_R( IDS_DTMF_DECODER_ABOUT_FAILED_TO_SET_NAME );  // "Failed to set the name of the app"
 
-         br = SetDlgItemTextA( hDlg, IDC_DATE, "Built: " __DATE__ "" );
-         /// @todo The date needs to be localized
+         br = SetDlgItemTextW( hDlg, IDC_VERSION, L"" FULL_VERSION);
+         WARN_BR_R( IDS_DTMF_DECODER_ABOUT_FAILED_TO_SET_VERSION );  // "Failed to set the version of the app"
+
+         br = SetDlgItemTextW( hDlg, IDC_DATE, L"" __DATE__ );  /// @todo Figure out how to localize the date
          WARN_BR_R( IDS_DTMF_DECODER_ABOUT_FAILED_TO_SET_DATE );  // "Failed to set the build date of the app"
 
          return (INT_PTR) TRUE;
