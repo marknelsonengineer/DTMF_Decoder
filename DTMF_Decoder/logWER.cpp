@@ -65,9 +65,10 @@
 #pragma comment(lib, "Wer")  // Link the WER library
 
 
-HREPORT hReport = NULL;                         ///< Handle to the windows error report
-WCHAR   wzFullExeFilename[ MAX_PATH ] = { 0 };  ///< Full path to the executable file
-WCHAR   reportName[ 64 ] = { 0 };               ///< Name of the report
+static HREPORT shReport = NULL;                         ///< Handle to the windows error report
+static WCHAR   swzFullExeFilename[ MAX_PATH ] = { 0 };  ///< Full path to the executable file
+static WCHAR   swzReportName[ 64 ] = { 0 };             ///< Name of the report
+static BOOL    sbLoggedWerFatalEvent = FALSE;           ///< WER captures the first #LOG_LEVEL_ERROR or #LOG_LEVEL_FATAL event.  This is `TRUE` if an event has been logged.
 
 
 
@@ -88,21 +89,21 @@ BOOL logWerInit() {
    HANDLE hProcess = GetCurrentProcess();
    // No error checking available
 
-   dwr = GetProcessImageFileNameW( hProcess, wzFullExeFilename, sizeof( wzFullExeFilename ) );
+   dwr = GetProcessImageFileNameW( hProcess, swzFullExeFilename, sizeof( swzFullExeFilename ) );
    if ( dwr <= 0 ) {
       RETURN_FATAL_R( IDS_LOG_WER_FAILED_TO_GET_EXE_PATH );  // "Unable to get the executable's full path name"
    }
-   LOG_INFO_R( IDS_LOG_WER_FULL_EXE_FILENAME, wzFullExeFilename );  // "GetProcessImageFileNameW Full Exe Filename=%s"
+   LOG_INFO_R( IDS_LOG_WER_FULL_EXE_FILENAME, swzFullExeFilename );  // "GetProcessImageFileNameW Full Exe Filename=%s"
 
 
    WER_REPORT_INFORMATION myReport = { 0 };
 
    myReport.dwSize = sizeof( myReport );
    myReport.hProcess = NULL;  // Handle to the report's process, if `NULL` it's the calling process
-   CopyMemory( myReport.wzConsentKey,        swAppName,         sizeof( myReport.wzConsentKey        ) );
-   CopyMemory( myReport.wzFriendlyEventName, swAppTitle,        sizeof( myReport.wzFriendlyEventName ) );
-   CopyMemory( myReport.wzApplicationName,   swAppTitle,        sizeof( myReport.wzApplicationName   ) );
-   CopyMemory( myReport.wzApplicationPath,   wzFullExeFilename, sizeof( myReport.wzApplicationPath   ) );
+   CopyMemory( myReport.wzConsentKey,        swAppName,          sizeof( myReport.wzConsentKey        ) );
+   CopyMemory( myReport.wzFriendlyEventName, swAppTitle,         sizeof( myReport.wzFriendlyEventName ) );
+   CopyMemory( myReport.wzApplicationName,   swAppTitle,         sizeof( myReport.wzApplicationName   ) );
+   CopyMemory( myReport.wzApplicationPath,   swzFullExeFilename, sizeof( myReport.wzApplicationPath   ) );
 
    // Compose myReport.wzDescription
    wBuffer_t format = { L"", BUFFER_GUARD };
@@ -111,20 +112,22 @@ BOOL logWerInit() {
 
    myReport.hwndParent = *sphMainWindow;
 
-   // Compose reportName
+   // Compose swzReportName
    format = { L"", BUFFER_GUARD };
    logGetStringFromResources( IDS_LOG_WER_REPORT_NAME, &format );  // "%s Error Report"
-   StringCchPrintfW( reportName, sizeof( reportName ), format.sBuf, swAppTitle );
+   StringCchPrintfW( swzReportName, sizeof( swzReportName ), format.sBuf, swAppTitle );
 
    hr = WerReportCreate(
-      reportName,          // A Unicode string with the name of this event
+      swzReportName,       // A Unicode string with the name of this event
       WerReportCritical,   // The type of report
       &myReport,           // A pointer to a WER_REPORT_INFORMATION structure
-      &hReport );          // A handle to the report. If the function fails, this handle is NULL.
+      &shReport );         // A handle to the report. If the function fails, this handle is NULL.
 
-   if ( hr != S_OK || hReport == NULL ) {
+   if ( hr != S_OK || shReport == NULL ) {
       LOG_WARN_R( IDS_LOG_WER_FAILED_CREATE_REPORT );  // "Failed to create a Windows Error Report (should it be needed later).  Continuing."
    }
+
+   sbLoggedWerFatalEvent = FALSE;
 
    LOG_INFO_R( IDS_LOG_WER_INIT_SUCCESS );  // "Initialized Windows Error Reporting."
 
@@ -147,10 +150,14 @@ BOOL logWerEvent(
       return TRUE;                      /// log level is less than #LOG_LEVEL_ERROR
    }
 
+   if ( sbLoggedWerFatalEvent ) {  /// Only one WER #LOG_LEVEL_WARN or #LOG_LEVEL_FATAL
+      return TRUE;                 /// event can be logged.
+   }
+
    HRESULT hr;  // HRESULT result
 
    hr = WerReportSetParameter(
-      hReport,       // Handle to the report
+      shReport,      // Handle to the report
       WER_P0,        // Identifier of the parameter to be set
       L"Log Level",  // Unicode string that contains the name of the parameter
       ( logLevel == LOG_LEVEL_ERROR ) ? L"ERROR" : L"FATAL"   // The parameter value
@@ -158,7 +165,7 @@ BOOL logWerEvent(
    WARN_HR_R( IDS_LOG_WER_FAILED_TO_SET_PARAMETER );  // "Unable to set WER parameter.  Continuing."
 
    hr = WerReportSetParameter(
-      hReport,           // Handle to the report
+      shReport,          // Handle to the report
       WER_P1,            // Identifier of the parameter to be set
       L"Resource Name",  // Unicode string that contains the name of the parameter
       resourceName       // The parameter value
@@ -171,29 +178,33 @@ BOOL logWerEvent(
    StringCchPrintfW( szResourceId, 8, L"%u", resourceId );
 
    hr = WerReportSetParameter(
-      hReport,           // Handle to the report
-      WER_P2,            // Identifier of the parameter to be set
-      L"Resource ID",    // Unicode string that contains the name of the parameter
-      szResourceId       // The parameter value
+      shReport,        // Handle to the report
+      WER_P2,          // Identifier of the parameter to be set
+      L"Resource ID",  // Unicode string that contains the name of the parameter
+      szResourceId     // The parameter value
    );
    WARN_HR_R( IDS_LOG_WER_FAILED_TO_SET_PARAMETER );  // "Unable to set WER parameter.  Continuing."
 
    hr = WerReportSetParameter(
-      hReport,           // Handle to the report
-      WER_P3,            // Identifier of the parameter to be set
-      L"Message",        // Unicode string that contains the name of the parameter
-      logMsg             // The parameter value
+      shReport,        // Handle to the report
+      WER_P3,          // Identifier of the parameter to be set
+      L"Message",      // Unicode string that contains the name of the parameter
+      logMsg           // The parameter value
    );
    WARN_HR_R( IDS_LOG_WER_FAILED_TO_SET_PARAMETER );  // "Unable to set WER parameter.  Continuing."
 
    hr = WerReportSetParameter(
-      hReport,           // Handle to the report
-      WER_P4,            // Identifier of the parameter to be set
+      shReport,        // Handle to the report
+      WER_P4,          // Identifier of the parameter to be set
       L"Application Version",  // Unicode string that contains the name of the parameter
-      FULL_VERSION_W     // The parameter value
+      FULL_VERSION_W   // The parameter value
    );
    WARN_HR_R( IDS_LOG_WER_FAILED_TO_SET_PARAMETER );  // "Unable to set WER parameter.  Continuing."
    /// @todo Pass the application version through parameters
+
+   LOG_INFO_R( IDS_LOG_WER_FATAL_ERROR_LOGGED );  // "WER fatal error logged"
+
+   sbLoggedWerFatalEvent = TRUE;
 
    return TRUE;
 }
@@ -207,7 +218,7 @@ BOOL logWerSubmit() {
 
 
 //   hr = WerReportAddDump(
-//      hReport,  // handle to the report
+//      shReport,  // handle to the report
 //      GetCurrentProcess(),
 //      GetCurrentThread(),
 //      WerDumpTypeMiniDump,
@@ -222,14 +233,14 @@ BOOL logWerSubmit() {
    WER_SUBMIT_RESULT submissionResult;
 
    hr = WerReportSubmit(
-      hReport,            // The report handle
-      WerConsentApproved, // The consent status enum  // WerConsentAlwaysPrompt   WerConsentNotAsked  WerConsentApproved
-      WER_SUBMIT_NO_QUEUE | WER_SUBMIT_OUTOFPROCESS | WER_SUBMIT_SHOW_DEBUG | WER_SUBMIT_REPORT_MACHINE_ID,                  // Submission flags:  WER_SUBMIT_QUEUE | WER_SUBMIT_OUTOFPROCESS
+      shReport,            // The report handle
+      WerConsentApproved,  // The consent status enum
+      WER_SUBMIT_NO_CLOSE_UI | WER_SUBMIT_QUEUE | WER_SUBMIT_REPORT_MACHINE_ID,
       &submissionResult
    );
    CHECK_HR_R( IDS_LOG_WER_FAILED_TO_SUBMIT_REPORT );  // "Unable to submit Windows Error Report"
 
-   LOG_TRACE( "WER Report submitted successfully" );
+   LOG_TRACE_R( IDS_LOG_WER_SUCCESSFULLY_SUBMITTED );  // "Windows Error Report submitted successfully"
 
    return TRUE;
 }
@@ -241,12 +252,13 @@ BOOL logWerSubmit() {
 BOOL logWerCleanup() {
    HRESULT hr;
 
-   if ( hReport != NULL ) {
-      hr = WerReportCloseHandle( hReport );
+   if ( shReport != NULL ) {
+      hr = WerReportCloseHandle( shReport );
       CHECK_HR_R( IDS_LOG_WER_FAILED_TO_CLOSE_HANDLE );  // "Failed to close WER handle"
-
-      hReport = NULL;
    }
 
+   sbLoggedWerFatalEvent = FALSE;
+
+   shReport = NULL;
    return TRUE;
 }

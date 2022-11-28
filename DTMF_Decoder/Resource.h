@@ -175,8 +175,9 @@
 #define IDS_LOG_WER_FAILED_CREATE_REPORT 250
 #define IDS_STRING251                   251
 #define IDS_LOG_WER_INIT_SUCCESS        251
-#define IDS_STRING252                   252
 #define IDS_LOG_WER_FAILED_TO_SET_PARAMETER 252
+#define IDS_STRING253                   253
+#define IDS_LOG_WER_FATAL_ERROR_LOGGED  253
 #define IDC_PROGRAM_NAME                1000
 #define IDC_VERSION                     1001
 #define IDC_AUTHOR                      1002
