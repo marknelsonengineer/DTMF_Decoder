@@ -10,10 +10,12 @@
 
 #pragma once
 
-/// The name of the application (narrow character)
+/// The `const` name of the application (narrow character) - does not change
+/// with localization
 #define APP_NAME     "DTMF Decoder"
 
-/// The name of the application (wide character)
+/// The `const` name of the application (wide character) - does not change
+/// with localization
 #define APP_NAME_W  L"DTMF Decoder"
 
 /// The application's return code if it ends normally

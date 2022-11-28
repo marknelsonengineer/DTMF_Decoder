@@ -56,6 +56,7 @@
 #include "resource.h"     // For the resource definitions
 #include "version.h"      // For the application's version strings
 
+#include "logWER.h"  // TEST TEST  /// @todo Not sure if we are keeping
 
 
 /// Defines the size of the wide-string buffer used to get strings from the
@@ -68,9 +69,8 @@
 
 // Global Variables
 static HINSTANCE shInstance = NULL;                   ///< Current instance
-static WCHAR     sswTitle[ MAX_LOADSTRING ];          ///< The title bar text
+static WCHAR     sswTitle[ MAX_LOADSTRING ];          ///< The localized name of the application
 static WCHAR     sswWindowClass[ MAX_LOADSTRING ];    ///< The main window class name
-
 
 // Forward declarations of private functions in this file
 LRESULT CALLBACK WndProc( HWND, UINT, WPARAM, LPARAM );
@@ -88,13 +88,14 @@ int APIENTRY wWinMain(
    _In_     LPWSTR    lpCmdLine,     ///< Command line arguments as a Unicode string
    _In_     int       nCmdShow )     ///< How the application window should be shown
    {
-   // This test finds unsafe cleanup routines... but I'm going to keep it in for now.
+   // These tests find unsafe cleanup routines... I'm keeping them in for now.
    gracefulShutdown();            // This does not shutdown a program during init
 // _ASSERTE( audioCleanup() );    // Can't call this before audioInit
    _ASSERTE( goertzel_Cleanup() );
 // _ASSERTE( logCleanup() );      // Can't call this before logInit
    _ASSERTE( mvcModelCleanup() );
    _ASSERTE( mvcViewCleanup() );
+   _ASSERTE( logWerCleanup() );
 
    // The program really starts here
 
@@ -107,17 +108,27 @@ int APIENTRY wWinMain(
    HRESULT hr;  // HRESULT result
    INT     ir;  // INT result
 
+
+   /// Get the localized application name
+   /// @todo Remove the ö from IDS_APP_TITLE
+   ir = LoadStringW( hInstance, IDS_APP_TITLE, sswTitle, MAX_LOADSTRING );
+   if ( !ir ) {
+      LOG_FATAL( "Failed to retrive app title.  Exiting." );
+      return EXIT_FAILURE;
+   }
+
    /// Initialize the logger
    ///
-   /// Tell the logger about where we hold the main window handle.  It's not
-   /// set initially, but as soon as it is, the logger can start using it.
-   br = logInit( &shInstance, &ghMainWindow, APP_NAME, APP_NAME_W );
+   /// Tell the logger about where we hold the instance and main window
+   /// handles.  As soon as they are set, the logger can start using them.
+   br = logInit( &shInstance, &ghMainWindow, APP_NAME, APP_NAME_W, sswTitle );
    if ( !br ) {
       LOG_FATAL( "Failed to initialize the logger.  Exiting." );
       return EXIT_FAILURE;
    }
 
-   LOG_TRACE_R( IDS_DTMF_DECODER_STARTING, APP_NAME_W );  // "Starting DTMF Decoder"
+   // Now that the logger is initialized, we can start using the _R log functions
+   LOG_TRACE_R( IDS_DTMF_DECODER_STARTING, sswTitle );  // "Starting %s"
 
 
    /// Set #gbIsRunning to `true`.  Set it to `false` if we need to shutdown.
@@ -133,13 +144,6 @@ int APIENTRY wWinMain(
    }
 
    /// Initialize global strings
-   ir = LoadStringW( hInstance, IDS_APP_TITLE, sswTitle, MAX_LOADSTRING );
-   if ( !ir ) {
-      LOG_FATAL_R( IDS_DTMF_DECODER_FAILED_TO_RETRIEVE_TITLE );  // "Failed to retrive app title.  Exiting."
-      CoUninitialize();       // Unwind COM
-      return EXIT_FAILURE;
-   }
-
    ir = LoadStringW( hInstance, IDC_DTMFDECODER, sswWindowClass, MAX_LOADSTRING );
    if ( !ir ) {
       LOG_FATAL_R( IDS_DTMF_DECODER_FAILED_TO_RETRIEVE_CLASS_NAME );  // "Failed to retrieve window class name.  Exiting."
@@ -427,6 +431,7 @@ INT_PTR CALLBACK About( HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam ) 
 
    switch ( message ) {
       case WM_INITDIALOG:
+         /// @todo this needs refactoring
          br = SetDlgItemTextA( hDlg, IDC_PROGRAM_NAME, APP_NAME ", " FULL_VERSION );
          WARN_BR_R( IDS_DTMF_DECODER_ABOUT_FAILED_TO_SET_NAME );  // "Failed to set the name and version of the app"
 

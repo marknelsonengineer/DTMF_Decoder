@@ -24,7 +24,7 @@
 #define VERSION_PATCH    0
 
 /// Monotonic counter that tracks the number of compilations
-#define VERSION_BUILD 1765
+#define VERSION_BUILD 1784
 
 /// C preprocesor trick that converts values into strings at compile time
 /// @see https://stackoverflow.com/questions/12844364/stringify-c-preprocess
@@ -38,3 +38,5 @@
                      "." stringify( VERSION_MINOR ) \
                      "." stringify( VERSION_PATCH ) \
                      "." stringify( VERSION_BUILD )
+
+/// @todo Make a wide version of this

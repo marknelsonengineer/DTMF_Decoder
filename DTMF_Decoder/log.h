@@ -117,7 +117,9 @@ extern BOOL logInit(
    _In_         HINSTANCE* phInst,
    _In_         HWND*      phWindow,
    _In_z_ const CHAR*      pAppName,
-   _In_z_ const WCHAR*     pwAppName
+   _In_z_ const WCHAR*     pwAppName,
+   _In_z_ const WCHAR*     pwAppTitle
+
 );
 
 extern BOOL logCleanup();

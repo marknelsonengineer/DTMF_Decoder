@@ -25,6 +25,15 @@ struct wBuffer_t {
    DWORD dwGuard;                 ///< Guards the message in sBuf from overflowing
 };
 
+
+// Make the data passed into #logInit available to extensions
+extern HWND*      sphMainWindow;
+extern HINSTANCE* sphInstance;
+extern CHAR       sAppName[ MAX_LOG_STRING ];
+extern WCHAR      swAppName[ MAX_LOG_STRING ];
+extern WCHAR      swAppTitle[ MAX_LOG_STRING ];
+
+
 extern void logGetStringFromResources(
    _In_   const UINT       resourceId,
    _Inout_      wBuffer_t* pString );

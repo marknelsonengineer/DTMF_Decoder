@@ -169,8 +169,11 @@
 #define IDS_LOG_WER_SUCCESSFULLY_SUBMITTED 245
 #define IDS_LOG_WER_FAILED_TO_GET_EXE_PATH 246
 #define IDS_LOG_WER_FULL_EXE_FILENAME   247
-#define IDS_STRING248                   248
 #define IDS_LOG_WER_DESCRIPTION         248
+#define IDS_LOG_WER_REPORT_NAME         249
+#define IDS_LOG_WER_FAILED_CREATE_REPORT 250
+#define IDS_STRING251                   251
+#define IDS_LOG_WER_INIT_SUCCESS        251
 #define IDC_PROGRAM_NAME                1000
 #define IDC_AUTHOR                      1001
 #define IDC_COPYRIGHT                   1002

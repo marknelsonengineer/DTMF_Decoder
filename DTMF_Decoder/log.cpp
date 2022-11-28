@@ -135,14 +135,15 @@
 
 /// Pointer to an application's global windows handle.  This window will "own"
 /// the message box popups.
-static HWND* sphMainWindow = NULL;
+HWND* sphMainWindow = NULL;
 
 /// Pointer to the application's current instance handle.  This is used to
 /// lookup resources (strings) in the application.
-static HINSTANCE* sphInstance = NULL;
+HINSTANCE* sphInstance = NULL;
 
-static CHAR  sAppName [ MAX_LOG_STRING ] = "";   ///< The (narrow) application name set in #logInit and used as the window title in `MessageBoxA`
-static WCHAR swAppName[ MAX_LOG_STRING ] = L"";  ///< The (wide) application name set in #logInit and used as the window title in `MessageBoxW`
+CHAR  sAppName  [ MAX_LOG_STRING ] = "";   ///< The (narrow) application name set in #logInit and used as the window title in `MessageBoxA`
+WCHAR swAppName [ MAX_LOG_STRING ] = L"";  ///< The (wide) non-localized application name set in #logInit
+WCHAR swAppTitle[ MAX_LOG_STRING ] = L"";  ///< The (wide) localized application name set in #logInit and used as the window title in `MessageBoxW`
 
 
 #define MAX_LOG_QUEUE_DEPTH 16     /**< The maximum depth of the log queue.  Set to `4` when testing. */
@@ -186,19 +187,25 @@ static logEntry_t logQueue[ MAX_LOG_QUEUE_DEPTH ];
 ///                 application's main window).  **This must be a global variable.**
 ///                 It is OK to set this to `NULL`
 ///
-/// @param pAppName Save the name of the application so we don't have to pass
-///                 it every time we log something.  It's OK to set this to
-///                 `NULL` or an empty string.  This is used as the title for
-///                 `MessageBoxA`.
+/// @param pAppName Narrow application name.  Used as the title for `MessageBoxA`.
+///                 Save the name of the application so we don't have to pass
+///                 it every time we log something.
 ///
-/// @param pwAppName Same as pAppName but for wide characters and `MessageBoxW`
+/// @param pwAppName Wide application name.  This is the same for all languages.
+///                  Save the name of the application so we don't have to pass it
+///                  every time we log something.
+///
+/// @param pwAppTitle Wide-character, localized application name.
+///                   Save the title so we don't have to pass it every time we
+///                   log something.
 ///
 /// @return `TRUE` if successful.  `FALSE` if there was a problem.
 BOOL logInit(
    _In_         HINSTANCE* phInst,
    _In_         HWND*      phWindow,
    _In_z_ const CHAR*      pAppName,
-   _In_z_ const WCHAR*     pwAppName
+   _In_z_ const WCHAR*     pwAppName,
+   _In_z_ const WCHAR*     pwAppTitle
 ) {
 
    /// The parameters are checked (validated) by #logValidate
@@ -210,16 +217,24 @@ BOOL logInit(
    if ( pAppName != NULL ) {
       hr = StringCchCopyA( sAppName, MAX_LOG_STRING, pAppName );
       if ( hr != S_OK ) {
-         FATAL_IN_LOG( L"Failed to copy application name (narrow)" );
+         FATAL_IN_LOG( L"Failed to copy application name (narrow)" );  // Can't be localized
       }
    }
 
    if ( pwAppName != NULL ) {
       hr = StringCchCopyW( swAppName, MAX_LOG_STRING, pwAppName );
       if ( hr != S_OK ) {
-         FATAL_IN_LOG( L"Failed to copy application name (wide)" );
+         FATAL_IN_LOG( L"Failed to copy application name (wide)" );  // Can't be localized
       }
    }
+
+   if ( pwAppTitle != NULL ) {
+      hr = StringCchCopyW( swAppTitle, MAX_LOG_STRING, pwAppTitle );
+      if ( hr != S_OK ) {
+         FATAL_IN_LOG( L"Failed to copy application title (wide)" );  // Can't be localized
+      }
+   }
+
 
    InitializeCriticalSection( &log_queue_critical_section );
 

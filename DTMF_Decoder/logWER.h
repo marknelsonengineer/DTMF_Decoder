@@ -12,13 +12,7 @@
 
 #pragma once
 
-extern BOOL logWerInit( 
-   _In_         HINSTANCE* phInst,
-   _In_         HWND*      phWindow,
-   _In_z_ const CHAR*      pAppName,
-   _In_z_ const WCHAR*     pwAppName
-);
-
+extern BOOL logWerInit();
 extern BOOL logWerEvent();
 extern BOOL logWerSubmit();
 extern BOOL logWerCleanup();

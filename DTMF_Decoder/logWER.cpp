@@ -76,34 +76,11 @@ WCHAR   reportName[ 64 ] = { 0 };               ///< Name of the report
 
 /// Initialize Windows Error Reporting
 ///
-/// @param phInst   The application instance handle.  **This must be a global
-///                 variable.**
-///
-/// @param phWindow The window that will own the log message boxes (usually the
-///                 application's main window).  **This must be a global variable.**
-///                 It is OK to set this to `NULL`
-///
-/// @param pAppName Save the name of the application so we don't have to pass
-///                 it every time we log something.  It's OK to set this to
-///                 `NULL` or an empty string.  This is used as the title for
-///                 `MessageBoxA`.
-///
-/// @param pwAppName Same as pAppName but for wide characters and `MessageBoxW`
+/// As an extension to log.cpp, WER can see all of the variables set in
+/// #logInit.
 ///
 /// @return `TRUE` if successful.  `FALSE` if there was a problem.
-BOOL logWerInit(
-   _In_         HINSTANCE* phInstance,
-   _In_         HWND*      phWindow,
-   _In_z_ const CHAR*      pAppName,
-   _In_z_ const WCHAR*     pwAppName
-   ) {
-   /// The parameters are checked (validated) by #logValidate via #logInit
-   //  ...but we'll do some ASSERT checking just to be sure
-   _ASSERTE( phInstance != NULL );
-   _ASSERTE( phWindow   != NULL );
-   _ASSERTE( pAppName   != NULL );
-   _ASSERTE( pwAppName  != NULL );
-
+BOOL logWerInit() {
    DWORD   dwr;  // DWORD result
    HRESULT hr;   // HRESULT result
 
@@ -121,32 +98,34 @@ BOOL logWerInit(
 
    myReport.dwSize = sizeof( myReport );
    myReport.hProcess = NULL;  // Handle to the report's process, if `NULL` it's the calling process
-// myReport.wzConsentKey defaults to pwzEventType, which is fine
-// myReport.wzFriendlyEventName defaults to pwzEventType, which is fine
-   CopyMemory( myReport.wzApplicationName, pwAppName, sizeof( myReport.wzApplicationName ) );
-   CopyMemory( myReport.wzApplicationPath, wzFullExeFilename, sizeof( myReport.wzApplicationPath ) );
+   CopyMemory( myReport.wzConsentKey,        swAppName,         sizeof( myReport.wzConsentKey        ) );
+   CopyMemory( myReport.wzFriendlyEventName, swAppTitle,        sizeof( myReport.wzFriendlyEventName ) );
+   CopyMemory( myReport.wzApplicationName,   swAppTitle,        sizeof( myReport.wzApplicationName   ) );
+   CopyMemory( myReport.wzApplicationPath,   wzFullExeFilename, sizeof( myReport.wzApplicationPath   ) );
 
+   // Compose myReport.wzDescription
    wBuffer_t format = { L"", BUFFER_GUARD };
    logGetStringFromResources( IDS_LOG_WER_DESCRIPTION, &format );  // "%s has a problem and needs to shutdown.  A report will be generated and sent to the developer."
-   StringCchPrintfW( myReport.wzDescription, sizeof( myReport.wzDescription ), format.sBuf, pwAppName );
+   StringCchPrintfW( myReport.wzDescription, sizeof( myReport.wzDescription ), format.sBuf, swAppTitle );
 
-   myReport.hwndParent = *phWindow;
+   myReport.hwndParent = *sphMainWindow;
 
-
+   // Compose reportName
    format = { L"", BUFFER_GUARD };
-
-   StringCchPrintfW( reportName, sizeof( reportName ), L"%s Error Report", pwAppName );
+   logGetStringFromResources( IDS_LOG_WER_REPORT_NAME, &format );  // "%s Error Report"
+   StringCchPrintfW( reportName, sizeof( reportName ), format.sBuf, swAppTitle );
 
    hr = WerReportCreate(
-      reportName,  // A Unicode string with the name of this event
+      reportName,          // A Unicode string with the name of this event
       WerReportCritical,   // The type of report
       &myReport,           // A pointer to a WER_REPORT_INFORMATION structure
       &hReport );          // A handle to the report. If the function fails, this handle is NULL.
 
-   LOG_INFO( "WerReportCreate hr=%ld  hReport=%zu", hr, hReport );
+   if ( hr != S_OK || hReport == NULL ) {
+      LOG_WARN_R( IDS_LOG_WER_FAILED_CREATE_REPORT );  // "Failed to create a Windows Error Report (should it be needed later).  Continuing."
+   }
 
-
-   LOG_INFO( "Done WER" );
+   LOG_INFO_R( IDS_LOG_WER_INIT_SUCCESS );  // "Initialized Windows Error Reporting."
 
    return TRUE;
 }
