@@ -138,7 +138,7 @@ extern int giApplicationReturnValue;
    return FALSE;
 
 
-/// Standardized macro for checking the return value of COM functions that
+/// Standardized macro for checking the return value of functions that
 /// return `HRESULT`s.  This macro uses resource strings and `printf`-style
 /// varargs.
 ///
@@ -201,7 +201,7 @@ extern int giApplicationReturnValue;
    }
 
 
-/// Standardized macro for checking the return value of COM functions that
+/// Standardized macro for checking the return value of functions that
 /// return `HRESULT`s.  This macro uses resource strings and `printf`-style
 /// varargs.
 ///
@@ -213,6 +213,19 @@ extern int giApplicationReturnValue;
 #define CHECK_HR_C( resource_id, ... )          \
    if ( FAILED( hr ) ) {                        \
       QUEUE_FATAL( resource_id, __VA_ARGS__ );  \
+   }
+
+
+/// Standardized macro for checking the return value of functions that
+/// return `HRESULT`s.  This macro uses resource strings and `printf`-style
+/// varargs.
+///
+/// - If the check succeeds, continue processing
+/// - If the check fails, print a warning but don't change the program flow
+///
+#define WARN_HR_R( resource_id, ... )          \
+   if ( FAILED( hr ) ) {                       \
+      LOG_WARN_R( resource_id, __VA_ARGS__ );  \
    }
 
 

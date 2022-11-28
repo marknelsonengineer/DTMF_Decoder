@@ -56,6 +56,7 @@
 #include <werapi.h>       // For WerGetFlags
 #include "log.h"          // For LOG_INFO
 #include "log_ex.h"       // For extensions to the log
+#include "version.h"      // For FULL_VERSION_W
 
 #include <inttypes.h>     // For PRIu16
 #include <psapi.h>        // For GetProcessImageFileNameW
@@ -131,17 +132,68 @@ BOOL logWerInit() {
 }
 
 
-BOOL logWerEvent() {
+BOOL logWerEvent(
+   _In_   const logLevels_t logLevel,
+   _In_z_ const WCHAR*      resourceName,
+   _In_   const UINT        resourceId,
+   _In_z_ const WCHAR*      logMsg
+   ) {
+   _ASSERTE( resourceName != NULL );
+   _ASSERTE( resourceName[ 0 ] != L'\0' );
+   _ASSERTE( logMsg != NULL );
+   _ASSERTE( logMsg[ 0 ] != L'\0' );
+
+   if ( logLevel < LOG_LEVEL_ERROR ) {  /// Don't set any WER parameters if the
+      return TRUE;                      /// log level is less than #LOG_LEVEL_ERROR
+   }
+
    HRESULT hr;  // HRESULT result
 
    hr = WerReportSetParameter(
-      hReport,  // handle to the report
-      WER_P0,  // identifier of the parameter to be set
-      L"Parm name 0",  //Unicode string that contains the name of the parameter
-      L"Lorem ipsum"   // The parameter value.
+      hReport,       // Handle to the report
+      WER_P0,        // Identifier of the parameter to be set
+      L"Log Level",  // Unicode string that contains the name of the parameter
+      ( logLevel == LOG_LEVEL_ERROR ) ? L"ERROR" : L"FATAL"   // The parameter value
    );
+   WARN_HR_R( IDS_LOG_WER_FAILED_TO_SET_PARAMETER );  // "Unable to set WER parameter.  Continuing."
 
-   LOG_INFO( "WerReportSetParameter hr=%ld", hr );
+   hr = WerReportSetParameter(
+      hReport,           // Handle to the report
+      WER_P1,            // Identifier of the parameter to be set
+      L"Resource Name",  // Unicode string that contains the name of the parameter
+      resourceName       // The parameter value
+   );
+   WARN_HR_R( IDS_LOG_WER_FAILED_TO_SET_PARAMETER );  // "Unable to set WER parameter.  Continuing."
+   /// @todo BUGFIX:  Replace the number with the name
+
+   // Convert UINT resourceId to a wide string
+   WCHAR szResourceId[ 8 ] = { 0 };
+   StringCchPrintfW( szResourceId, 8, L"%u", resourceId );
+
+   hr = WerReportSetParameter(
+      hReport,           // Handle to the report
+      WER_P2,            // Identifier of the parameter to be set
+      L"Resource ID",    // Unicode string that contains the name of the parameter
+      szResourceId       // The parameter value
+   );
+   WARN_HR_R( IDS_LOG_WER_FAILED_TO_SET_PARAMETER );  // "Unable to set WER parameter.  Continuing."
+
+   hr = WerReportSetParameter(
+      hReport,           // Handle to the report
+      WER_P3,            // Identifier of the parameter to be set
+      L"Message",        // Unicode string that contains the name of the parameter
+      logMsg             // The parameter value
+   );
+   WARN_HR_R( IDS_LOG_WER_FAILED_TO_SET_PARAMETER );  // "Unable to set WER parameter.  Continuing."
+
+   hr = WerReportSetParameter(
+      hReport,           // Handle to the report
+      WER_P4,            // Identifier of the parameter to be set
+      L"Application Version",  // Unicode string that contains the name of the parameter
+      FULL_VERSION_W     // The parameter value
+   );
+   WARN_HR_R( IDS_LOG_WER_FAILED_TO_SET_PARAMETER );  // "Unable to set WER parameter.  Continuing."
+   /// @todo Pass the application version through parameters
 
    return TRUE;
 }

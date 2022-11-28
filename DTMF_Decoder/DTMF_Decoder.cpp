@@ -103,7 +103,6 @@ int APIENTRY wWinMain(
 
    shInstance = hInstance;  /// Store the instance handle in a global variable
 
-
    BOOL    br;  // BOOL result
    HRESULT hr;  // HRESULT result
    INT     ir;  // INT result
@@ -128,7 +127,7 @@ int APIENTRY wWinMain(
    }
 
    // Now that the logger is initialized, we can start using the _R log functions
-   LOG_TRACE_R( IDS_DTMF_DECODER_STARTING, sswTitle, L"" FULL_VERSION, L"" __DATE__ L" " __TIME__ );  // "Starting %s   Version:  %s   Built:  %s"
+   LOG_TRACE_R( IDS_DTMF_DECODER_STARTING, sswTitle, FULL_VERSION_W, L"" __DATE__ L" " __TIME__ );  // "Starting %s   Version:  %s   Built:  %s"
 
 
 
@@ -435,7 +434,7 @@ INT_PTR CALLBACK About( HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam ) 
          br = SetDlgItemTextW( hDlg, IDC_PROGRAM_NAME, sswTitle );
          WARN_BR_R( IDS_DTMF_DECODER_ABOUT_FAILED_TO_SET_NAME );  // "Failed to set the name of the app"
 
-         br = SetDlgItemTextW( hDlg, IDC_VERSION, L"" FULL_VERSION);
+         br = SetDlgItemTextW( hDlg, IDC_VERSION, FULL_VERSION_W );
          WARN_BR_R( IDS_DTMF_DECODER_ABOUT_FAILED_TO_SET_VERSION );  // "Failed to set the version of the app"
 
          br = SetDlgItemTextW( hDlg, IDC_DATE, L"" __DATE__ );  /// @todo Figure out how to localize the date

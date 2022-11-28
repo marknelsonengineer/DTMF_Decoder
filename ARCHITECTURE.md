@@ -368,7 +368,8 @@ Here's what I've learned about processes' end-of-life:
 | Queue messages for later     | #CHECK_BR_C           | #CHECK_HR_C           | Call #QUEUE_FATAL    |
 | Test for success or failure  | `if ( !br )`          | `if ( FAILED( hr ) )` |                      |
 
-  - #WARN_BR_R warns on a BOOL failure
+  - #WARN_BR_R and #WARN_HR_R warns on failures but doesn't change the program's
+    flow.
   
   - #RETURN_FATAL_R is very simple... it calls #PROCESS_FATAL_R and then 
     returns `FALSE`
