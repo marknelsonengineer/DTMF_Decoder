@@ -299,9 +299,9 @@ int APIENTRY wWinMain(
 
    // The log can still be called even after it's been "cleaned up"
    if ( giApplicationReturnValue == EXIT_SUCCESS ) {
-      LOG_INFO_R( IDS_DTMF_DECODER_ENDING_SUCCESSFULLY, APP_NAME_W );  // "All %s resources were cleaned up.  Ending program:  SUCCESS."
+      LOG_INFO_R( IDS_DTMF_DECODER_ENDING_SUCCESSFULLY, sswTitle );  // "All %s resources were cleaned up.  Ending program:  SUCCESS."
    } else {
-      LOG_INFO_R( IDS_DTMF_DECODER_ENDING_IN_FAILURE_MODE, APP_NAME_W );  // "All %s resources were cleaned up.  Ending program in failure mode."
+      LOG_INFO_R( IDS_DTMF_DECODER_ENDING_IN_FAILURE_MODE, sswTitle );  // "All %s resources were cleaned up.  Ending program in failure mode."
    }
 
    return giApplicationReturnValue;

@@ -444,13 +444,13 @@ void logShowMessageW( logLevels_t logLevel, WCHAR* message ) {
 
    switch ( logLevel ) {
       case LOG_LEVEL_WARN:
-         MessageBoxW( ( ( sphMainWindow == NULL ) ? NULL : *sphMainWindow ), message, swAppName, MB_OK | MB_ICONWARNING );
+         MessageBoxW( ( ( sphMainWindow == NULL ) ? NULL : *sphMainWindow ), message, swAppTitle, MB_OK | MB_ICONWARNING );
          break;
       case LOG_LEVEL_ERROR:
-         MessageBoxW( ( ( sphMainWindow == NULL ) ? NULL : *sphMainWindow ), message, swAppName, MB_OK | MB_ICONERROR );
+         MessageBoxW( ( ( sphMainWindow == NULL ) ? NULL : *sphMainWindow ), message, swAppTitle, MB_OK | MB_ICONERROR );
          break;
       case LOG_LEVEL_FATAL:
-         MessageBoxW( ( ( sphMainWindow == NULL ) ? NULL : *sphMainWindow ), message, swAppName, MB_OK | MB_ICONSTOP );
+         MessageBoxW( ( ( sphMainWindow == NULL ) ? NULL : *sphMainWindow ), message, swAppTitle, MB_OK | MB_ICONSTOP );
          break;
       default:
          FATAL_IN_LOG( L"Unexpected log level" );
