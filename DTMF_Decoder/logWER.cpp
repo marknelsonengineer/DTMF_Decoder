@@ -6,13 +6,13 @@
 //
 /// Generic Windows Error Reporting utility
 ///
-/// This utility is 'bolted' onto the logger log.cpp.  If it's enabled (through
-/// `#ifdef`s) it will generate a Windows Error Report if the application
-/// detects a fatal error.
+/// This utility extends log.cpp.  If it's enabled (through
+/// `#ifdef`s) it generates a Windows Error Report if the application
+/// has a fatal error.
 ///
 /// The data logWER collects is:
-///   - The first 10 error codes (the numeric error from the string table)
-///   - The first 10 error message
+///   - The error message, resource name, resource id, etc. of the first
+///     #LOG_LEVEL_ERROR or #LOG_LEVEL_FATAL message.
 ///   - The first 4K of log messages
 ///   - The last 4K of log messages
 ///
@@ -28,6 +28,9 @@
 /// @see https://learn.microsoft.com/en-us/windows/win32/wer/windows-error-reporting
 /// @see Windows Quality Online Services
 /// @see https://en.wikipedia.org/wiki/Winqual
+///
+/// If you are into WER, checkout an excellent paper on the subject:
+/// [Debugging in the (Very) Large: Ten Years of Implementationand Experience](https://www.sigops.org/s/conferences/sosp/2009/papers/glerum-sosp09.pdf)
 ///
 /// @todo:  Complete this bit
 /// ## Generic Win32 API
@@ -67,14 +70,33 @@
 #define REPORT_NAME_SIZE 64  ///< The size of the report name
 
 static HREPORT shReport = NULL;                            ///< Handle to the windows error report
-static WCHAR   swzFullExeFilename[ MAX_PATH ] = { 0 };     ///< Full path to the executable file
+static WCHAR   swzFullExeFilename[ MAX_PATH ]    = { 0 };  ///< Full path to the executable file
 static WCHAR   swzReportName[ REPORT_NAME_SIZE ] = { 0 };  ///< Name of the report
 static BOOL    sbLoggedWerFatalEvent = FALSE;              ///< WER captures the first #LOG_LEVEL_ERROR or #LOG_LEVEL_FATAL event.  This is `TRUE` if an event has been logged.
 
 
+/// Define the size of #msgBuf_t.msgBuf
+#define MESSAGE_BUFFER_CAPACITY 4096
 
-///////////////////////////////////////////////////////////////////////////////
-// End of declarations from log.cpp
+/// The structure of the two WER buffers
+typedef struct {
+   size_t messageBufferCapacity;  ///< The size of the message buffer in bytes
+   size_t msgStartOffset;         ///< The offset to the first message in the buffer
+   size_t bytesRemaining;         ///< If the buffer is not yet full, this is the number of available bytes in the buffer.
+   WCHAR msgBuf[ MESSAGE_BUFFER_CAPACITY ];  ///< The message buffer
+} msgBuf_t;
+
+
+/// A buffer with the first #MESSAGE_BUFFER_CAPACITY characters of the log.
+/// Once data is written into this buffer, it never gets overwritten.  This
+/// buffer preserves the startup logs of the application.
+static msgBuf_t firstMsgs = { sizeof( msgBuf_t ), 0, sizeof( msgBuf_t ), { 0 } };
+
+/// A circular buffer with the last #MESSAGE_BUFFER_CAPACITY characters of the
+/// log.  After the initial log is written in #firstMsgs, log messages are
+/// written (circularly) in this buffer.  This buffer preserves the events
+/// leading up to the failure.
+static msgBuf_t lastMsgs = { sizeof( msgBuf_t ), 0, sizeof( msgBuf_t ), { 0 } };
 
 
 /// Initialize Windows Error Reporting
@@ -92,7 +114,7 @@ BOOL logWerInit() {
 
    dwr = GetProcessImageFileNameW( hProcess, swzFullExeFilename, MAX_PATH );
    if ( dwr <= 0 ) {
-      RETURN_FATAL_R( IDS_LOG_WER_FAILED_TO_GET_EXE_PATH );  // "Unable to get the executable's full path name"
+      RETURN_FATAL_R( IDS_LOG_WER_FAILED_TO_GET_EXE_PATH );  // "Failed to get the executable's full path name"
    }
    LOG_INFO_R( IDS_LOG_WER_FULL_EXE_FILENAME, swzFullExeFilename );  // "GetProcessImageFileNameW Full Exe Filename=%s"
 
@@ -163,7 +185,7 @@ BOOL logWerEvent(
       L"Log Level",  // Unicode string that contains the name of the parameter
       ( logLevel == LOG_LEVEL_ERROR ) ? L"ERROR" : L"FATAL"   // The parameter value
    );
-   WARN_HR_R( IDS_LOG_WER_FAILED_TO_SET_PARAMETER );  // "Unable to set WER parameter.  Continuing."
+   WARN_HR_R( IDS_LOG_WER_FAILED_TO_SET_PARAMETER, WER_P0 );  // "Failed to set WER parameter:  %d   Continuing."
 
    hr = WerReportSetParameter(
       shReport,          // Handle to the report
@@ -171,7 +193,7 @@ BOOL logWerEvent(
       L"Resource Name",  // Unicode string that contains the name of the parameter
       resourceName       // The parameter value
    );
-   WARN_HR_R( IDS_LOG_WER_FAILED_TO_SET_PARAMETER );  // "Unable to set WER parameter.  Continuing."
+   WARN_HR_R( IDS_LOG_WER_FAILED_TO_SET_PARAMETER, WER_P1 );  // "Failed to set WER parameter:  %d   Continuing."
    /// @todo BUGFIX:  Replace the number with the name
 
    // Convert UINT resourceId to a wide string
@@ -184,7 +206,7 @@ BOOL logWerEvent(
       L"Resource ID",  // Unicode string that contains the name of the parameter
       szResourceId     // The parameter value
    );
-   WARN_HR_R( IDS_LOG_WER_FAILED_TO_SET_PARAMETER );  // "Unable to set WER parameter.  Continuing."
+   WARN_HR_R( IDS_LOG_WER_FAILED_TO_SET_PARAMETER, WER_P2 );  // "Failed to set WER parameter:  %d   Continuing."
 
    hr = WerReportSetParameter(
       shReport,        // Handle to the report
@@ -192,7 +214,7 @@ BOOL logWerEvent(
       L"Message",      // Unicode string that contains the name of the parameter
       logMsg           // The parameter value
    );
-   WARN_HR_R( IDS_LOG_WER_FAILED_TO_SET_PARAMETER );  // "Unable to set WER parameter.  Continuing."
+   WARN_HR_R( IDS_LOG_WER_FAILED_TO_SET_PARAMETER, WER_P3 );  // "Failed to set WER parameter:  %d   Continuing."
 
    hr = WerReportSetParameter(
       shReport,        // Handle to the report
@@ -200,7 +222,7 @@ BOOL logWerEvent(
       L"Application Version",  // Unicode string that contains the name of the parameter
       FULL_VERSION_W   // The parameter value
    );
-   WARN_HR_R( IDS_LOG_WER_FAILED_TO_SET_PARAMETER );  // "Unable to set WER parameter.  Continuing."
+   WARN_HR_R( IDS_LOG_WER_FAILED_TO_SET_PARAMETER, WER_P4 );  // "Failed to set WER parameter:  %d   Continuing."
    /// @todo Pass the application version through parameters
 
    LOG_INFO_R( IDS_LOG_WER_FATAL_ERROR_LOGGED );  // "WER fatal error logged"
@@ -217,18 +239,26 @@ BOOL logWerEvent(
 BOOL logWerSubmit() {
    HRESULT hr;  // HRESULT result
 
+   hr = WerRegisterMemoryBlock(
+      &firstMsgs, sizeof( firstMsgs )
+   );
+   CHECK_HR_R( IDS_LOG_WER_FAILED_TO_REGISTER_MEMORY, L"First" );  // "Failed to register %s memory block with Windows Error Report"
 
-//   hr = WerReportAddDump(
-//      shReport,  // handle to the report
-//      GetCurrentProcess(),
-//      GetCurrentThread(),
-//      WerDumpTypeMiniDump,
-//      NULL,
-//      NULL,
-//      0 );
-//
-//   LOG_INFO( "WerReportAddDump hr=%ld", hr );
+   hr = WerRegisterMemoryBlock(
+      &lastMsgs, sizeof( lastMsgs )
+   );
+   CHECK_HR_R( IDS_LOG_WER_FAILED_TO_REGISTER_MEMORY, L"Last" );  // "Failed to register %s memory block with Windows Error Report"
 
+
+   hr = WerReportAddDump(
+      shReport,
+      GetCurrentProcess(),
+      GetCurrentThread(),
+      WerDumpTypeHeapDump,  // Dump type
+      NULL,                 // Exception parameters
+      NULL,                 // Custom options
+      0 );                  // Flags
+   CHECK_HR_R( IDS_LOG_WER_FAILED_TO_ADD_DUMP );  // "Failed to add dump to Windows Error Report"
 
 
    WER_SUBMIT_RESULT submissionResult;
@@ -236,10 +266,10 @@ BOOL logWerSubmit() {
    hr = WerReportSubmit(
       shReport,            // The report handle
       WerConsentApproved,  // The consent status enum
-      WER_SUBMIT_NO_CLOSE_UI | WER_SUBMIT_QUEUE | WER_SUBMIT_REPORT_MACHINE_ID,
+      WER_SUBMIT_NO_CLOSE_UI | WER_SUBMIT_QUEUE | WER_SUBMIT_REPORT_MACHINE_ID | WER_SUBMIT_ADD_REGISTERED_DATA,
       &submissionResult
    );
-   CHECK_HR_R( IDS_LOG_WER_FAILED_TO_SUBMIT_REPORT );  // "Unable to submit Windows Error Report"
+   CHECK_HR_R( IDS_LOG_WER_FAILED_TO_SUBMIT_REPORT );  // "Failed to submit Windows Error Report"
 
    LOG_TRACE_R( IDS_LOG_WER_SUCCESSFULLY_SUBMITTED );  // "Windows Error Report submitted successfully"
 
