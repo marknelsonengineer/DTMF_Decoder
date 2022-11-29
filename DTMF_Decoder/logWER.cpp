@@ -64,11 +64,12 @@
 
 #pragma comment(lib, "Wer")  // Link the WER library
 
+#define REPORT_NAME_SIZE 64  ///< The size of the report name
 
-static HREPORT shReport = NULL;                         ///< Handle to the windows error report
-static WCHAR   swzFullExeFilename[ MAX_PATH ] = { 0 };  ///< Full path to the executable file
-static WCHAR   swzReportName[ 64 ] = { 0 };             ///< Name of the report
-static BOOL    sbLoggedWerFatalEvent = FALSE;           ///< WER captures the first #LOG_LEVEL_ERROR or #LOG_LEVEL_FATAL event.  This is `TRUE` if an event has been logged.
+static HREPORT shReport = NULL;                            ///< Handle to the windows error report
+static WCHAR   swzFullExeFilename[ MAX_PATH ] = { 0 };     ///< Full path to the executable file
+static WCHAR   swzReportName[ REPORT_NAME_SIZE ] = { 0 };  ///< Name of the report
+static BOOL    sbLoggedWerFatalEvent = FALSE;              ///< WER captures the first #LOG_LEVEL_ERROR or #LOG_LEVEL_FATAL event.  This is `TRUE` if an event has been logged.
 
 
 
@@ -89,7 +90,7 @@ BOOL logWerInit() {
    HANDLE hProcess = GetCurrentProcess();
    // No error checking available
 
-   dwr = GetProcessImageFileNameW( hProcess, swzFullExeFilename, sizeof( swzFullExeFilename ) );
+   dwr = GetProcessImageFileNameW( hProcess, swzFullExeFilename, MAX_PATH );
    if ( dwr <= 0 ) {
       RETURN_FATAL_R( IDS_LOG_WER_FAILED_TO_GET_EXE_PATH );  // "Unable to get the executable's full path name"
    }
@@ -108,14 +109,14 @@ BOOL logWerInit() {
    // Compose myReport.wzDescription
    wBuffer_t format = { L"", BUFFER_GUARD };
    logGetStringFromResources( IDS_LOG_WER_DESCRIPTION, &format );  // "%s has a problem and needs to shutdown.  A report will be generated and sent to the developer."
-   StringCchPrintfW( myReport.wzDescription, sizeof( myReport.wzDescription ), format.sBuf, swAppTitle );
+   StringCbPrintfW( myReport.wzDescription, sizeof( myReport.wzDescription ), format.sBuf, swAppTitle );
 
    myReport.hwndParent = *sphMainWindow;
 
    // Compose swzReportName
    format = { L"", BUFFER_GUARD };
    logGetStringFromResources( IDS_LOG_WER_REPORT_NAME, &format );  // "%s Error Report"
-   StringCchPrintfW( swzReportName, sizeof( swzReportName ), format.sBuf, swAppTitle );
+   StringCchPrintfW( swzReportName, REPORT_NAME_SIZE, format.sBuf, swAppTitle );
 
    hr = WerReportCreate(
       swzReportName,       // A Unicode string with the name of this event
