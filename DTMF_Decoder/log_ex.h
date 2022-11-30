@@ -52,3 +52,8 @@ extern void vLogW(
    _In_z_ const WCHAR* functionName,
    _In_z_ const WCHAR* format,
    _In_z_ const va_list     args );
+
+/// Process an error within the logging subsystem
+#define FATAL_IN_LOG( message )    \
+   OutputDebugStringW( message );  \
+   _ASSERT_EXPR( FALSE, message );

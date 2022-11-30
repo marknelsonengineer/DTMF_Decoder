@@ -158,11 +158,6 @@ static CRITICAL_SECTION log_queue_critical_section;  ///< Manage the queue in a 
 /// generated (like in a worker thread or drawing a screen buffer).
 static logEntry_t logQueue[ MAX_LOG_QUEUE_DEPTH ];
 
-/// Process an error within the logging subsystem
-#define FATAL_IN_LOG( message )   \
-   OutputDebugStringW( message ); \
-   _ASSERT_EXPR( FALSE, message );
-
 
 /// Initialize the logger
 ///

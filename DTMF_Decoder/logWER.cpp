@@ -79,10 +79,11 @@ static BOOL    sbLoggedWerFatalEvent = FALSE;              ///< WER captures the
 #define MESSAGE_BUFFER_CAPACITY 4096
 
 /// The structure of the two WER buffers
+///
+/// Integers are held as bytes as that's easier to read as a memory dump
 typedef struct {
    size_t messageBufferCapacity;  ///< The size of the message buffer in bytes
-   size_t msgStartOffset;         ///< The offset to the first message in the buffer
-   size_t bytesRemaining;         ///< If the buffer is not yet full, this is the number of available bytes in the buffer.
+   size_t msgStartOffset;         ///< The offset (in bytes!) to the end of the buffer (or the wraparound point)
    WCHAR msgBuf[ MESSAGE_BUFFER_CAPACITY ];  ///< The message buffer
 } msgBuf_t;
 
@@ -90,13 +91,17 @@ typedef struct {
 /// A buffer with the first #MESSAGE_BUFFER_CAPACITY characters of the log.
 /// Once data is written into this buffer, it never gets overwritten.  This
 /// buffer preserves the startup logs of the application.
-static msgBuf_t firstMsgs = { sizeof( msgBuf_t ), 0, sizeof( msgBuf_t ), { 0 } };
+static msgBuf_t firstMsgs = { MESSAGE_BUFFER_CAPACITY << 1, 0, { 0 } };
+
+/// `FALSE` while #firstMsgs is filling.  Once it's full, set to `TRUE` and
+/// #lastMsgs will start filling.
+static BOOL bIsFirstBufferFull = FALSE;
 
 /// A circular buffer with the last #MESSAGE_BUFFER_CAPACITY characters of the
 /// log.  After the initial log is written in #firstMsgs, log messages are
 /// written (circularly) in this buffer.  This buffer preserves the events
 /// leading up to the failure.
-static msgBuf_t lastMsgs = { sizeof( msgBuf_t ), 0, sizeof( msgBuf_t ), { 0 } };
+static msgBuf_t lastMsgs = { MESSAGE_BUFFER_CAPACITY << 1, 0, { 0 } };
 
 
 /// Initialize Windows Error Reporting
@@ -169,6 +174,67 @@ BOOL logWerEvent(
    _ASSERTE( logMsg != NULL );
    _ASSERTE( logMsg[ 0 ] != L'\0' );
 
+   HRESULT hr;  // HRESULT result
+
+   _ASSERTE( firstMsgs.messageBufferCapacity >= firstMsgs.msgStartOffset );
+   _ASSERTE( lastMsgs.messageBufferCapacity >= lastMsgs.msgStartOffset );
+
+   size_t msgLength = wcslen( logMsg ) << 1;  // wcslen returns the number of chars, << 1 converts to bytes
+
+   size_t firstBytesRemaining = firstMsgs.messageBufferCapacity - firstMsgs.msgStartOffset;
+
+   /// If the current message would overflow #firstMsgs, then it's full and
+   /// it's time to shift to the #lastMsgs buffer.
+   if ( !bIsFirstBufferFull && msgLength >= firstBytesRemaining ) {
+      bIsFirstBufferFull = TRUE;
+   }
+
+   STRSAFE_LPWSTR endPtr;
+
+   if ( !bIsFirstBufferFull ) {  // If #firstMsgs is not full...
+      _ASSERTE( firstBytesRemaining > msgLength );
+
+      hr = StringCbCopyExW(
+         firstMsgs.msgBuf + ( firstMsgs.msgStartOffset >> 1 ),  // Destination buffer
+         firstBytesRemaining,                   // Size of destination buffer in bytes
+         logMsg,                                // Null terminated wide source string
+         &endPtr,                               // Populate a pointer to the end of the destination buffer
+         NULL,                                  // Number of unused bytes in destination
+         0                                      // Flags
+      );
+      if ( !( hr == S_OK || hr == STRSAFE_E_INSUFFICIENT_BUFFER ) ) {
+         FATAL_IN_LOG( L"Unknown error in StringCbCopyExW.  Exiting immediately." );
+      }
+
+      /// Pointer arithmetic is always in terms of the derefrenced object
+      /// (`WCHAR`s in this case), so convert them to bytes.
+      firstMsgs.msgStartOffset = ( endPtr - firstMsgs.msgBuf ) << 1;
+   } else {
+      size_t lastBytesRemaining = lastMsgs.messageBufferCapacity - lastMsgs.msgStartOffset;
+
+      // If this message exceeds the remaining size of the buffer, then start over
+      if ( msgLength >= lastBytesRemaining ) {
+         lastMsgs.msgStartOffset = 0;
+         lastBytesRemaining = lastMsgs.messageBufferCapacity;
+      }
+
+      hr = StringCbCopyExW(
+         lastMsgs.msgBuf + ( lastMsgs.msgStartOffset >> 1 ),  // Destination buffer
+         lastBytesRemaining,                    // Size of destination buffer in bytes
+         logMsg,                                // Null terminated wide source string
+         &endPtr,                               // Populate a pointer to the end of the destination buffer
+         NULL,                                  // Number of unused bytes in destination
+         0                                      // Flags
+      );
+      if ( !( hr == S_OK || hr == STRSAFE_E_INSUFFICIENT_BUFFER ) ) {
+         FATAL_IN_LOG( L"Unknown error in StringCbCopyExW.  Exiting immediately." );
+      }
+
+      /// Pointer arithmetic is always in terms of the derefrenced object
+      /// (`WCHAR`s in this case), so convert them to bytes.
+      lastMsgs.msgStartOffset = ( endPtr - lastMsgs.msgBuf ) << 1;
+   }
+
    if ( logLevel < LOG_LEVEL_ERROR ) {  /// Don't set any WER parameters if the
       return TRUE;                      /// log level is less than #LOG_LEVEL_ERROR
    }
@@ -176,8 +242,6 @@ BOOL logWerEvent(
    if ( sbLoggedWerFatalEvent ) {  /// Only one WER #LOG_LEVEL_WARN or #LOG_LEVEL_FATAL
       return TRUE;                 /// event can be logged.
    }
-
-   HRESULT hr;  // HRESULT result
 
    hr = WerReportSetParameter(
       shReport,      // Handle to the report
