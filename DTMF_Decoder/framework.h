@@ -102,9 +102,9 @@ extern int giApplicationReturnValue;
 /// - Call #LOG_FATAL_Q to queue the message
 /// - Call #gracefulShutdown
 ///
-#define QUEUE_FATAL( resource_id, ... )      \
-   giApplicationReturnValue = EXIT_FAILURE;  \
-   LOG_FATAL_Q( resource_id, __VA_ARGS__ );  \
+#define QUEUE_FATAL( resource_id, ... )        \
+   giApplicationReturnValue = EXIT_FAILURE;    \
+   LOG_FATAL_Q( ##resource_id, __VA_ARGS__ );  \
    gracefulShutdown();
 
 
@@ -118,9 +118,9 @@ extern int giApplicationReturnValue;
 /// @see https://learn.microsoft.com/en-us/windows/win32/com/using-macros-for-error-handling
 /// @see https://gcc.gnu.org/onlinedocs/cpp/Variadic-Macros.html
 ///
-#define PROCESS_FATAL_R( resource_id, ... )  \
-   giApplicationReturnValue = EXIT_FAILURE;  \
-   LOG_FATAL_R( resource_id, __VA_ARGS__ );  \
+#define PROCESS_FATAL_R( resource_id, ... )    \
+   giApplicationReturnValue = EXIT_FAILURE;    \
+   LOG_FATAL_R( ##resource_id, __VA_ARGS__ );  \
    gracefulShutdown();
 
 
@@ -133,8 +133,8 @@ extern int giApplicationReturnValue;
 /// @see https://learn.microsoft.com/en-us/windows/win32/com/using-macros-for-error-handling
 /// @see https://gcc.gnu.org/onlinedocs/cpp/Variadic-Macros.html
 ///
-#define RETURN_FATAL_R( resource_id, ... )      \
-   PROCESS_FATAL_R( resource_id, __VA_ARGS__ ); \
+#define RETURN_FATAL_R( resource_id, ... )        \
+   PROCESS_FATAL_R( ##resource_id, __VA_ARGS__ ); \
    return FALSE;
 
 
@@ -149,9 +149,9 @@ extern int giApplicationReturnValue;
 /// @see https://learn.microsoft.com/en-us/windows/win32/com/using-macros-for-error-handling
 /// @see https://gcc.gnu.org/onlinedocs/cpp/Variadic-Macros.html
 ///
-#define CHECK_HR_R( resource_id, ... )             \
-   if ( FAILED( hr ) ) {                           \
-      RETURN_FATAL_R( resource_id, __VA_ARGS__ );  \
+#define CHECK_HR_R( resource_id, ... )               \
+   if ( FAILED( hr ) ) {                             \
+      RETURN_FATAL_R( ##resource_id, __VA_ARGS__ );  \
    }
 
 
@@ -166,9 +166,9 @@ extern int giApplicationReturnValue;
 /// @see https://learn.microsoft.com/en-us/windows/win32/com/using-macros-for-error-handling
 /// @see https://gcc.gnu.org/onlinedocs/cpp/Variadic-Macros.html
 ///
-#define CHECK_BR_R( resource_id, ... )            \
-   if ( !br ) {                                   \
-      RETURN_FATAL_R( resource_id, __VA_ARGS__ ); \
+#define CHECK_BR_R( resource_id, ... )              \
+   if ( !br ) {                                     \
+      RETURN_FATAL_R( ##resource_id, __VA_ARGS__ ); \
    }
 
 
@@ -180,9 +180,9 @@ extern int giApplicationReturnValue;
 ///
 /// @see https://gcc.gnu.org/onlinedocs/cpp/Variadic-Macros.html
 ///
-#define WARN_BR_R( resource_id, ... )          \
-   if ( !br ) {                                \
-      LOG_WARN_R( resource_id, __VA_ARGS__ );  \
+#define WARN_BR_R( resource_id, ... )            \
+   if ( !br ) {                                  \
+      LOG_WARN_R( ##resource_id, __VA_ARGS__ );  \
    }
 
 
@@ -194,10 +194,10 @@ extern int giApplicationReturnValue;
 /// - If the check fails, queue a message and close the program
 ///
 /// @see https://learn.microsoft.com/en-us/windows/win32/com/using-macros-for-error-handling
-///
-#define CHECK_BR_C( resource_id, ... )          \
-   if ( !br ) {                                 \
-      QUEUE_FATAL( resource_id, __VA_ARGS__ );  \
+/// @todo rename to CHECK_BR_Q
+#define CHECK_BR_C( resource_id, ... )            \
+   if ( !br ) {                                   \
+      QUEUE_FATAL( ##resource_id, __VA_ARGS__ );  \
    }
 
 
@@ -209,10 +209,10 @@ extern int giApplicationReturnValue;
 /// - If the check fails, queue a message and close the program
 ///
 /// @see https://learn.microsoft.com/en-us/windows/win32/com/using-macros-for-error-handling
-///
-#define CHECK_HR_C( resource_id, ... )          \
-   if ( FAILED( hr ) ) {                        \
-      QUEUE_FATAL( resource_id, __VA_ARGS__ );  \
+/// @todo rename to CHECK_HR_Q
+#define CHECK_HR_C( resource_id, ... )            \
+   if ( FAILED( hr ) ) {                          \
+      QUEUE_FATAL( ##resource_id, __VA_ARGS__ );  \
    }
 
 
@@ -223,9 +223,9 @@ extern int giApplicationReturnValue;
 /// - If the check succeeds, continue processing
 /// - If the check fails, print a warning but don't change the program flow
 ///
-#define WARN_HR_R( resource_id, ... )          \
-   if ( FAILED( hr ) ) {                       \
-      LOG_WARN_R( resource_id, __VA_ARGS__ );  \
+#define WARN_HR_R( resource_id, ... )            \
+   if ( FAILED( hr ) ) {                         \
+      LOG_WARN_R( ##resource_id, __VA_ARGS__ );  \
    }
 
 

@@ -42,16 +42,18 @@ extern void logShowMessageW( logLevels_t logLevel, WCHAR* message );
 
 extern int vLogComposeW(
    _In_    const logLevels_t logLevel,
-   _In_z_  const WCHAR* functionName,
-   _In_z_  const WCHAR* format,
-   _Inout_       wBuffer_t* pBuffer,
+   _In_z_  const WCHAR*      functionName,
+   _In_z_  const WCHAR*      format,
+   _Inout_       wBuffer_t*  pBuffer,
    _In_    const va_list     args );
 
 extern void vLogW(
-   _In_   const logLevels_t logLevel,
-   _In_z_ const WCHAR* functionName,
-   _In_z_ const WCHAR* format,
-   _In_z_ const va_list     args );
+   _In_       const logLevels_t logLevel,
+   _In_z_     const WCHAR*  functionName,
+   _In_opt_z_ const WCHAR*  resourceName,
+   _In_opt_   const UINT    resourceId,
+   _In_z_     const WCHAR*  format,
+   _In_z_     const va_list args );
 
 /// Process an error within the logging subsystem
 #define FATAL_IN_LOG( message )    \

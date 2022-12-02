@@ -122,6 +122,7 @@
 #include "framework.h"    // Standard system include files
 #include "log.h"          // For yourself
 #include "log_ex.h"       // For extensions to the log
+#include "logWER.h"       // For logWerEvent
 
 #include <stdio.h>        // For sprintf_s
 #include <stdarg.h>       // For va_start
@@ -329,6 +330,8 @@ void logA(
 
    OutputDebugStringA( buffer.sBuf );
 
+   /// @todo Convert to wide character.  Maybe use mbstowcs_s to do it.
+
    if ( logLevel == LOG_LEVEL_WARN ) {
       MessageBoxA( ( ( sphMainWindow == NULL ) ? NULL : *sphMainWindow ), buffer.sBuf, sAppName, MB_OK | MB_ICONWARNING );
    } else if ( logLevel == LOG_LEVEL_ERROR ) {
@@ -467,13 +470,17 @@ void logShowMessageW( logLevels_t logLevel, WCHAR* message ) {
 ///
 /// @param logLevel      The level of this logging event
 /// @param functionName  The name of the function
+/// @param resourceName  The name of the resource (if any)
+/// @param resourceId    The ID of the resource (if any)
 /// @param format        `printf`-style formatting
 /// @param args          Varargs `va_list`
 void vLogW(
-   _In_   const logLevels_t logLevel,
-   _In_z_ const WCHAR*      functionName,
-   _In_z_ const WCHAR*      format,
-   _In_z_ const va_list     args ) {
+   _In_       const logLevels_t logLevel,
+   _In_z_     const WCHAR*      functionName,
+   _In_opt_z_ const WCHAR*      resourceName,
+   _In_opt_   const UINT        resourceId,
+   _In_z_     const WCHAR*      format,
+   _In_z_     const va_list     args ) {
 
    _ASSERTE( functionName != NULL );
    _ASSERTE( format       != NULL );
@@ -488,6 +495,7 @@ void vLogW(
    vLogComposeW( logLevel, functionName, format, &buffer, args );
 
    OutputDebugStringW( buffer.sBuf );
+   logWerEvent( logLevel, resourceName, resourceId, buffer.sBuf );
 
    if ( logLevel >= LOG_LEVEL_WARN ) {
       logShowMessageW( logLevel, buffer.sBuf );
@@ -522,7 +530,7 @@ void logW(
 
    va_list args;
    va_start( args, format );    // va_start & va_end do not have result codes
-   vLogW( logLevel, functionName, format, args );
+   vLogW( logLevel, functionName, NULL, 0, format, args );
    va_end( args );
 }
 
@@ -538,10 +546,12 @@ void logW(
 ///
 /// @param logLevel        The level of this logging event
 /// @param functionName    The name of the function
+/// @param resourceName    The name of the resource ID
 /// @param resourceId, ... The ID of the resource string.  The string may contain `printf`-style formatting characters.
 void logR(
    _In_   const logLevels_t logLevel,
    _In_z_ const WCHAR*      functionName,
+   _In_z_ const WCHAR*      resourceName,
    _In_   const UINT        resourceId,
    _In_ ... ) {
 
@@ -561,7 +571,7 @@ void logR(
 
    va_list args;
    va_start( args, resourceId );  // va_start & va_end do not have result codes
-   vLogW( logLevel, functionName, format.sBuf, args );
+   vLogW( logLevel, functionName, resourceName, resourceId, format.sBuf, args );
    va_end( args );
 }
 
@@ -583,10 +593,12 @@ void logR(
 ///
 /// @param logLevel        The level of this logging event
 /// @param functionName    The name of the function
+/// @param resourceName    The name of the resource
 /// @param resourceId, ... The ID of the resource string.  The string may contain `printf`-style formatting characters.
 void logQ(
    _In_   const logLevels_t logLevel,
    _In_z_ const WCHAR*      functionName,
+   _In_z_ const WCHAR*      resourceName,
    _In_   const UINT        resourceId,
    _In_ ... ) {
 
@@ -612,6 +624,7 @@ void logQ(
    va_end( args );
 
    OutputDebugStringW( buffer.sBuf );
+   logWerEvent( logLevel, resourceName, resourceId, buffer.sBuf );
 
    _ASSERTE( logValidate() );
 
@@ -1054,21 +1067,4 @@ void logTest() {
          totalOps++;
       }
    }
-}
-
-
-/// Save a message ID and level in the logger.
-///
-/// Only save messages where the severity level is #LOG_LEVEL_WARN,
-/// #LOG_LEVEL_ERROR or #LOG_LEVEL_FATAL.  This is because these messages
-/// generate `MessageBox`es and can't be displayed by worker threads or when
-/// we have issues in the actual message loop.  So we save them and print the
-/// first one we encounter at a later time.
-///
-/// This is not thread-safe, but it's close enough for what we are doing.
-///
-/// @param level     The severity of the message
-/// @param msgId     The ID of the message
-/// @param msgWParam A WPARAM passed into the message
-void logSetMsg( _In_ const logLevels_t level, _In_ const UINT msgId, _In_ const WPARAM msgWParam ) {
 }

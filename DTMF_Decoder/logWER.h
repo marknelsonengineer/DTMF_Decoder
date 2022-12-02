@@ -12,17 +12,12 @@
 
 #pragma once
 
-
-/// C preprocesor trick that converts `define`d constants into strings
-#define RESOURCE_ID_TO_STR( resourceId) #resourceId
-
-
-extern BOOL logWerInit();
+ extern BOOL logWerInit();
 extern BOOL logWerEvent(
-   _In_   const logLevels_t logLevel,
-   _In_z_ const WCHAR*      resourceName,
-   _In_   const UINT        resourceId,
-   _In_z_ const WCHAR*      logMsg
+   _In_       const logLevels_t logLevel,
+   _In_opt_z_ const WCHAR*      resourceName,
+   _In_opt_   const UINT        resourceId,
+   _In_z_     const WCHAR*      logMsg
 );
 extern BOOL logWerSubmit();
 extern BOOL logWerCleanup();

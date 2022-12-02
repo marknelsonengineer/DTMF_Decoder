@@ -76,41 +76,41 @@ struct logEntry_t {
 
 
 /// Log a wide `printf`-style resource string at the the #LOG_LEVEL_TRACE level
-#define LOG_TRACE_R( uId, ... ) logR( LOG_LEVEL_TRACE, __FUNCTIONW__, uId, __VA_ARGS__ )
+#define LOG_TRACE_R( uId, ... ) logR( LOG_LEVEL_TRACE, __FUNCTIONW__, L"" #uId, uId, __VA_ARGS__ )
 
 /// Log a wide `printf`-style resource string at the the #LOG_LEVEL_DEBUG level
-#define LOG_DEBUG_R( uId, ... ) logR( LOG_LEVEL_DEBUG, __FUNCTIONW__, uId, __VA_ARGS__ )
+#define LOG_DEBUG_R( uId, ... ) logR( LOG_LEVEL_DEBUG, __FUNCTIONW__, L"" #uId, uId, __VA_ARGS__ )
 
 /// Log a wide `printf`-style resource string at the the #LOG_LEVEL_INFO level
-#define LOG_INFO_R( uId, ... )  logR( LOG_LEVEL_INFO,  __FUNCTIONW__, uId, __VA_ARGS__ )
+#define LOG_INFO_R( uId, ... )  logR( LOG_LEVEL_INFO,  __FUNCTIONW__, L"" #uId, uId, __VA_ARGS__ )
 
 /// Log a wide `printf`-style resource string at the the #LOG_LEVEL_WARN level
-#define LOG_WARN_R( uId, ... )  logR( LOG_LEVEL_WARN,  __FUNCTIONW__, uId, __VA_ARGS__ )
+#define LOG_WARN_R( uId, ... )  logR( LOG_LEVEL_WARN,  __FUNCTIONW__, L"" #uId, uId, __VA_ARGS__ )
 
 /// Log a wide `printf`-style resource string at the the #LOG_LEVEL_ERROR level
-#define LOG_ERROR_R( uId, ... ) logR( LOG_LEVEL_ERROR, __FUNCTIONW__, uId, __VA_ARGS__ )
+#define LOG_ERROR_R( uId, ... ) logR( LOG_LEVEL_ERROR, __FUNCTIONW__, L"" #uId, uId, __VA_ARGS__ )
 
 /// Log a wide `printf`-style resource string at the the #LOG_LEVEL_FATAL level
-#define LOG_FATAL_R( uId, ... ) logR( LOG_LEVEL_FATAL, __FUNCTIONW__, uId, __VA_ARGS__ )
+#define LOG_FATAL_R( uId, ... ) logR( LOG_LEVEL_FATAL, __FUNCTIONW__, L"" #uId, uId, __VA_ARGS__ )
 
 
 /// Queue a wide `printf`-style resource string at the the #LOG_LEVEL_TRACE level
-#define LOG_TRACE_Q( uId, ... ) logQ( LOG_LEVEL_TRACE, __FUNCTIONW__, uId, __VA_ARGS__ )
+#define LOG_TRACE_Q( uId, ... ) logQ( LOG_LEVEL_TRACE, __FUNCTIONW__, L"" #uId, uId, __VA_ARGS__ )
 
 /// Queue a wide `printf`-style resource string at the the #LOG_LEVEL_DEBUG level
-#define LOG_DEBUG_Q( uId, ... ) logQ( LOG_LEVEL_DEBUG, __FUNCTIONW__, uId, __VA_ARGS__ )
+#define LOG_DEBUG_Q( uId, ... ) logQ( LOG_LEVEL_DEBUG, __FUNCTIONW__, L"" #uId, uId, __VA_ARGS__ )
 
 /// Queue a wide `printf`-style resource string at the the #LOG_LEVEL_INFO level
-#define LOG_INFO_Q( uId, ... )  logQ( LOG_LEVEL_INFO,  __FUNCTIONW__, uId, __VA_ARGS__ )
+#define LOG_INFO_Q( uId, ... )  logQ( LOG_LEVEL_INFO,  __FUNCTIONW__, L"" #uId, uId, __VA_ARGS__ )
 
 /// Queue a wide `printf`-style resource string at the the #LOG_LEVEL_WARN level
-#define LOG_WARN_Q( uId, ... )  logQ( LOG_LEVEL_WARN,  __FUNCTIONW__, uId, __VA_ARGS__ )
+#define LOG_WARN_Q( uId, ... )  logQ( LOG_LEVEL_WARN,  __FUNCTIONW__, L"" #uId, uId, __VA_ARGS__ )
 
 /// Queue a wide `printf`-style resource string at the the #LOG_LEVEL_ERROR level
-#define LOG_ERROR_Q( uId, ... ) logQ( LOG_LEVEL_ERROR, __FUNCTIONW__, uId, __VA_ARGS__ )
+#define LOG_ERROR_Q( uId, ... ) logQ( LOG_LEVEL_ERROR, __FUNCTIONW__, L"" #uId, uId, __VA_ARGS__ )
 
 /// Queue a wide `printf`-style resource string at the the #LOG_LEVEL_FATAL level
-#define LOG_FATAL_Q( uId, ... ) logQ( LOG_LEVEL_FATAL, __FUNCTIONW__, uId, __VA_ARGS__ )
+#define LOG_FATAL_Q( uId, ... ) logQ( LOG_LEVEL_FATAL, __FUNCTIONW__, L"" #uId, uId, __VA_ARGS__ )  // NOLINT
 
 
 extern BOOL logInit(
@@ -139,12 +139,14 @@ extern void logW(
 extern void logR(
    _In_   const logLevels_t logLevel,
    _In_z_ const WCHAR*      functionName,
+   _In_z_ const WCHAR*      resourceName,
    _In_   const UINT        resourceId,
    _In_   ... );
 
 extern void logQ(
    _In_   const logLevels_t logLevel,
    _In_z_ const WCHAR*      functionName,
+   _In_z_ const WCHAR*      resourceName,
    _In_   const UINT        resourceId,
    _In_   ... );
 
@@ -157,5 +159,3 @@ extern size_t logQueueSize();
 
 extern size_t logDequeueAndDisplayMessage();
 extern BOOL   logPeekQueuedMessage( logEntry_t* logEntry );
-
-extern void        logSetMsg( _In_ const logLevels_t level, _In_ const UINT msgId, _In_ const WPARAM msgWParam );

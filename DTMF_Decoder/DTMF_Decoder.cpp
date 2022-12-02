@@ -109,7 +109,7 @@ int APIENTRY wWinMain(
 
 
    /// Get the localized application name
-   /// @todo Remove the Ã¶ from IDS_APP_TITLE
+   /// @todo Remove the ö from IDS_APP_TITLE
    ir = LoadStringW( hInstance, IDS_APP_TITLE, sswTitle, MAX_LOADSTRING );
    if ( !ir ) {
       LOG_FATAL( "Failed to retrive app title.  Exiting." );
@@ -129,6 +129,8 @@ int APIENTRY wWinMain(
    // Now that the logger is initialized, we can start using the _R log functions
    LOG_TRACE_R( IDS_DTMF_DECODER_STARTING, sswTitle, FULL_VERSION_W, L"" __DATE__ L" " __TIME__ );  // "Starting %s   Version:  %s   Built:  %s"
 
+   /// Initialize Windows Error Reporting
+   logWerInit();
 
 
    /// Set #gbIsRunning to `true`.  Set it to `false` if we need to shutdown.
@@ -302,7 +304,11 @@ int APIENTRY wWinMain(
       LOG_INFO_R( IDS_DTMF_DECODER_ENDING_SUCCESSFULLY, sswTitle );  // "All %s resources were cleaned up.  Ending program:  SUCCESS."
    } else {
       LOG_INFO_R( IDS_DTMF_DECODER_ENDING_IN_FAILURE_MODE, sswTitle );  // "All %s resources were cleaned up.  Ending program in failure mode."
+      /// If the program ends in an error condition, then submit the Windows Error Report
+      logWerSubmit();
    }
+
+   logWerCleanup();
 
    return giApplicationReturnValue;
 }
