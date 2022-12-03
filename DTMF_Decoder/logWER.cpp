@@ -4,23 +4,27 @@
 //
 //  A Windows Desktop C program that decodes DTMF tones
 //
-/// Generic Windows Error Reporting utility
+/// Extend log.cpp to use the Windows Error Reporting (WER) utility
 ///
-/// This utility extends log.cpp.  If it's enabled (through
-/// `#ifdef`s) it generates a Windows Error Report if the application
-/// has a fatal error.
+/// This utility extends log.cpp.  It generates a Windows Error Report if the
+/// application has a fatal error.
 ///
 /// The data logWER collects is:
-///   - The error message, resource name, resource id, etc. of the first
-///     #LOG_LEVEL_ERROR or #LOG_LEVEL_FATAL message.
+///   - The application's version
+///   - For the first #LOG_LEVEL_ERROR or #LOG_LEVEL_FATAL message:
+///     - The log level
+///     - The error message
+///     - The resource name
+///     - The resource id
 ///   - The first 4K of log messages
-///   - The last 4K of log messages
+///   - The last 4K of log messages (in a circular buffer)
 ///
 /// The design is such that the main application doesn't need to know much
 /// about logWER.
 ///
 /// Applications need to be digitally signed before they can be recorded in
-/// the live WER database... where developers can get access to the analytics.
+/// Microsoft's live WER database... where developers can get access to
+/// analytics and the application's health.
 ///
 /// Users should see the logger's `MessageBox`-based messages but not the WER
 /// dialog box.
@@ -67,26 +71,27 @@
 
 #pragma comment(lib, "Wer")  // Link the WER library
 
-#define REPORT_NAME_SIZE 64  ///< The size of the report name
+#define REPORT_NAME_SIZE 64  ///< The maximum size of #swzReportName
+
+#define MESSAGE_BUFFER_CAPACITY 4096   ///< Define the size of #msgBuf_t.msgBuf
+
 
 static HREPORT shReport = NULL;                            ///< Handle to the windows error report
-static WCHAR   swzFullExeFilename[ MAX_PATH ]    = { 0 };  ///< Full path to the executable file
+static WCHAR   swzFullExeFilename[ MAX_PATH ]    = { 0 };  ///< Full path of the executable file name
 static WCHAR   swzReportName[ REPORT_NAME_SIZE ] = { 0 };  ///< Name of the report
 static BOOL    sbLoggedWerFatalEvent = FALSE;              ///< WER captures the first #LOG_LEVEL_ERROR or #LOG_LEVEL_FATAL event.  This is `TRUE` if an event has been logged.
 
 
-/// Define the size of #msgBuf_t.msgBuf
-#define MESSAGE_BUFFER_CAPACITY 4096
-
 /// The structure of the two WER buffers
 ///
 /// Integers are held as bytes as that's easier to read as a memory dump
+///
+/// @todo Create and monitor a guard for this buffer
 typedef struct {
    size_t messageBufferCapacity;  ///< The size of the message buffer in bytes
    size_t msgStartOffset;         ///< The offset (in bytes!) to the end of the buffer (or the wraparound point)
    WCHAR msgBuf[ MESSAGE_BUFFER_CAPACITY ];  ///< The message buffer
 } msgBuf_t;
-
 
 /// A buffer with the first #MESSAGE_BUFFER_CAPACITY characters of the log.
 /// Once data is written into this buffer, it never gets overwritten.  This
@@ -106,10 +111,11 @@ static msgBuf_t lastMsgs = { MESSAGE_BUFFER_CAPACITY << 1, 0, { 0 } };
 
 /// Initialize Windows Error Reporting
 ///
-/// As an extension to log.cpp, WER can see all of the variables set in
+/// As an extension to log.cpp, logWER.cpp can see all of the variables set in
 /// #logInit.
 ///
 /// @return `TRUE` if successful.  `FALSE` if there was a problem.
+_Success_(return != 0)
 BOOL logWerInit() {
    DWORD   dwr;  // DWORD result
    HRESULT hr;   // HRESULT result
@@ -163,16 +169,26 @@ BOOL logWerInit() {
 }
 
 
+/// Journal a log message into one of the two WER log queues
+///
+/// @param logLevel      The level of this logging event
+/// @param resourceName  The name of the resource (if any)
+/// @param resourceId    The ID of the resource (if any)
+/// @param logMsg        The fully expanded message to log
+///
+/// @return `TRUE` if successful.  `FALSE` if there was a problem.
+_Success_( return != 0 )
 BOOL logWerEvent(
    _In_       const logLevels_t logLevel,
-   _In_opt_z_ const WCHAR*      resourceName,
-   _In_opt_   const UINT        resourceId,
-   _In_z_     const WCHAR*      logMsg
+   _In_opt_z_ const PCWSTR      resourceName,
+   _In_       const UINT        resourceId,
+   _In_z_     const PCWSTR      logMsg
    ) {
-   if ( resourceName != NULL ) {
-      _ASSERTE( resourceName[ 0 ] != L'\0' );
-      _ASSERTE( resourceId != 0 );
-   }
+/// @todo Figure this out so we can uncomment it (clang-tidy throws errors when we Analyze it)
+//   if ( resourceName != NULL ) {
+//      _ASSERTE( resourceName[ 0 ] != L'\0' );
+//      _ASSERTE( resourceId != 0 );
+//   }
 
    if ( resourceId != 0 ) {
       _ASSERTE( resourceName != NULL );
@@ -213,8 +229,8 @@ BOOL logWerEvent(
          FATAL_IN_LOG( L"Unknown error in StringCbCopyExW.  Exiting immediately." );
       }
 
-      /// Pointer arithmetic is always in terms of the derefrenced object
-      /// (`WCHAR`s in this case), so convert them to bytes.
+      // Pointer arithmetic is always in terms of the derefrenced object
+      // (`WCHAR`s in this case), so convert them to bytes.
       firstMsgs.msgStartOffset = ( endPtr - firstMsgs.msgBuf ) << 1;
    } else {
       size_t lastBytesRemaining = lastMsgs.messageBufferCapacity - lastMsgs.msgStartOffset;
@@ -237,17 +253,20 @@ BOOL logWerEvent(
          FATAL_IN_LOG( L"Unknown error in StringCbCopyExW.  Exiting immediately." );
       }
 
-      /// Pointer arithmetic is always in terms of the derefrenced object
-      /// (`WCHAR`s in this case), so convert them to bytes.
+      // Pointer arithmetic is always in terms of the derefrenced object
+      // (`WCHAR`s in this case), so convert them to bytes.
       lastMsgs.msgStartOffset = ( endPtr - lastMsgs.msgBuf ) << 1;
    }
 
-   if ( logLevel < LOG_LEVEL_ERROR ) {  /// Don't set any WER parameters if the
-      return TRUE;                      /// log level is less than #LOG_LEVEL_ERROR
+   /// Don't set any WER parameters if the log level is less than #LOG_LEVEL_ERROR
+   if ( logLevel < LOG_LEVEL_ERROR ) {
+      return TRUE;
    }
 
-   if ( sbLoggedWerFatalEvent ) {  /// Only one WER #LOG_LEVEL_WARN or #LOG_LEVEL_FATAL
-      return TRUE;                 /// event can be logged.
+   /// Only one (the first #LOG_LEVEL_WARN or #LOG_LEVEL_FATAL log message) can
+   /// fully parameterized/characterized in a report to WER
+   if ( sbLoggedWerFatalEvent ) {
+      return TRUE;
    }
 
    hr = WerReportSetParameter(
@@ -255,9 +274,9 @@ BOOL logWerEvent(
       WER_P0,          // Identifier of the parameter to be set
       L"Application Version",  // Unicode string that contains the name of the parameter
       FULL_VERSION_W   // The parameter value
+                       /// @todo Pass the application's version through a parameter
    );
    WARN_HR_R( IDS_LOG_WER_FAILED_TO_SET_PARAMETER, WER_P0 );  // "Failed to set WER parameter:  %d   Continuing."
-   /// @todo Pass the application version through parameters
 
    hr = WerReportSetParameter(
       shReport,      // Handle to the report
@@ -307,9 +326,10 @@ BOOL logWerEvent(
 }
 
 
-/// Submit a Windows Error Report.  This will display a modal dialog box.
+/// Submit a Windows Error Report to Microsoft
 ///
 /// @return `TRUE` if successful.  `FALSE` if there was a problem.
+_Success_( return != 0 )
 BOOL logWerSubmit() {
    HRESULT hr;  // HRESULT result
 
@@ -354,6 +374,7 @@ BOOL logWerSubmit() {
 /// Cleanup Windows Error Reporting resources
 ///
 /// @return `TRUE` if successful.  `FALSE` if there was a problem.
+_Success_( return != 0 )
 BOOL logWerCleanup() {
    HRESULT hr;
 

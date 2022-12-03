@@ -257,7 +257,7 @@ __forceinline static void audioCapture() {
          /// Note:  This thread will wait, signal 8 DFT threads to run, then
          ///        will continue after the DFT threads are done
          br = goertzel_compute_dtmf_tones();
-         CHECK_BR_C( IDS_AUDIO_FAILED_TO_COMPUTE_DTMF_TONES, 0 );  // "Failed to compute DTMF tones.  Exiting.  Investigate!"
+         CHECK_BR_Q( IDS_AUDIO_FAILED_TO_COMPUTE_DTMF_TONES, 0 );  // "Failed to compute DTMF tones.  Exiting.  Investigate!"
       }
 
       /// Carefully analyze the flags returned by GetBuffer

@@ -91,7 +91,9 @@ struct logEntry_t {
 #define LOG_ERROR_R( uId, ... ) logR( LOG_LEVEL_ERROR, __FUNCTIONW__, L"" #uId, uId, __VA_ARGS__ )
 
 /// Log a wide `printf`-style resource string at the the #LOG_LEVEL_FATAL level
-#define LOG_FATAL_R( uId, ... ) logR( LOG_LEVEL_FATAL, __FUNCTIONW__, L"" #uId, uId, __VA_ARGS__ )
+#define LOG_FATAL_R( uId, ... )       logR( LOG_LEVEL_FATAL, __FUNCTIONW__, L"" #uId, uId, __VA_ARGS__ )
+/// Log a wide `printf`-style resource string at the the #LOG_LEVEL_FATAL level - Extended to include the resource name
+#define LOG_FATAL_RX( sId, uId, ... ) logR( LOG_LEVEL_FATAL, __FUNCTIONW__, sId,      uId, __VA_ARGS__ )
 
 
 /// Queue a wide `printf`-style resource string at the the #LOG_LEVEL_TRACE level
@@ -110,15 +112,17 @@ struct logEntry_t {
 #define LOG_ERROR_Q( uId, ... ) logQ( LOG_LEVEL_ERROR, __FUNCTIONW__, L"" #uId, uId, __VA_ARGS__ )
 
 /// Queue a wide `printf`-style resource string at the the #LOG_LEVEL_FATAL level
-#define LOG_FATAL_Q( uId, ... ) logQ( LOG_LEVEL_FATAL, __FUNCTIONW__, L"" #uId, uId, __VA_ARGS__ )  // NOLINT
+#define LOG_FATAL_Q( uId, ... )       logQ( LOG_LEVEL_FATAL, __FUNCTIONW__, L"" #uId, uId, __VA_ARGS__ )
+/// Queue a wide `printf`-style resource string at the the #LOG_LEVEL_FATAL level - Extended to include the resource name
+#define LOG_FATAL_QX( sId, uId, ... ) logQ( LOG_LEVEL_FATAL, __FUNCTIONW__, sId,      uId, __VA_ARGS__ )
 
 
 extern BOOL logInit(
    _In_         HINSTANCE* phInst,
    _In_         HWND*      phWindow,
-   _In_z_ const CHAR*      pAppName,
-   _In_z_ const WCHAR*     pwAppName,
-   _In_z_ const WCHAR*     pwAppTitle
+   _In_z_ const PCSTR      pAppName,
+   _In_z_ const PCWSTR     pwAppName,
+   _In_z_ const PCWSTR     pwAppTitle
 
 );
 
@@ -126,28 +130,28 @@ extern BOOL logCleanup();
 
 extern void logA(
    _In_   const logLevels_t logLevel,
-   _In_z_ const CHAR*       functionName,
-   _In_z_ const CHAR*       format,
+   _In_z_ const PCSTR       functionName,
+   _In_z_ const PCSTR       format,
    _In_ ... );
 
 extern void logW(
    _In_   const logLevels_t logLevel,
-   _In_z_ const WCHAR*      functionName,
-   _In_z_ const WCHAR*      format,
+   _In_z_ const PCWSTR      functionName,
+   _In_z_ const PCWSTR      format,
    _In_ ... );
 
 extern void logR(
-   _In_   const logLevels_t logLevel,
-   _In_z_ const WCHAR*      functionName,
-   _In_z_ const WCHAR*      resourceName,
-   _In_   const UINT        resourceId,
+   _In_       const logLevels_t logLevel,
+   _In_z_     const PCWSTR      functionName,
+   _In_opt_z_ const PCWSTR      resourceName,
+   _In_       const UINT        resourceId,
    _In_   ... );
 
 extern void logQ(
-   _In_   const logLevels_t logLevel,
-   _In_z_ const WCHAR*      functionName,
-   _In_z_ const WCHAR*      resourceName,
-   _In_   const UINT        resourceId,
+   _In_       const logLevels_t logLevel,
+   _In_z_     const PCWSTR      functionName,
+   _In_opt_z_ const PCWSTR      resourceName,
+   _In_       const UINT        resourceId,
    _In_   ... );
 
 extern void logTest();

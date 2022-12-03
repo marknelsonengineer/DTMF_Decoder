@@ -44,7 +44,7 @@ __forceinline BOOL goertzel_compute_dtmf_tones() {
 
    /// Start all of the worker threads
    br = SetEvent( ghStartDFTevent );
-   CHECK_BR_C( IDS_GOERTZEL_FAILED_TO_SIGNAL_START_DFT, 0 );  // "Failed to signal a ghStartDFTevent.  Exiting."
+   CHECK_BR_Q( IDS_GOERTZEL_FAILED_TO_SIGNAL_START_DFT, 0 );  // "Failed to signal a ghStartDFTevent.  Exiting."
 
    /// Wait for all of the worker threads to signal their ghDoneDFTevent
    dwWaitResult = WaitForMultipleObjects( NUMBER_OF_DTMF_TONES, ghDoneDFTevent, TRUE, INFINITE );
@@ -54,7 +54,7 @@ __forceinline BOOL goertzel_compute_dtmf_tones() {
    _ASSERTE( dwWaitResult >= WAIT_OBJECT_0 && dwWaitResult <= ( WAIT_OBJECT_0 + NUMBER_OF_DTMF_TONES - 1 ) );
 
    br = ResetEvent( ghStartDFTevent );
-   CHECK_BR_C( IDS_GOERTZEL_FAILED_TO_RESET_STARTDFT_EVENT, 0 );  // "Failed to reset the DFT start event"
+   CHECK_BR_Q( IDS_GOERTZEL_FAILED_TO_RESET_STARTDFT_EVENT, 0 );  // "Failed to reset the DFT start event"
 
    return TRUE;
 }

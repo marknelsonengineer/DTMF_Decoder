@@ -565,7 +565,7 @@ BOOL mvcViewPaintWindow( _In_ const RECT* pUpdateRect ) {
    paintKeys( 14, pUpdateRect );  paintKeys( 15, pUpdateRect );
 
    hr = spRenderTarget->EndDraw();
-   CHECK_HR_C( IDS_VIEW_FAILED_TO_END_DRAW, 0 );  // "Failed to end drawing operations on render target"
+   CHECK_HR_Q( IDS_VIEW_FAILED_TO_END_DRAW, 0 );  // "Failed to end drawing operations on render target"
 
    return TRUE;
 }

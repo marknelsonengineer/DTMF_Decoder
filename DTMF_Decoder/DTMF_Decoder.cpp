@@ -352,10 +352,10 @@ LRESULT CALLBACK WndProc( HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam 
 
             // Paint the window
             br = mvcViewPaintWindow( &updateRect );
-            CHECK_BR_C( IDS_DTMF_DECODER_FAILED_TO_PAINT, 0 );  // "Failed to paint window.  Investigate!!"
+            CHECK_BR_Q( IDS_DTMF_DECODER_FAILED_TO_PAINT, 0 );  // "Failed to paint window.  Investigate!!"
 
             br = EndPaint( hWnd, &ps );
-            CHECK_BR_C( IDS_DTMF_DECODER_FAILED_TO_END_PAINT, 0 );  // "Failed to end paint.  Investigate!!"
+            CHECK_BR_Q( IDS_DTMF_DECODER_FAILED_TO_END_PAINT, 0 );  // "Failed to end paint.  Investigate!!"
          }
          break;
       case WM_KEYDOWN:  /// WM_KEYDOWN - Exit if ESC is pressed

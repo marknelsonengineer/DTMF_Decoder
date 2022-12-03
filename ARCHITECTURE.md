@@ -365,7 +365,7 @@ Here's what I've learned about processes' end-of-life:
 |                              | Check a `BOOL` result | Check an `HRESULT`    | Action taken         |
 |------------------------------|-----------------------|-----------------------|----------------------|
 | Immediately display messages | #CHECK_BR_R           | #CHECK_HR_R           | Call #RETURN_FATAL_R |
-| Queue messages for later     | #CHECK_BR_C           | #CHECK_HR_C           | Call #QUEUE_FATAL    |
+| Queue messages for later     | #CHECK_BR_Q           | #CHECK_HR_Q           | Call #QUEUE_FATAL    |
 | Test for success or failure  | `if ( !br )`          | `if ( FAILED( hr ) )` |                      |
 
   - #WARN_BR_R and #WARN_HR_R warns on failures but doesn't change the program's

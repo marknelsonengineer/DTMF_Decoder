@@ -199,9 +199,9 @@ static logEntry_t logQueue[ MAX_LOG_QUEUE_DEPTH ];
 BOOL logInit(
    _In_         HINSTANCE* phInst,
    _In_         HWND*      phWindow,
-   _In_z_ const CHAR*      pAppName,
-   _In_z_ const WCHAR*     pwAppName,
-   _In_z_ const WCHAR*     pwAppTitle
+   _In_z_ const PCSTR      pAppName,
+   _In_z_ const PCWSTR     pwAppName,
+   _In_z_ const PCWSTR     pwAppTitle
 ) {
 
    /// The parameters are checked (validated) by #logValidate
@@ -277,8 +277,8 @@ BOOL logCleanup() {
 /// @param format, ...   `printf`-style formatting
 void logA(
    _In_   const logLevels_t logLevel,
-   _In_z_ const CHAR*       functionName,
-   _In_z_ const CHAR*       format,
+   _In_z_ const PCSTR       functionName,
+   _In_z_ const PCSTR       format,
    _In_ ... ) {
    /// Silently `return` if `functionName` or `format` is `NULL`
    if ( functionName == NULL || format == NULL )
@@ -356,8 +356,8 @@ void logA(
 /// @param args          Varargs `va_list`
 int vLogComposeW(
    _In_    const logLevels_t logLevel,
-   _In_z_  const WCHAR*      functionName,
-   _In_z_  const WCHAR*      format,
+   _In_z_  const PCWSTR      functionName,
+   _In_z_  const PCWSTR      format,
    _Inout_       wBuffer_t*  pBuffer,
    _In_    const va_list     args ) {
 
@@ -437,7 +437,7 @@ void logGetStringFromResources(
 ///
 /// @param logLevel The level of the log message
 /// @param message  The message to display
-void logShowMessageW( logLevels_t logLevel, WCHAR* message ) {
+void logShowMessageW( logLevels_t logLevel, PCWSTR message ) {
    _ASSERTE( message != NULL );
 
    switch ( logLevel ) {
@@ -476,10 +476,10 @@ void logShowMessageW( logLevels_t logLevel, WCHAR* message ) {
 /// @param args          Varargs `va_list`
 void vLogW(
    _In_       const logLevels_t logLevel,
-   _In_z_     const WCHAR*      functionName,
-   _In_opt_z_ const WCHAR*      resourceName,
-   _In_opt_   const UINT        resourceId,
-   _In_z_     const WCHAR*      format,
+   _In_z_     const PCWSTR      functionName,
+   _In_opt_z_ const PCWSTR      resourceName,
+   _In_       const UINT        resourceId,
+   _In_z_     const PCWSTR      format,
    _In_z_     const va_list     args ) {
 
    _ASSERTE( functionName != NULL );
@@ -516,8 +516,8 @@ void vLogW(
 /// @param format, ...   `printf`-style formatting
 void logW(
    _In_   const logLevels_t logLevel,
-   _In_z_ const WCHAR*      functionName,
-   _In_z_ const WCHAR*      format,
+   _In_z_ const PCWSTR      functionName,
+   _In_z_ const PCWSTR      format,
    _In_  ... ) {
 
    /// Silently `return` if `functionName` or `format` is `NULL`
@@ -549,10 +549,10 @@ void logW(
 /// @param resourceName    The name of the resource ID
 /// @param resourceId, ... The ID of the resource string.  The string may contain `printf`-style formatting characters.
 void logR(
-   _In_   const logLevels_t logLevel,
-   _In_z_ const WCHAR*      functionName,
-   _In_z_ const WCHAR*      resourceName,
-   _In_   const UINT        resourceId,
+   _In_       const logLevels_t logLevel,
+   _In_z_     const PCWSTR      functionName,
+   _In_opt_z_ const PCWSTR      resourceName,
+   _In_       const UINT        resourceId,
    _In_ ... ) {
 
    _ASSERTE( sphInstance != NULL );
@@ -596,10 +596,10 @@ void logR(
 /// @param resourceName    The name of the resource
 /// @param resourceId, ... The ID of the resource string.  The string may contain `printf`-style formatting characters.
 void logQ(
-   _In_   const logLevels_t logLevel,
-   _In_z_ const WCHAR*      functionName,
-   _In_z_ const WCHAR*      resourceName,
-   _In_   const UINT        resourceId,
+   _In_       const logLevels_t logLevel,
+   _In_z_     const PCWSTR      functionName,
+   _In_opt_z_ const PCWSTR      resourceName,
+   _In_       const UINT        resourceId,
    _In_ ... ) {
 
    _ASSERTE( sphInstance != NULL );
