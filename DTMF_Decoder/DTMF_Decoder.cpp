@@ -264,12 +264,6 @@ int APIENTRY wWinMain(
    br = goertzel_Stop();
    WARN_BR_R( IDS_DTMF_DECODER_FAILED_TO_END_DFT_THREADS );  // "Failed to end the Goertzel DFT threads"
 
-   /// After all of the threads have stopped, see if they have any messages
-   /// to report
-   if ( logQueueHasEntry() ) {
-      /// @todo This
-   }
-
    /// Cleanup all resources in the reverse order they were created
    br = audioCleanup();
    WARN_BR_R( IDS_DTMF_DECODER_FAILED_TO_CLEANUP_AUDIO );  // "Failed to clean up audio resources."

@@ -206,7 +206,6 @@ extern int giApplicationReturnValue;
 /// - If the check fails, queue a message and close the program
 ///
 /// @see https://learn.microsoft.com/en-us/windows/win32/com/using-macros-for-error-handling
-/// @todo rename to CHECK_BR_Q
 #define CHECK_BR_Q( resource_id, ... )                             \
    if ( !br ) {                                                    \
       /* QUEUE_FATAL */                                            \
@@ -224,7 +223,6 @@ extern int giApplicationReturnValue;
 /// - If the check fails, queue a message and close the program
 ///
 /// @see https://learn.microsoft.com/en-us/windows/win32/com/using-macros-for-error-handling
-/// @todo rename to CHECK_HR_Q
 #define CHECK_HR_Q( resource_id, ... )                             \
    if ( FAILED( hr ) ) {                                           \
       /* QUEUE_FATAL */                                            \

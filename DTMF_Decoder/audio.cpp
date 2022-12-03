@@ -598,7 +598,7 @@ BOOL audioInit() {
    /// Initialize shared mode audio client
    //  Shared mode streams using event-driven buffering must set both periodicity and bufferDuration to 0.
    hr = spAudioClient->Initialize( sShareMode, AUDCLNT_STREAMFLAGS_EVENTCALLBACK
-                                              | AUDCLNT_STREAMFLAGS_AUTOCONVERTPCM, 0, 0, spMixFormat, NULL );
+                                             | AUDCLNT_STREAMFLAGS_AUTOCONVERTPCM, 0, 0, spMixFormat, NULL );
    if ( hr != S_OK ) {
       /// @todo Look at more error codes and print out higher-fidelity error messages
       RETURN_FATAL_R( IDS_AUDIO_FAILED_TO_INITIALIZE );  // "Failed to initialize the audio client"
