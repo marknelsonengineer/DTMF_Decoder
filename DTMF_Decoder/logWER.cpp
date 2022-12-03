@@ -33,25 +33,39 @@
 /// @see Windows Quality Online Services
 /// @see https://en.wikipedia.org/wiki/Winqual
 ///
+/// @todo Consider getting into making our own UI for error reporting via `WerReportSetUIOption` https://learn.microsoft.com/en-us/windows/win32/api/werapi/nf-werapi-werreportsetuioption
+/// @todo Consider getting into custom metadata via `WerRegisterCustomMetadata` https://learn.microsoft.com/en-us/windows/win32/api/werapi/nf-werapi-werregistercustommetadata
+///
 /// If you are into WER, checkout an excellent paper on the subject:
 /// [Debugging in the (Very) Large: Ten Years of Implementationand Experience](https://www.sigops.org/s/conferences/sosp/2009/papers/glerum-sosp09.pdf)
 ///
-/// @todo:  Complete this bit
 /// ## Generic Win32 API
-/// | API                 | Link                                                                                                                              |
-/// |---------------------| ----------------------------------------------------------------------------------------------------------------------------------|
-/// | `LoadStringW`       | https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-loadstringw                                                |
-/// GetProcessImageFileNameW
+/// | API                        | Link                                                                                                         |
+/// |----------------------------| -------------------------------------------------------------------------------------------------------------|
+/// | `LoadStringW`              | https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-loadstringw                           |
+/// | `GetCurrentProcess`        | https://learn.microsoft.com/en-us/windows/win32/api/processthreadsapi/nf-processthreadsapi-getcurrentprocess |
+/// | `GetProcessImageFileNameW` | https://learn.microsoft.com/en-us/windows/win32/api/psapi/nf-psapi-getprocessimagefilenamew                  |
 ///
 /// ## Debugging& Instrumentation API
-/// | API | Link                                                                                                                                               |
-/// |----------------------| ----------------------------------------------------------------------------------------------------------------------------------|
-/// | `va_arg`             | https://learn.microsoft.com/en-us/cpp/c-runtime-library/reference/va-arg-va-copy-va-end-va-start?view=msvc-170                    |
+/// | API                      | Link                                                                                                                |
+/// |--------------------------| --------------------------------------------------------------------------------------------------------------------|
+/// | `WerRegisterMemoryBlock` | https://learn.microsoft.com/en-us/windows/win32/api/werapi/nf-werapi-werregistermemoryblock                         |
+/// | `WerReportAddDump`       | https ://learn.microsoft.com/en-us/windows/win32/api/werapi/nf-werapi-werreportadddump                              |
+/// | `WerReportCloseHandle`   | https ://learn.microsoft.com/en-us/windows/win32/api/werapi/nf-werapi-werreportclosehandle                          |
+/// | `WerReportCreate`        | https ://learn.microsoft.com/en-us/windows/win32/api/werapi/nf-werapi-werreportcreate                               |
+/// | `WerReportSetParameter`  | https ://learn.microsoft.com/en-us/windows/win32/api/werapi/nf-werapi-werreportsetparameter                         |
+/// | `WerReportSubmit`        | https ://learn.microsoft.com/en-us/windows/win32/api/werapi/nf-werapi-werreportsubmit                               |
+/// | `_ASSERTE`               | https://learn.microsoft.com/en-us/cpp/c-runtime-library/reference/assert-asserte-assert-expr-macros?view=msvc-170   |
+/// | `wcslen`                 | https://en.cppreference.com/w/c/string/wide/wcslen                                                                  |
+/// | `va_arg`                 | https://learn.microsoft.com/en-us/cpp/c-runtime-library/reference/va-arg-va-copy-va-end-va-start?view=msvc-170      |
 ///
 /// ## CRT & Memory Management API
 /// | API                | Link                                                                                         |
 /// |--------------------| ---------------------------------------------------------------------------------------------|
 /// | `CopyMemory`       | https://learn.microsoft.com/en-us/previous-versions/windows/desktop/legacy/aa366535(v=vs.85) |
+/// | `StringCbCopyExW`  | https://learn.microsoft.com/en-us/windows/win32/api/strsafe/nf-strsafe-stringcbcopyexw       |
+/// | `StringCbPrintfW`  | https://learn.microsoft.com/en-us/windows/win32/api/strsafe/nf-strsafe-stringcbprintfw       |
+/// | `StringCchPrintfW` | https://learn.microsoft.com/en-us/windows/win32/api/strsafe/nf-strsafe-stringcchprintfw      |
 ///
 /// @file    logWER.cpp
 /// @author  Mark Nelson <marknels@hawaii.edu>
@@ -115,8 +129,7 @@ static msgBuf_t lastMsgs = { MESSAGE_BUFFER_CAPACITY << 1, 0, { 0 } };
 /// #logInit.
 ///
 /// @return `TRUE` if successful.  `FALSE` if there was a problem.
-_Success_(return != 0)
-BOOL logWerInit() {
+RETURN_BOOL logWerInit() {
    DWORD   dwr;  // DWORD result
    HRESULT hr;   // HRESULT result
 
@@ -177,8 +190,7 @@ BOOL logWerInit() {
 /// @param logMsg        The fully expanded message to log
 ///
 /// @return `TRUE` if successful.  `FALSE` if there was a problem.
-_Success_( return != 0 )
-BOOL logWerEvent(
+RETURN_BOOL logWerEvent(
    _In_       const logLevels_t logLevel,
    _In_opt_z_ const PCWSTR      resourceName,
    _In_       const UINT        resourceId,
@@ -329,8 +341,7 @@ BOOL logWerEvent(
 /// Submit a Windows Error Report to Microsoft
 ///
 /// @return `TRUE` if successful.  `FALSE` if there was a problem.
-_Success_( return != 0 )
-BOOL logWerSubmit() {
+RETURN_BOOL logWerSubmit() {
    HRESULT hr;  // HRESULT result
 
    hr = WerRegisterMemoryBlock(
@@ -374,8 +385,7 @@ BOOL logWerSubmit() {
 /// Cleanup Windows Error Reporting resources
 ///
 /// @return `TRUE` if successful.  `FALSE` if there was a problem.
-_Success_( return != 0 )
-BOOL logWerCleanup() {
+RETURN_BOOL logWerCleanup() {
    HRESULT hr;
 
    if ( shReport != NULL ) {

@@ -4,31 +4,35 @@ References
 The Windows API is quite complex.  Here's all of the API functions I needed to
 research to write DTMF_Decoder.
 
+I've broken them down by (my own) categories and then alphabetically.
+
 
 ## Generic Win32 API
-| API                    | Link                                                                                         |
-|------------------------|----------------------------------------------------------------------------------------------|
-| `CreateWindowW`        | https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindoww         |
-| `RegisterClassExW`     | https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-registerclassexw      |
-| `DefWindowProc`        | https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-defwindowproca        |
-| `GetMessage`           | https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-getmessage            |
-| `DispatchMessage`      | https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-dispatchmessage       |
-| `LoadAccelerators`     | https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-loadacceleratorsa     |
-| `LoadStringW`          | https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-loadstringw           |
-| `MAKEINTRESOURCE`      | https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-makeintresourcea      |
-| `PostMessageA`         | https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-postmessagea          |
-| `UpdateWindow`         | https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-updatewindow          |
-| `ShowWindow`           | https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-showwindow            |
-| `InvalidateRect`       | https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-invalidaterect        |
-| `TranslateAccelerator` | https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-translateacceleratora |
-| `TranslateMessage`     | https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-translatemessage      |
-| `DialogBox`            | https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-dialogboxa            |
-| `PostQuitMessage`      | https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-postquitmessage       |
-| `CloseHandle`          | https://learn.microsoft.com/en-us/windows/win32/api/handleapi/nf-handleapi-closehandle       |
-| `EndDialog`            | https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-enddialog             |
-| `DestroyWindow`        | https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-destroywindow         |
-| `SetDlgItemTextA`      | https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-setdlgitemtexta       |
-| `HIWORD`               | https://learn.microsoft.com/en-us/previous-versions/windows/desktop/legacy/ms632657(v=vs.85) |
+| API                        | Link                                                                                                         |
+|----------------------------|--------------------------------------------------------------------------------------------------------------|
+| `CloseHandle`              | https://learn.microsoft.com/en-us/windows/win32/api/handleapi/nf-handleapi-closehandle                       |
+| `CreateWindowW`            | https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindoww                         |
+| `DefWindowProc`            | https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-defwindowproca                        |
+| `DestroyWindow`            | https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-destroywindow                         |
+| `DialogBox`                | https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-dialogboxa                            |
+| `DispatchMessage`          | https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-dispatchmessage                       |
+| `EndDialog`                | https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-enddialog                             |
+| `GetCurrentProcess`        | https://learn.microsoft.com/en-us/windows/win32/api/processthreadsapi/nf-processthreadsapi-getcurrentprocess |
+| `GetMessage`               | https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-getmessage                            |
+| `GetProcessImageFileNameW` | https://learn.microsoft.com/en-us/windows/win32/api/psapi/nf-psapi-getprocessimagefilenamew                  | 
+| `HIWORD`                   | https://learn.microsoft.com/en-us/previous-versions/windows/desktop/legacy/ms632657(v=vs.85)                 |
+| `InvalidateRect`           | https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-invalidaterect                        |
+| `LoadAccelerators`         | https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-loadacceleratorsa                     |
+| `LoadStringW`              | https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-loadstringw                           |
+| `MAKEINTRESOURCE`          | https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-makeintresourcea                      |
+| `PostMessageA`             | https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-postmessagea                          |
+| `PostQuitMessage`          | https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-postquitmessage                       |
+| `RegisterClassExW`         | https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-registerclassexw                      |
+| `SetDlgItemTextA`          | https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-setdlgitemtexta                       |
+| `ShowWindow`               | https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-showwindow                            |
+| `TranslateAccelerator`     | https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-translateacceleratora                 |
+| `TranslateMessage`         | https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-translatemessage                      |
+| `UpdateWindow`             | https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-updatewindow                          |
 
 
 ## COM API
@@ -37,124 +41,134 @@ research to write DTMF_Decoder.
 | `CoCreateInstance`  | https://learn.microsoft.com/en-us/windows/win32/api/combaseapi/nf-combaseapi-cocreateinstance |
 | `CoInitializeEx`    | https://learn.microsoft.com/en-us/windows/win32/api/combaseapi/nf-combaseapi-coinitializeex   |
 | `CoTaskMemFree`     | https://learn.microsoft.com/en-us/windows/win32/api/combaseapi/nf-combaseapi-cotaskmemfree    |
-| `PropVariantClear`  | https://learn.microsoft.com/en-us/windows/win32/api/combaseapi/nf-combaseapi-propvariantclear |
 | `CoUninitialize`    | https://learn.microsoft.com/en-us/windows/win32/api/combaseapi/nf-combaseapi-couninitialize   |
 | `IUnknown::Release` | https://learn.microsoft.com/en-us/windows/win32/api/unknwn/nf-unknwn-iunknown-release         |
+| `PropVariantClear`  | https://learn.microsoft.com/en-us/windows/win32/api/combaseapi/nf-combaseapi-propvariantclear |
 
 
 ## GDI & Direct2D API
 | API                                         | Link                                                                                                                                                                                                        |
 |---------------------------------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | `BeginPaint` (GDI)                          | https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-beginpaint                                                                                                                           |
-| `EndPaint` (GDI)                            | https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-endpaint                                                                                                                             |
 | `D2D1CreateFactory`                         | https://learn.microsoft.com/en-us/windows/win32/api/d2d1/nf-d2d1-d2d1createfactory-r1                                                                                                                       |
-| `DWriteCreateFactory`                       | https://learn.microsoft.com/en-us/windows/win32/api/dwrite/nf-dwrite-dwritecreatefactory                                                                                                                    |
-| `ID2D1RenderTarget::CreateHwndRenderTarget` | https://learn.microsoft.com/en-us/windows/win32/api/d2d1/nf-d2d1-id2d1factory-createhwndrendertarget(constd2d1_render_target_properties__constd2d1_hwnd_render_target_properties__id2d1hwndrendertarget)    |
-| `ID2D1RenderTarget::BeginDraw`              | https://learn.microsoft.com/en-us/windows/win32/api/d2d1/nf-d2d1-id2d1rendertarget-begindraw                                                                                                                |
 | `D2D1::RectF`                               | https://learn.microsoft.com/en-us/windows/win32/api/d2d1helper/nf-d2d1helper-rectf                                                                                                                          |
-| `ID2D1RenderTarget::Clear`                  | https://learn.microsoft.com/en-us/windows/win32/direct2d/id2d1rendertarget-clear                                                                                                                            |
-| `ID2D1RenderTarget::CreateSolidColorBrush`  | https://learn.microsoft.com/en-us/windows/win32/api/d2d1/nf-d2d1-id2d1rendertarget-createsolidcolorbrush(constd2d1_color_f__id2d1solidcolorbrush)                                                           |
-| `IDWriteFactory::CreateTextFormat`          | https://learn.microsoft.com/en-us/windows/win32/api/dwrite/nf-dwrite-idwritefactory-createtextformat                                                                                                        |
+| `DWriteCreateFactory`                       | https://learn.microsoft.com/en-us/windows/win32/api/dwrite/nf-dwrite-dwritecreatefactory                                                                                                                    |
 | `DrawRoundedRectangle`                      | https://learn.microsoft.com/en-us/dotnet/api/system.windows.media.drawingcontext.drawroundedrectangle?view=windowsdesktop-6.0                                                                               |
+| `EndPaint` (GDI)                            | https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-endpaint                                                                                                                             |
+| `ID2D1RenderTarget::BeginDraw`              | https://learn.microsoft.com/en-us/windows/win32/api/d2d1/nf-d2d1-id2d1rendertarget-begindraw                                                                                                                |
+| `ID2D1RenderTarget::Clear`                  | https://learn.microsoft.com/en-us/windows/win32/direct2d/id2d1rendertarget-clear                                                                                                                            |
+| `ID2D1RenderTarget::CreateHwndRenderTarget` | https://learn.microsoft.com/en-us/windows/win32/api/d2d1/nf-d2d1-id2d1factory-createhwndrendertarget(constd2d1_render_target_properties__constd2d1_hwnd_render_target_properties__id2d1hwndrendertarget)    |
+| `ID2D1RenderTarget::CreateSolidColorBrush`  | https://learn.microsoft.com/en-us/windows/win32/api/d2d1/nf-d2d1-id2d1rendertarget-createsolidcolorbrush(constd2d1_color_f__id2d1solidcolorbrush)                                                           |
 | `ID2D1RenderTarget::DrawText`               | https://learn.microsoft.com/en-us/windows/win32/api/d2d1/nf-d2d1-id2d1rendertarget-drawtext(constwchar_uint32_idwritetextformat_constd2d1_rect_f__id2d1brush_d2d1_draw_text_options_dwrite_measuring_mode)  |
+| `ID2D1RenderTarget::EndDraw`                | https://learn.microsoft.com/en-us/windows/win32/api/d2d1/nf-d2d1-id2d1rendertarget-enddraw                                                                                                                  |
+| `IDWriteFactory::CreateTextFormat`          | https://learn.microsoft.com/en-us/windows/win32/api/dwrite/nf-dwrite-idwritefactory-createtextformat                                                                                                        |
 | `IDWriteTextFormat::SetParagraphAlignment`  | https://learn.microsoft.com/en-us/windows/win32/api/dwrite/nf-dwrite-idwritetextformat-setparagraphalignment                                                                                                |
 | `IDWriteTextFormat::SetTextAlignment`       | https://learn.microsoft.com/en-us/windows/win32/api/dwrite/nf-dwrite-idwritetextformat-settextalignment                                                                                                     |
 | `IDWriteTextFormat::SetWordWrapping`        | https://learn.microsoft.com/en-us/windows/win32/api/dwrite/nf-dwrite-idwritetextformat-setwordwrapping                                                                                                      |
-| `ID2D1RenderTarget::EndDraw`                | https://learn.microsoft.com/en-us/windows/win32/api/d2d1/nf-d2d1-id2d1rendertarget-enddraw                                                                                                                  |
 | `InvalidateRect`                            | https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-invalidaterect                                                                                                                       |
+
 
 ## Audio API
 | API                                            | Link                                                                                                                           |
 |------------------------------------------------|--------------------------------------------------------------------------------------------------------------------------------|
-| `IMMDevice`                                    | https://learn.microsoft.com/en-us/windows/win32/api/mmdeviceapi/nn-mmdeviceapi-immdevice                                       |
-| `IAudioClient`                                 | https://learn.microsoft.com/en-us/windows/win32/api/audioclient/nn-audioclient-iaudioclient                                    |
+| `AvRevertMmThreadCharacteristics`              | https://learn.microsoft.com/en-us/windows/win32/api/avrt/nf-avrt-avrevertmmthreadcharacteristics                               |
+| `AvSetMmThreadCharacteristics`                 | https://learn.microsoft.com/en-us/windows/win32/api/avrt/nf-avrt-avsetmmthreadcharacteristicsa                                 |
 | `IAudioCaptureClient`                          | https://learn.microsoft.com/en-us/windows/win32/api/audioclient/nn-audioclient-iaudiocaptureclient                             |
-| `WAVEFORMATEX`                                 | https://learn.microsoft.com/en-us/windows/win32/api/mmeapi/ns-mmeapi-waveformatex                                              |
-| `WAVEFORMATEXTENSIBLE`                         | https://learn.microsoft.com/en-us/windows/win32/api/mmreg/ns-mmreg-waveformatextensible                                        |
-| `IPropertyStore`                               | https://learn.microsoft.com/en-us/windows/win32/api/propsys/nn-propsys-ipropertystore                                          |
+| `IAudioCaptureClient::GetBuffer`               | https://learn.microsoft.com/en-us/windows/win32/api/audioclient/nf-audioclient-iaudiocaptureclient-getbuffer                   |
+| `IAudioCaptureClient::ReleaseBuffer`           | https://learn.microsoft.com/en-us/windows/win32/api/audioclient/nf-audioclient-iaudiocaptureclient-releasebuffer               |
+| `IAudioClient`                                 | https://learn.microsoft.com/en-us/windows/win32/api/audioclient/nn-audioclient-iaudioclient                                    |
+| `IAudioClient::GetBufferSize`                  | https://learn.microsoft.com/en-us/windows/win32/api/audioclient/nf-audioclient-iaudioclient-getbuffersize                      |
+| `IAudioClient::GetDevicePeriod`                | https://learn.microsoft.com/en-us/windows/win32/api/audioclient/nf-audioclient-iaudioclient-getdeviceperiod                    |
+| `IAudioClient::GetMixFormat`                   | https://learn.microsoft.com/en-us/windows/win32/api/audioclient/nf-audioclient-iaudioclient-getmixformat                       |
+| `IAudioClient::GetService`                     | https://learn.microsoft.com/en-us/windows/win32/api/audioclient/nf-audioclient-iaudioclient-getservice                         |
+| `IAudioClient::Initialize`                     | https://learn.microsoft.com/en-us/windows/win32/api/audioclient/nf-audioclient-iaudioclient-initialize                         |
+| `IAudioClient::IsFormatSupported`              | https://learn.microsoft.com/en-us/windows/win32/api/audioclient/nf-audioclient-iaudioclient-isformatsupported                  |
+| `IAudioClient::Reset`                          | https://learn.microsoft.com/en-us/windows/win32/api/audioclient/nf-audioclient-iaudioclient-reset                              |
+| `IAudioClient::SetEventHandle`                 | https://learn.microsoft.com/en-us/windows/win32/api/audioclient/nf-audioclient-iaudioclient-seteventhandle                     |
+| `IAudioClient::Start`                          | https://learn.microsoft.com/en-us/windows/win32/api/audioclient/nf-audioclient-iaudioclient-start                              |
+| `IAudioClient::Stop`                           | https://learn.microsoft.com/en-us/windows/win32/api/audioclient/nf-audioclient-iaudioclient-stop                               |
+| `IMMDevice`                                    | https://learn.microsoft.com/en-us/windows/win32/api/mmdeviceapi/nn-mmdeviceapi-immdevice                                       |
+| `IMMDevice::Activate`                          | https://learn.microsoft.com/en-us/windows/win32/api/mmdeviceapi/nf-mmdeviceapi-immdevice-activate                              |
 | `IMMDeviceEnumerator::GetDefaultAudioEndpoint` | https://learn.microsoft.com/en-us/windows/win32/api/mmdeviceapi/nf-mmdeviceapi-immdeviceenumerator-getdefaultaudioendpoint     |
 | `IMMDevice::GetId`                             | https://learn.microsoft.com/en-us/windows/win32/api/mmdeviceapi/nf-mmdeviceapi-immdevice-getid                                 |
 | `IMMDevice::GetState`                          | https://learn.microsoft.com/en-us/windows/win32/api/mmdeviceapi/nf-mmdeviceapi-immdevice-getstate                              |
 | `IMMDevice::OpenPropertyStore`                 | https://learn.microsoft.com/en-us/windows/win32/api/mmdeviceapi/nf-mmdeviceapi-immdevice-openpropertystore                     |
-| `PropVariantInit`                              | https://learn.microsoft.com/en-us/windows/win32/api/propidl/nf-propidl-propvariantinit                                         |
+| `IPropertyStore`                               | https://learn.microsoft.com/en-us/windows/win32/api/propsys/nn-propsys-ipropertystore                                          |
 | `IPropertyStore::GetValue`                     | https://learn.microsoft.com/en-us/previous-versions/windows/desktop/legacy/bb761473(v=vs.85)                                   |
-| `IAudioClient::GetMixFormat`                   | https://learn.microsoft.com/en-us/windows/win32/api/audioclient/nf-audioclient-iaudioclient-getmixformat                       |
-| `IAudioClient::IsFormatSupported`              | https://learn.microsoft.com/en-us/windows/win32/api/audioclient/nf-audioclient-iaudioclient-isformatsupported                  |
-| `IAudioClient::Initialize`                     | https://learn.microsoft.com/en-us/windows/win32/api/audioclient/nf-audioclient-iaudioclient-initialize                         |
-| `IMMDevice::Activate`                          | https://learn.microsoft.com/en-us/windows/win32/api/mmdeviceapi/nf-mmdeviceapi-immdevice-activate                              |
-| `IAudioClient::GetBufferSize`                  | https://learn.microsoft.com/en-us/windows/win32/api/audioclient/nf-audioclient-iaudioclient-getbuffersize                      |
-| `IAudioClient::GetDevicePeriod`                | https://learn.microsoft.com/en-us/windows/win32/api/audioclient/nf-audioclient-iaudioclient-getdeviceperiod                    |
-| `IAudioClient::GetService`                     | https://learn.microsoft.com/en-us/windows/win32/api/audioclient/nf-audioclient-iaudioclient-getservice                         |
-| `IAudioClient::SetEventHandle`                 | https://learn.microsoft.com/en-us/windows/win32/api/audioclient/nf-audioclient-iaudioclient-seteventhandle                     |
-| `IAudioClient::Start`                          | https://learn.microsoft.com/en-us/windows/win32/api/audioclient/nf-audioclient-iaudioclient-start                              |
-| `AvSetMmThreadCharacteristics`                 | https://learn.microsoft.com/en-us/windows/win32/api/avrt/nf-avrt-avsetmmthreadcharacteristicsa                                 |
-| `AvRevertMmThreadCharacteristics`              | https://learn.microsoft.com/en-us/windows/win32/api/avrt/nf-avrt-avrevertmmthreadcharacteristics                               |
-| `IAudioCaptureClient::GetBuffer`               | https://learn.microsoft.com/en-us/windows/win32/api/audioclient/nf-audioclient-iaudiocaptureclient-getbuffer                   |
-| `IAudioCaptureClient::ReleaseBuffer`           | https://learn.microsoft.com/en-us/windows/win32/api/audioclient/nf-audioclient-iaudiocaptureclient-releasebuffer               |
-| `IAudioClient::Stop`                           | https://learn.microsoft.com/en-us/windows/win32/api/audioclient/nf-audioclient-iaudioclient-stop                               |
-| `IAudioClient::Reset`                          | https://learn.microsoft.com/en-us/windows/win32/api/audioclient/nf-audioclient-iaudioclient-reset                              |
+| `PropVariantInit`                              | https://learn.microsoft.com/en-us/windows/win32/api/propidl/nf-propidl-propvariantinit                                         |
+| `WAVEFORMATEX`                                 | https://learn.microsoft.com/en-us/windows/win32/api/mmeapi/ns-mmeapi-waveformatex                                              |
+| `WAVEFORMATEXTENSIBLE`                         | https://learn.microsoft.com/en-us/windows/win32/api/mmreg/ns-mmreg-waveformatextensible                                        |
 
 
 ## Debugging & Instrumentation API
-| API                  | Link                                                                                                                              |
-|----------------------|-----------------------------------------------------------------------------------------------------------------------------------|
-| `_ASSERTE`           | https://learn.microsoft.com/en-us/cpp/c-runtime-library/reference/assert-asserte-assert-expr-macros?view=msvc-170                 |
-| `wcslen`             | https://en.cppreference.com/w/c/string/wide/wcslen                                                                                |
-| `va_arg`             | https://learn.microsoft.com/en-us/cpp/c-runtime-library/reference/va-arg-va-copy-va-end-va-start?view=msvc-170                    |
-| `sprintf_s`          | https://learn.microsoft.com/en-us/cpp/c-runtime-library/reference/sprintf-s-sprintf-s-l-swprintf-s-swprintf-s-l?view=msvc-170     |
-| `vsprintf_s`         | https://learn.microsoft.com/en-us/cpp/c-runtime-library/reference/vsprintf-s-vsprintf-s-l-vswprintf-s-vswprintf-s-l?view=msvc-170 |
-| `OutputDebugStringA` | https://learn.microsoft.com/en-us/windows/win32/api/debugapi/nf-debugapi-outputdebugstringa                                       |
-| `_ASSERT_EXPR`       | https://learn.microsoft.com/en-us/cpp/c-runtime-library/reference/assert-asserte-assert-expr-macros?view=msvc-170                 |
-| `MessageBoxA`        | https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-messageboxa                                                |
-| `swprintf_s`         | https://learn.microsoft.com/en-us/cpp/c-runtime-library/reference/sprintf-s-sprintf-s-l-swprintf-s-swprintf-s-l?view=msvc-170     |
-| `vswprintf_s`        | https://learn.microsoft.com/en-us/cpp/c-runtime-library/reference/vsprintf-s-vsprintf-s-l-vswprintf-s-vswprintf-s-l?view=msvc-170 |
-| `OutputDebugStringW` | https://learn.microsoft.com/en-us/windows/win32/api/debugapi/nf-debugapi-outputdebugstringw                                       |
-| `MessageBoxW`        | https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-messageboxw                                                |
-| `MessageBeep`        | https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-messagebeep                                                |
+| API                      | Link                                                                                                                              |
+|--------------------------|-----------------------------------------------------------------------------------------------------------------------------------|
+| `_ASSERTE`               | https://learn.microsoft.com/en-us/cpp/c-runtime-library/reference/assert-asserte-assert-expr-macros?view=msvc-170                 |
+| `_ASSERT_EXPR`           | https://learn.microsoft.com/en-us/cpp/c-runtime-library/reference/assert-asserte-assert-expr-macros?view=msvc-170                 |
+| `MessageBeep`            | https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-messagebeep                                                |
+| `MessageBoxA`            | https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-messageboxa                                                |
+| `MessageBoxW`            | https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-messageboxw                                                |
+| `OutputDebugStringA`     | https://learn.microsoft.com/en-us/windows/win32/api/debugapi/nf-debugapi-outputdebugstringa                                       |
+| `OutputDebugStringW`     | https://learn.microsoft.com/en-us/windows/win32/api/debugapi/nf-debugapi-outputdebugstringw                                       |
+| `WerRegisterMemoryBlock` | https://learn.microsoft.com/en-us/windows/win32/api/werapi/nf-werapi-werregistermemoryblock |
+| `WerReportAddDump`       | https://learn.microsoft.com/en-us/windows/win32/api/werapi/nf-werapi-werreportadddump       |
+| `WerReportCloseHandle`   | https://learn.microsoft.com/en-us/windows/win32/api/werapi/nf-werapi-werreportclosehandle   |
+| `WerReportCreate`        | https://learn.microsoft.com/en-us/windows/win32/api/werapi/nf-werapi-werreportcreate        |
+| `WerReportSetParameter`  | https://learn.microsoft.com/en-us/windows/win32/api/werapi/nf-werapi-werreportsetparameter  |
+| `WerReportSubmit`        | https://learn.microsoft.com/en-us/windows/win32/api/werapi/nf-werapi-werreportsubmit        |
+| `sprintf_s`              | https://learn.microsoft.com/en-us/cpp/c-runtime-library/reference/sprintf-s-sprintf-s-l-swprintf-s-swprintf-s-l?view=msvc-170     |
+| `swprintf_s`             | https://learn.microsoft.com/en-us/cpp/c-runtime-library/reference/sprintf-s-sprintf-s-l-swprintf-s-swprintf-s-l?view=msvc-170     |
+| `va_arg`                 | https://learn.microsoft.com/en-us/cpp/c-runtime-library/reference/va-arg-va-copy-va-end-va-start?view=msvc-170                    |
+| `vsprintf_s`             | https://learn.microsoft.com/en-us/cpp/c-runtime-library/reference/vsprintf-s-vsprintf-s-l-vswprintf-s-vswprintf-s-l?view=msvc-170 |
+| `vswprintf_s`            | https://learn.microsoft.com/en-us/cpp/c-runtime-library/reference/vsprintf-s-vsprintf-s-l-vswprintf-s-vswprintf-s-l?view=msvc-170 |
+| `wcslen`                 | https://en.cppreference.com/w/c/string/wide/wcslen                                                                                |
 
 
 ## CRT & Memory Management API
 | API                | Link                                                                                         |
 |--------------------|----------------------------------------------------------------------------------------------|
-| `_malloc_dbg`      | https://learn.microsoft.com/en-us/cpp/c-runtime-library/reference/malloc-dbg                 |
+| `CopyMemory`       | https://learn.microsoft.com/en-us/previous-versions/windows/desktop/legacy/aa366535(v=vs.85) |
+| `_CrtCheckMemory`  | https://learn.microsoft.com/en-us/cpp/c-runtime-library/reference/crtcheckmemory             |
 | `SecureZeroMemory` | https://learn.microsoft.com/en-us/previous-versions/windows/desktop/legacy/aa366877(v=vs.85) |
+| `StringCbCopyExW`  | https://learn.microsoft.com/en-us/windows/win32/api/strsafe/nf-strsafe-stringcbcopyexw       |
+| `StringCbPrintfW`  | https://learn.microsoft.com/en-us/windows/win32/api/strsafe/nf-strsafe-stringcbprintfw       |
+| `StringCchCopyW`   | https://learn.microsoft.com/en-us/windows/win32/api/strsafe/nf-strsafe-stringcchcopyw        |
+| `StringCchPrintfW` | https://learn.microsoft.com/en-us/windows/win32/api/strsafe/nf-strsafe-stringcchprintfw      |
 | `ZeroMemory`       | https://learn.microsoft.com/en-us/previous-versions/windows/desktop/legacy/aa366920(v=vs.85) |
 | `_free_dbg`        | https://learn.microsoft.com/en-us/cpp/c-runtime-library/reference/free-dbg                   |
-| `_CrtCheckMemory`  | https://learn.microsoft.com/en-us/cpp/c-runtime-library/reference/crtcheckmemory             |
-| `CopyMemory`       | https://learn.microsoft.com/en-us/previous-versions/windows/desktop/legacy/aa366535(v=vs.85) |
+| `_malloc_dbg`      | https://learn.microsoft.com/en-us/cpp/c-runtime-library/reference/malloc-dbg                 |
 | `rand`             | https://learn.microsoft.com/en-us/cpp/c-runtime-library/reference/rand?view=msvc-170         |
-| `StringCchCopyW`   | https://learn.microsoft.com/en-us/windows/win32/api/strsafe/nf-strsafe-stringcchcopyw        |
 
 
 ## Threads & Synchronization API
 | API                      | Link                                                                                                    |
 |--------------------------|---------------------------------------------------------------------------------------------------------|
-| `CreateThread`           | https://learn.microsoft.com/en-us/windows/win32/api/processthreadsapi/nf-processthreadsapi-createthread |
-| `CreateEventW`           | https://learn.microsoft.com/en-us/windows/win32/api/synchapi/nf-synchapi-createeventw                   |
 | `CreateEventExW`         | https://learn.microsoft.com/en-us/windows/win32/api/synchapi/nf-synchapi-createeventexw                 |
-| `ThreadProc`             | https://learn.microsoft.com/en-us/previous-versions/windows/desktop/legacy/ms686736(v=vs.85)            |
-| `SetEvent`               | https://learn.microsoft.com/en-us/windows/win32/api/synchapi/nf-synchapi-setevent                       |
-| `ResetEvent`             | https://learn.microsoft.com/en-us/windows/win32/api/synchapi/nf-synchapi-resetevent                     |
-| `WaitForSingleObject`    | https://learn.microsoft.com/en-us/windows/win32/api/synchapi/nf-synchapi-waitforsingleobject            |
-| `WaitForMultipleObjects` | https://learn.microsoft.com/en-us/windows/win32/api/synchapi/nf-synchapi-waitformultipleobjects         |
-| `ExitThread`             | https://learn.microsoft.com/en-us/windows/win32/api/processthreadsapi/nf-processthreadsapi-exitthread   |
-| `InitializeCriticalSection` | https://learn.microsoft.com/en-us/windows/win32/api/synchapi/nf-synchapi-initializecriticalsection |
+| `CreateEventW`           | https://learn.microsoft.com/en-us/windows/win32/api/synchapi/nf-synchapi-createeventw                   |
+| `CreateThread`           | https://learn.microsoft.com/en-us/windows/win32/api/processthreadsapi/nf-processthreadsapi-createthread |
 | `DeleteCriticalSection`     | https://learn.microsoft.com/en-us/windows/win32/api/synchapi/nf-synchapi-deletecriticalsection |
 | `EnterCriticalSection`      | https://learn.microsoft.com/en-us/windows/win32/api/synchapi/nf-synchapi-entercriticalsection |
+| `ExitThread`             | https://learn.microsoft.com/en-us/windows/win32/api/processthreadsapi/nf-processthreadsapi-exitthread   |
+| `InitializeCriticalSection` | https://learn.microsoft.com/en-us/windows/win32/api/synchapi/nf-synchapi-initializecriticalsection |
 | `LeaveCriticalSection`      | https://learn.microsoft.com/en-us/windows/win32/api/synchapi/nf-synchapi-leavecriticalsection |
+| `ResetEvent`             | https://learn.microsoft.com/en-us/windows/win32/api/synchapi/nf-synchapi-resetevent                     |
+| `SetEvent`               | https://learn.microsoft.com/en-us/windows/win32/api/synchapi/nf-synchapi-setevent                       |
+| `ThreadProc`             | https://learn.microsoft.com/en-us/previous-versions/windows/desktop/legacy/ms686736(v=vs.85)            |
+| `WaitForMultipleObjects` | https://learn.microsoft.com/en-us/windows/win32/api/synchapi/nf-synchapi-waitformultipleobjects         |
+| `WaitForSingleObject`    | https://learn.microsoft.com/en-us/windows/win32/api/synchapi/nf-synchapi-waitforsingleobject            |
 
 
 ## Pragmas
 | API                            | Link                                                                           |
 |--------------------------------|--------------------------------------------------------------------------------|
-| `#pragma message`              | https://learn.microsoft.com/en-us/cpp/preprocessor/message?view=msvc-170       |
 | `#pragma comment(lib, "avrt")` | https://learn.microsoft.com/en-us/cpp/preprocessor/comment-c-cpp?view=msvc-170 |
+| `#pragma message`              | https://learn.microsoft.com/en-us/cpp/preprocessor/message?view=msvc-170       |
 
 
 ## Math
 | API                 | Link                                                                                 |
 |---------------------|--------------------------------------------------------------------------------------|
 | `_USE_MATH_DEFINES` | https://learn.microsoft.com/en-us/cpp/c-runtime-library/math-constants?view=msvc-170 |
-| `sinf`              | https://en.cppreference.com/w/c/numeric/math/sin                                     |
 | `cosf`              | https://en.cppreference.com/w/c/numeric/math/cos                                     |
+| `sinf`              | https://en.cppreference.com/w/c/numeric/math/sin                                     |
 | `sqrtf`             | https://en.cppreference.com/w/c/numeric/math/sqrt                                    |

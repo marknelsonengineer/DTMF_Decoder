@@ -12,13 +12,13 @@
 
 #pragma once
 
-extern _Success_( return != 0 ) BOOL logWerInit();
+extern RETURN_BOOL logWerInit();
 
-extern _Success_( return != 0 ) BOOL logWerEvent(
+extern RETURN_BOOL logWerEvent(
    _In_       const logLevels_t logLevel,
    _In_opt_z_ const PCWSTR      resourceName,
    _In_       const UINT        resourceId,
    _In_z_     const PCWSTR      logMsg
 );
-extern _Success_( return != 0 ) BOOL logWerSubmit();
-extern _Success_( return != 0 ) BOOL logWerCleanup();
+extern RETURN_BOOL logWerSubmit();
+extern RETURN_BOOL logWerCleanup();
