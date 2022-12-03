@@ -17,7 +17,7 @@ however it probably doesn't make sense to run it from Profile
   some background noise
 - Program detects individual tones
 - Observe the program and each of the threads in Process Monitor and ensure none
-  of the threads is over heating
+  of the threads consume too much CPU
 - Run DebugView and observe all of the output
 - Test a deep failure.  Change the `==` to `!=` in the following line 
   of `audio.cpp`:
