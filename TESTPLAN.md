@@ -6,6 +6,7 @@ however it probably doesn't make sense to run it from Profile
 
 ## Basic tests
 - Runs on a 64-bit OS
+- Runs as a 32-bit and 64-bit program
 - Starts and draws the display
 - Help > About works and is correct
   - The version number is correct
