@@ -38,6 +38,7 @@ however it probably doesn't make sense to run it from Profile
     - Uncomment 2 excessively long log tests at the end of `log.cpp` (one at a time)
       and verify that they throw asserts.
   - Reverse the tests of every error handler and verify that they work as expected.
+  - Ensure runs that end in failure generate a Windiws Error Report.  Open the report and ensure all of the 
 
 ## Documentation
 - Check the project's [GitHub page](https://github.com/marknelsonengineer/DTMF_Decoder) and make sure the home page looks good
