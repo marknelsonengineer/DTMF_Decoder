@@ -87,7 +87,7 @@ Yikes!
 Here's what I've learned about processes' end-of-life:
    - [Error Handling](https://learn.microsoft.com/en-us/windows/win32/debug/error-handling) by Microsoft
      - Well-written applications include error-handling code that allows them
-       to recover gracefully from unexpected errors. When an error occurs, the
+       to recover gracefully from unexpected errors.  When an error occurs, the
        application may need to request user intervention, or it may be able to
        recover on its own.
    - [Modern C++ Best Practices for Exceptions and Error Handling](https://learn.microsoft.com/en-us/cpp/cpp/errors-and-exception-handling-modern-cpp?view=msvc-170)
@@ -159,12 +159,12 @@ Here's what I've learned about processes' end-of-life:
 
 
 ### Error Handling Policy
-   - (Done) **If the main window hasn't started**
+   - **If the main window hasn't started**
      - Show a dialog box, then exit #wWinMain
 
    - **Inside the `initSomething` functions**
-     - Unwind, returning `FALSE` until you get to the top, then show a `MessageBox`,
-       set #giApplicationReturnValue and bubble up the error
+     - Unwind, returning `FALSE` to bubble up the error, then show a `MessageBox`,
+       set #giApplicationReturnValue and exit
 
      - The `initSomething` functions are called from #wWinMain before the 
        message loop starts...
