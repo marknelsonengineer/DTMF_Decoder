@@ -39,6 +39,7 @@ however it probably doesn't make sense to run it from Profile
       and verify that they throw asserts.
   - Reverse the tests of every error handler and verify that they work as expected.
   - Ensure runs that end in failure generate a Windiws Error Report.  Open the report and ensure all of the 
+  - Ensure the program runs correctly when used in a Remote Desktop session. 
 
 ## Documentation
 - Check the project's [GitHub page](https://github.com/marknelsonengineer/DTMF_Decoder) and make sure the home page looks good
