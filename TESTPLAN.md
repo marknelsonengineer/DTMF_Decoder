@@ -6,6 +6,7 @@ however it probably doesn't make sense to run it from Profile
 
 ## Basic tests
 - Runs on a 64-bit OS
+- Runs as a 32-bit and 64-bit program
 - Starts and draws the display
 - Help > About works and is correct
   - The version number is correct
@@ -17,7 +18,7 @@ however it probably doesn't make sense to run it from Profile
   some background noise
 - Program detects individual tones
 - Observe the program and each of the threads in Process Monitor and ensure none
-  of the threads is over heating
+  of the threads consume too much CPU
 - Run DebugView and observe all of the output
 - Test a deep failure.  Change the `==` to `!=` in the following line 
   of `audio.cpp`:
@@ -37,6 +38,8 @@ however it probably doesn't make sense to run it from Profile
     - Uncomment 2 excessively long log tests at the end of `log.cpp` (one at a time)
       and verify that they throw asserts.
   - Reverse the tests of every error handler and verify that they work as expected.
+  - Ensure runs that end in failure generate a Windiws Error Report.  Open the report and ensure all of the 
+  - Ensure the program runs correctly when used in a Remote Desktop session. 
 
 ## Documentation
 - Check the project's [GitHub page](https://github.com/marknelsonengineer/DTMF_Decoder) and make sure the home page looks good

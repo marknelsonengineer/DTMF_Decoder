@@ -3,11 +3,11 @@ Architecture
 
 The overall architecture of DTMF Decoder is very straightforward.
 
-The main window is a 1-panel, hand-drawn, non-resizable window with a
+The main interface is a 1-panel, hand-drawn, non-resizable window with a
 telephone keypad on it.
 
 The program opens the default audio capture device (there's no user interface
-for selecting an audio device).  Then, it starts to listen to audio frames.
+for selecting an audio device).  It then starts to listen to audio frames.
 
 The most efficient way to listen to audio is to register a callback function
 that gets called when the OS has a batch of audio frames to process.  So,
@@ -25,9 +25,9 @@ it signals all 8 threads to run in parallel and when **all** of the Goertzel
 work threads finish, it signals the Audio Capture thread to continue
 processing.
 
-When a frequency surpasses a set threshold, the row or column frequency labels
-are redrawn (in a highlighted color).  If both a DTMF row *and* column are
-"on", then the key "lights up" as well.  Super simple.
+When the energy at a given frequency surpasses a set threshold, the row or 
+column frequency labels are redrawn (in a highlighted color).  If both a 
+DTMF row *and* column are "on", then the key "lights up" as well.  Super simple.
 
 Per [Raymond Chen](https://devblogs.microsoft.com/oldnewthing/author/oldnewthing)'s
 book [The Old New Thing](https://www.amazon.com/Old-New-Thing-Development-Throughout/dp/0321440307/)
@@ -42,23 +42,23 @@ the element is in the update rectangle, it gets drawn.  If not, then it must
 not need to be updated.  This is the Win32 way of drawing.
 
 For performance, I hand-coded an x86-64 Goertzel algorithm in Assembly
-Language.  C is very "chatty" with memory, and this algorithm takes advantage
-of:
+Language.  C is very "chatty" with memory.   An Assembly Language based 
+algorithm takes advantage of:
   - Out-of-order processing
   - All of the intermediate variables are held in registers
 
 The x86-32 bit version of the program uses a traditional C-based Goertzel
-algorithm, for a reference design and comparison.
+algorithm for a reference design and comparison.
 
 When you are running DTMF Decoder in a VM, it's still subject to the whims
 of the hypervisor's scheduler.  Therefore, you may get frames with
-DATA_DISCONTINUITY set.  However, when you run it on a bare-metal
+`DATA_DISCONTINUITY` set.  However, when you run it on a bare-metal
 Windows system, the performance is excellent and it processes all of the
 audio in realtime.
 
 DTMF Decoder has a good, simple logging mechanism.  It logs everything to
-DebugView.  Logs to WARN, ERROR and FATAL will also popup a Dialog Box.  That's
-it for a user interface.
+DebugView.  Logs to WARN, ERROR and FATAL will also show a Dialog Box.
+DTMF Decoder has an About dialog box and that's it for a user interface.
 
 So, it's a very simple program that took ~80 hours to write (4,800 minutes).
 There's ~3,000 lines of code, so I'm averaging about 96-seconds per line.  Not
@@ -67,7 +67,7 @@ but still, not great.
 
 That said, it's been forever since I've written in Win32 and I'd write this
 much faster if I had to do it again.  I've written a guide to the API calls I
-use [here](REFERENCES.md).  I read every one of these to write this program.
+use [here](REFERENCES.md).  I read every one of them to write this program.
 
 
 ## Shutdown
@@ -91,7 +91,7 @@ This is ridiculously hard to do in Win32.  Let's start with what I've learned
 about processes' end-of-life:
    - [Error Handling](https://learn.microsoft.com/en-us/windows/win32/debug/error-handling) by Microsoft
      - Well-written applications include error-handling code that allows them
-       to recover gracefully from unexpected errors. When an error occurs, the
+       to recover gracefully from unexpected errors.  When an error occurs, the
        application may need to request user intervention, or it may be able to
        recover on its own.
    - [Modern C++ Best Practices for Exceptions and Error Handling](https://learn.microsoft.com/en-us/cpp/cpp/errors-and-exception-handling-modern-cpp?view=msvc-170)
@@ -163,11 +163,12 @@ about processes' end-of-life:
 
 
 ### Error Handling Policy
-   - All messages should be held as a multi-lingual capable string resource
-     - There are a handful of messages (mostly around initialing the string
-       resource API) that will be English-only.
+   - (Done) **If the main window hasn't started**
+     - Show a dialog box, then exit #wWinMain
 
-   - #gbIsRunning is set to `true` at exactly one place:  The start of #wWinMain
+   - **Inside the `initSomething` functions**
+     - Unwind, returning `FALSE` until you get to the top, then show a `MessageBox`,
+       set #giApplicationReturnValue and bubble up the error
 
    - **If the main window hasn't started**
      - Show a dialog box, then exit #wWinMain returnng #EXIT_FAILURE
