@@ -29,7 +29,7 @@ extern BOOL mvcModelCleanup();
 /// pre-computed information for the Goertzel Magnitude calculation for each
 /// individual DTMF tone
 ///
-/// #sine, #cosine, #coeff are computed and set by #goertzel_Init
+/// #sine, #cosine, #coeff are computed and set by #goertzel_Start
 ///
 /// #goertzelMagnitude is set in #goertzel_Magnitude
 ///

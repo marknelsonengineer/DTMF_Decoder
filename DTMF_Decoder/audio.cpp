@@ -627,9 +627,11 @@ BOOL audioInit() {
    LOG_INFO_R( IDS_AUDIO_QUEUE_SIZE, gstQueueSize, SIZE_OF_QUEUE_IN_MS );  // "Queue size=%zu bytes or %d ms"
 
    /// Initialize the Goertzel module (and associated threads)
-   br = goertzel_Init( spMixFormat->nSamplesPerSec );
-   CHECK_BR_R( IDS_AUDIO_FAILED_TO_INITIALIZE_GOERTZEL );  // "Failed to initialize Goertzel module (and associated threads)"
+   br = goertzel_Init();
+   CHECK_BR_R( IDS_AUDIO_FAILED_TO_INITIALIZE_GOERTZEL );  // "Failed to initialize Goertzel module.  Exiting."
 
+   br = goertzel_Start( spMixFormat->nSamplesPerSec );
+   CHECK_BR_R( IDS_AUDIO_FAILED_TO_START_GOERTZEL );       // "Failed to start Goertzel DFT worker threads.  Exiting."
 
    /// Create the callback events
    ghAudioSamplesReadyEvent = CreateEventExW(

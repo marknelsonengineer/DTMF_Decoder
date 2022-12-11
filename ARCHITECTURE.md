@@ -166,6 +166,9 @@ about processes' end-of-life:
    - All messages should be held as a multi-lingual capable string resource
      - There are a handful of messages (mostly around initialing the string
        resource API) that will be English-only.
+       
+   - On a fatal error, the message should end with "Exiting."  On a warning,
+     the message should end with "Continuing."
 
    - #gbIsRunning is set to `true` at exactly one place:  The start of #wWinMain
 

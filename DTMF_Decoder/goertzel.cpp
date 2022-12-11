@@ -62,7 +62,7 @@
        HANDLE ghDoneDFTevent[ NUMBER_OF_DTMF_TONES ];   ///< The audio handler waits on each of the DFT threads before continuing.  Declared external to support inlining.
 static HANDLE shWorkThreads[ NUMBER_OF_DTMF_TONES ];    ///< Handles to the worker threads
 
-extern "C" float fScaleFactor = 0;  ///< Set in #goertzel_Init and used in #goertzel_Magnitude
+extern "C" float fScaleFactor = 0;  ///< Set in #goertzel_Start and used in #goertzel_Magnitude
 
 
 #ifdef _WIN64
@@ -203,13 +203,47 @@ DWORD WINAPI goertzelWorkThread( _In_ LPVOID pContext ) {
 #define M_PIF 3.141592653589793238462643383279502884e+00F
 
 
+/// Initialize resources needed by the goertzel DFT
+///
+/// @return `TRUE` if successful.  `FALSE` if there was a problem.
+BOOL goertzel_Init() {
+   /// Create events for synchronizing the threads
+   _ASSERTE( ghStartDFTevent == NULL );
+   ghStartDFTevent = CreateEventW(
+      NULL,                            // Default security attributes
+      TRUE,                            // Manually reset after all 8 threads run
+      FALSE,                           // Initial state
+      NULL );                          // Object name
+   if ( ghStartDFTevent == NULL ) {
+      RETURN_FATAL( IDS_GOERTZEL_FAILED_TO_CREATE_STARTDFT_HANDLE );  // "Failed to create a ghStartDFTevent event handle.  Exiting."
+   }
+
+   /// Create the "Done" events for each goertzel worker thread
+   for ( int i = 0 ; i < NUMBER_OF_DTMF_TONES ; i++ ) {
+      _ASSERTE( ghDoneDFTevent[ i ] == NULL );
+
+      ghDoneDFTevent[ i ] = CreateEventW(
+         NULL,                         // Default security attributes
+         FALSE,                        // Automatically reset after the worker starts
+         FALSE,                        // Initial state
+         NULL );                       // Object name
+      if ( ghDoneDFTevent[ i ] == NULL ) {
+         RETURN_FATAL( IDS_GOERTZEL_FAILED_TO_CREATE_DONEDFT_HANDLES );  // "Failed to create a ghDoneDFTevent event handle.  Exiting."
+      }
+   }
+
+   return TRUE;
+}
+
+
 /// Initialize values needed by the goertzel DFT and start the worker threads
 ///
 /// @param  iSampleRate  Samples per second
 /// @return `TRUE` if successful.  `FALSE` if there was a problem.
-BOOL goertzel_Init( _In_ const int iSampleRate ) {
+BOOL goertzel_Start( _In_ const int iSampleRate ) {
    _ASSERTE( iSampleRate > 0 );
    _ASSERTE( gstQueueSize > 0 );
+   _ASSERTE( ghStartDFTevent != NULL );
 
    float floatSamplingRate = (float) iSampleRate;
 
@@ -227,34 +261,14 @@ BOOL goertzel_Init( _In_ const int iSampleRate ) {
       gDtmfTones[ i ].coeff  = 2.0f * gDtmfTones[ i ].cosine;
    }
 
-   /// Create events for synchronizing the threads
-   _ASSERTE( ghStartDFTevent == NULL );
-   ghStartDFTevent = CreateEventW(
-      NULL,                            // Default security attributes
-      TRUE,                            // Manual-reset option
-      FALSE,                           // Initial state
-      NULL );                          // Object name
-   if ( ghStartDFTevent == NULL ) {
-      RETURN_FATAL( IDS_GOERTZEL_FAILED_TO_CREATE_STARTDFT_HANDLE );  // "Failed to create a ghStartDFTevent event handle.  Exiting."
-   }
-
    for ( int i = 0 ; i < NUMBER_OF_DTMF_TONES ; i++ ) {
-      _ASSERTE( ghDoneDFTevent[ i ] == NULL );
+      _ASSERTE( ghDoneDFTevent[ i ] != NULL );
       _ASSERTE( shWorkThreads[ i ] == NULL );
-
-      ghDoneDFTevent[ i ] = CreateEventW(
-         NULL,                         // Default security attributes
-         FALSE,                        // Manual-reset option
-         FALSE,                        // Initial state
-         NULL );                       // Object name
-      if ( ghDoneDFTevent[ i ] == NULL ) {
-         RETURN_FATAL( IDS_GOERTZEL_FAILED_TO_CREATE_DONEDFT_HANDLES );  // "Failed to create a ghDoneDFTevent event handle.  Exiting."
-      }
 
       /// Start the threads
       shWorkThreads[i] = CreateThread(NULL, 0, goertzelWorkThread, &gDtmfTones[i].index, 0, NULL);
       if ( shWorkThreads[ i ] == NULL ) {
-         RETURN_FATAL( IDS_GOERTZEL_FAILED_TO_CREATE_WORK_THREAD );  // "Failed to create a Goertzel work thread.  Exiting."
+         RETURN_FATAL( IDS_GOERTZEL_FAILED_TO_CREATE_WORK_THREAD, i );  // "Failed to create Goertzel work thread %d.  Exiting."
       }
    }
 
@@ -265,9 +279,9 @@ BOOL goertzel_Init( _In_ const int iSampleRate ) {
 /// Signal all of the threads so they can end on their own terms
 ///
 /// This function should not return until all of the goertzel work threads have
-/// stopped.  
-/// 
-/// In Win32, threads will set their signalled state when they terminate, so 
+/// stopped.
+///
+/// In Win32, threads will set their signalled state when they terminate, so
 /// let's take advantage of that.
 ///
 /// @see https://learn.microsoft.com/en-us/windows/win32/api/synchapi/nf-synchapi-setevent
