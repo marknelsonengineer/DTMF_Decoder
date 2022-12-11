@@ -682,11 +682,12 @@ BOOL audioStop() {
    /// Start by setting #gbIsRunning to `FALSE` -- just to be sure
    gbIsRunning = false;
 
+   _ASSERTE( spAudioClient != NULL );
    _ASSERTE( ghAudioSamplesReadyEvent != NULL );
    _ASSERTE( shCaptureThread != NULL );
 
-   br = goertzel_Stop();
-   WARN_BR_R( IDS_DTMF_DECODER_FAILED_TO_END_DFT_THREADS );  // "Failed to end the Goertzel DFT threads"
+   hr = spAudioClient->Stop();
+   CHECK_HR_R( IDS_AUDIO_STOP_FAILED );  // "Stopping the audio stream returned an unexpected value.  Investigate!!"
 
    /// Trigger the audio capture threads to loop...
    /// with #gbIsRunning `== FALSE` causing the loop to terminate
@@ -697,7 +698,7 @@ BOOL audioStop() {
    DWORD dwWaitResult;  // Result from WaitForMultipleObjects
    dwWaitResult = WaitForSingleObject( shCaptureThread, INFINITE );
    if ( dwWaitResult != WAIT_OBJECT_0 ) {
-      RETURN_FATAL( IDS_AUDIO_THREAD_END_FAILED );  // "Wait for all audio capture thread to end failed.  Exiting."
+      RETURN_FATAL( IDS_AUDIO_THREAD_END_FAILED );  // "Wait for the audio capture thread to end failed.  Exiting."
    }
 
    // At this point, the audio capture thread has ended
@@ -706,10 +707,8 @@ BOOL audioStop() {
 
    shCaptureThread = NULL;
 
-   if ( spAudioClient != NULL ) {
-      hr = spAudioClient->Stop();
-      CHECK_HR_R( IDS_AUDIO_STOP_FAILED );  // "Stopping the audio stream returned an odd value.  Investigate!!"
-   }
+   br = goertzel_Stop();
+   WARN_BR_R( IDS_DTMF_DECODER_FAILED_TO_END_DFT_THREADS );  // "Failed to end the Goertzel DFT threads"
 
    return TRUE;
 }

@@ -215,8 +215,6 @@ about processes' end-of-life:
    - **Ending the application (normally)**
      - On `WM_CLOSE` - The start of a normal close... start unwinding things
        - Set #gbIsRunning to `false`
-       - Call #goertzel_Stop
-       - Call #audioStopDevice
        - Call `destroyWindow` - This is standard Win32 behavior
 
      - On `WM_DESTROY`
@@ -310,10 +308,9 @@ Normal and abnormal shutdowns can be differentiated by:
   - Normal Shutdown
     - Call #goertzel_Stop to stop the threads.  #goertzel_Stop does not
       return until all of the threads have stopped
-    - #goertzel_Stop should be called _after_ ending the audio capture
-      thread
-    - After the threads are done, call #goertzel_Cleanup to close out the
-      resources it created
+    - #goertzel_Stop is called _after_ ending the audio capture
+      thread in #audioStop
+    - Call #goertzel_Cleanup to close out the resources it created
 
 
 ### Macros & Functions Supporting Shutdown
