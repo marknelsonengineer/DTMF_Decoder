@@ -468,7 +468,7 @@ BOOL audioInit() {
    BOOL    br;  // BOOL result
 
    if ( sShareMode == AUDCLNT_SHAREMODE_EXCLUSIVE ) {
-      RETURN_FATAL_R( IDS_AUDIO_EXCLUSIVE_MODE_UNSUPPORTED );  // "Exclusive mode not supported right now.  Exiting."
+      RETURN_FATAL( IDS_AUDIO_EXCLUSIVE_MODE_UNSUPPORTED );  // "Exclusive mode not supported right now.  Exiting."
    }
 
    _ASSERTE( sShareMode == AUDCLNT_SHAREMODE_SHARED );
@@ -490,7 +490,7 @@ BOOL audioInit() {
    /// Get the ID from IMMDevice
    hr = spDevice->GetId( &spwstrDeviceId );
    if ( hr != S_OK || spwstrDeviceId == NULL ) {
-      RETURN_FATAL_R( IDS_AUDIO_FAILED_TO_GET_DEVICE_ID );  // "Failed to get the device's ID string"
+      RETURN_FATAL( IDS_AUDIO_FAILED_TO_GET_DEVICE_ID );  // "Failed to get the device's ID string"
    }
 
    LOG_INFO_R( IDS_AUDIO_DEVICE_ID, spwstrDeviceId );  // "Device ID = %s"
@@ -498,17 +498,17 @@ BOOL audioInit() {
    /// Get the State from IMMDevice
    hr = spDevice->GetState( &sdwState );
    if ( hr != S_OK || sdwState == NULL ) {
-      RETURN_FATAL_R( IDS_AUDIO_FAILED_TO_GET_DEVICE_STATE );  // "Failed to get the device's state"
+      RETURN_FATAL( IDS_AUDIO_FAILED_TO_GET_DEVICE_STATE );  // "Failed to get the device's state"
    }
 
    if ( sdwState != DEVICE_STATE_ACTIVE ) {
-      RETURN_FATAL_R( IDS_AUDIO_DEVICE_NOT_ACTIVE );  // "The audio device state is not active"
+      RETURN_FATAL( IDS_AUDIO_DEVICE_NOT_ACTIVE );  // "The audio device state is not active"
    }
 
    /// Get the Property Store from IMMDevice
    hr = spDevice->OpenPropertyStore( STGM_READ, &spPropertyStore );
    if ( hr != S_OK || spPropertyStore == NULL ) {
-      RETURN_FATAL_R( IDS_AUDIO_FAILED_TO_OPEN_PROPERTIES );  // "Failed to open device property store"
+      RETURN_FATAL( IDS_AUDIO_FAILED_TO_OPEN_PROPERTIES );  // "Failed to open device property store"
    }
 
    /// Get the device's properties from the property store
@@ -543,7 +543,7 @@ BOOL audioInit() {
    /// Use Activate on IMMDevice to create an IAudioClient
    hr = spDevice->Activate( __uuidof( IAudioClient ), CLSCTX_ALL, NULL, (void**) &spAudioClient );
    if ( hr != S_OK || spAudioClient == NULL ) {
-      RETURN_FATAL_R( IDS_AUDIO_FAILED_TO_ACTIVATE );  // "Failed to activate an audio client"
+      RETURN_FATAL( IDS_AUDIO_FAILED_TO_ACTIVATE );  // "Failed to activate an audio client"
    }
 
    _ASSERTE( spAudioClient != NULL );
@@ -551,7 +551,7 @@ BOOL audioInit() {
    /// Get the default audio format that the audio driver wants to use
    hr = spAudioClient->GetMixFormat( &spMixFormat );
    if ( hr != S_OK || spMixFormat == NULL ) {
-      RETURN_FATAL_R( IDS_AUDIO_FAILED_TO_GET_MIX_FORMAT );  // "Failed to retrieve mix format"
+      RETURN_FATAL( IDS_AUDIO_FAILED_TO_GET_MIX_FORMAT );  // "Failed to retrieve mix format"
    }
 
    _ASSERTE( spMixFormat != NULL );
@@ -563,13 +563,13 @@ BOOL audioInit() {
    if ( hr == S_OK ) {
       LOG_INFO_R( IDS_AUDIO_FORMAT_SUPPORTED );  // "The requested format is supported"
    } else if ( hr == AUDCLNT_E_UNSUPPORTED_FORMAT ) {
-      RETURN_FATAL_R( IDS_AUDIO_FORMAT_UNSUPPORTED );  // "The requested format is is not supported"
+      RETURN_FATAL( IDS_AUDIO_FORMAT_UNSUPPORTED );  // "The requested format is is not supported"
    } else if( hr == S_FALSE && spAudioFormatUsed != NULL) {
       LOG_DEBUG_R( IDS_AUDIO_FORMAT_NOT_AVAILABLE );  // "The requested format is not available, but this format is:"
       audioPrintWaveFormat( spAudioFormatUsed );
       return FALSE;
    } else {
-      RETURN_FATAL_R( IDS_AUDIO_FORMAT_INVALID );  // "Failed to validate the requested format"
+      RETURN_FATAL( IDS_AUDIO_FORMAT_INVALID );  // "Failed to validate the requested format"
    }
 
    /// Determine the audio format
@@ -590,7 +590,7 @@ BOOL audioInit() {
    }
 
    if ( sAudioFormat == UNKNOWN_AUDIO_FORMAT ) {
-      RETURN_FATAL_R( IDS_AUDIO_FAILED_TO_MATCH_FORMAT );  // "Failed to match with the audio format"
+      RETURN_FATAL( IDS_AUDIO_FAILED_TO_MATCH_FORMAT );  // "Failed to match with the audio format"
    }
 
    _ASSERTE( sAudioFormat != UNKNOWN_AUDIO_FORMAT );
@@ -601,7 +601,7 @@ BOOL audioInit() {
                                              | AUDCLNT_STREAMFLAGS_AUTOCONVERTPCM, 0, 0, spMixFormat, NULL );
    if ( hr != S_OK ) {
       /// @todo Look at more error codes and print out higher-fidelity error messages
-      RETURN_FATAL_R( IDS_AUDIO_FAILED_TO_INITIALIZE );  // "Failed to initialize the audio client"
+      RETURN_FATAL( IDS_AUDIO_FAILED_TO_INITIALIZE );  // "Failed to initialize the audio client"
    }
 
    hr = spAudioClient->GetBufferSize( &suBufferSize );
@@ -638,7 +638,7 @@ BOOL audioInit() {
       0,                                   // Configuration flags
       EVENT_MODIFY_STATE | SYNCHRONIZE );  // Desired access
    if ( ghAudioSamplesReadyEvent == NULL ) {
-      RETURN_FATAL_R( IDS_AUDIO_FAILED_TO_CREATE_READY_EVENT );  // "Failed to create an audio samples ready event"
+      RETURN_FATAL( IDS_AUDIO_FAILED_TO_CREATE_READY_EVENT );  // "Failed to create an audio samples ready event"
    }
 
    hr = spAudioClient->SetEventHandle( ghAudioSamplesReadyEvent );
@@ -651,7 +651,7 @@ BOOL audioInit() {
    /// Start the thread
    shCaptureThread = CreateThread( NULL, 0, audioCaptureThread, NULL, 0, NULL );
    if ( shCaptureThread == NULL ) {
-      RETURN_FATAL_R( IDS_AUDIO_FAILED_TO_CREATE_CAPTURE_THREAD );  // "Failed to create the audio capture thread"
+      RETURN_FATAL( IDS_AUDIO_FAILED_TO_CREATE_CAPTURE_THREAD );  // "Failed to create the audio capture thread"
    }
 
    /// Start the audio processer

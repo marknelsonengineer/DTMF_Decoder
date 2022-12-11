@@ -138,7 +138,7 @@ RETURN_BOOL logWerInit() {
 
    dwr = GetProcessImageFileNameW( hProcess, swzFullExeFilename, MAX_PATH );
    if ( dwr <= 0 ) {
-      RETURN_FATAL_R( IDS_LOG_WER_FAILED_TO_GET_EXE_PATH );  // "Failed to get the executable's full path name"
+      RETURN_FATAL( IDS_LOG_WER_FAILED_TO_GET_EXE_PATH );  // "Failed to get the executable's full path name"
    }
    LOG_INFO_R( IDS_LOG_WER_FULL_EXE_FILENAME, swzFullExeFilename );  // "GetProcessImageFileNameW Full Exe Filename=%s"
 

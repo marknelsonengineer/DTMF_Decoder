@@ -235,7 +235,7 @@ BOOL goertzel_Init( _In_ const int iSampleRate ) {
       FALSE,                           // Initial state
       NULL );                          // Object name
    if ( ghStartDFTevent == NULL ) {
-      RETURN_FATAL_R( IDS_GOERTZEL_FAILED_TO_CREATE_STARTDFT_HANDLE );  // "Failed to create a ghStartDFTevent event handle.  Exiting."
+      RETURN_FATAL( IDS_GOERTZEL_FAILED_TO_CREATE_STARTDFT_HANDLE );  // "Failed to create a ghStartDFTevent event handle.  Exiting."
    }
 
    for ( int i = 0 ; i < NUMBER_OF_DTMF_TONES ; i++ ) {
@@ -248,13 +248,13 @@ BOOL goertzel_Init( _In_ const int iSampleRate ) {
          FALSE,                        // Initial state
          NULL );                       // Object name
       if ( ghDoneDFTevent[ i ] == NULL ) {
-         RETURN_FATAL_R( IDS_GOERTZEL_FAILED_TO_CREATE_DONEDFT_HANDLES );  // "Failed to create a ghDoneDFTevent event handle.  Exiting."
+         RETURN_FATAL( IDS_GOERTZEL_FAILED_TO_CREATE_DONEDFT_HANDLES );  // "Failed to create a ghDoneDFTevent event handle.  Exiting."
       }
 
       /// Start the threads
       shWorkThreads[i] = CreateThread(NULL, 0, goertzelWorkThread, &gDtmfTones[i].index, 0, NULL);
       if ( shWorkThreads[ i ] == NULL ) {
-         RETURN_FATAL_R( IDS_GOERTZEL_FAILED_TO_CREATE_WORK_THREAD );  // "Failed to create a Goertzel work thread.  Exiting."
+         RETURN_FATAL( IDS_GOERTZEL_FAILED_TO_CREATE_WORK_THREAD );  // "Failed to create a Goertzel work thread.  Exiting."
       }
    }
 
@@ -291,7 +291,7 @@ BOOL goertzel_Stop() {
    DWORD   dwWaitResult;  // Result from WaitForMultipleObjects
    dwWaitResult = WaitForMultipleObjects( NUMBER_OF_DTMF_TONES, shWorkThreads, TRUE, INFINITE );
    if ( !( dwWaitResult >= WAIT_OBJECT_0 && dwWaitResult <= ( WAIT_OBJECT_0 + NUMBER_OF_DTMF_TONES - 1 ) ) ) {
-      RETURN_FATAL_R( IDS_GOERTZEL_THREAD_END_FAILED );  // "Wait for all Goertzel threads to end failed.  Exiting."
+      RETURN_FATAL( IDS_GOERTZEL_THREAD_END_FAILED );  // "Wait for all Goertzel threads to end failed.  Exiting."
    }
 
    /// Cleanup the thread handles

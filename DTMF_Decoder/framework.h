@@ -105,48 +105,60 @@ extern int giApplicationReturnValue;
 
 
 /// Standardized macro for queuing a fatal error using a `printf`-style
-/// resource string
-///
-/// - Set #giApplicationReturnValue to #EXIT_FAILURE
-/// - Call #LOG_FATAL_QX to queue the message
-/// - Call #gracefulShutdown
-///
-#define QUEUE_FATAL( resource_id, ... )                         \
+/// resource string - Extended to include the resource name
+#define QUEUE_FATAL_EX( resource_name, resource_id, ... )       \
    giApplicationReturnValue = EXIT_FAILURE;                     \
-   LOG_FATAL_QX( L"" #resource_id, resource_id, __VA_ARGS__ );  \
+   LOG_FATAL_QX( resource_name, resource_id, __VA_ARGS__ );     \
+   gracefulShutdown()
+
+
+/// Standardized macro for queuing a fatal error using a `printf`-style
+/// resource string
+#define QUEUE_FATAL( resource_id, ... )                          \
+   QUEUE_FATAL_EX( L"" #resource_id, resource_id, __VA_ARGS__ )  \
+
+
+/// Standardized macro for processing a fatal error using a `printf`-style
+/// resource string - Extended to include the resource name
+///
+/// @see https://learn.microsoft.com/en-us/windows/win32/com/using-macros-for-error-handling
+/// @see https://gcc.gnu.org/onlinedocs/cpp/Variadic-Macros.html
+///
+#define PROCESS_FATAL_EX( resource_name, resource_id, ... )     \
+   giApplicationReturnValue = EXIT_FAILURE;                     \
+   LOG_FATAL_RX( resource_name, resource_id, __VA_ARGS__ );     \
    gracefulShutdown()
 
 
 /// Standardized macro for processing a fatal error using a `printf`-style
 /// resource string
 ///
-/// - Set #giApplicationReturnValue to #EXIT_FAILURE
-/// - Call #LOG_FATAL_RX to immediately display the message
-/// - Call #gracefulShutdown
+/// @see https://learn.microsoft.com/en-us/windows/win32/com/using-macros-for-error-handling
+/// @see https://gcc.gnu.org/onlinedocs/cpp/Variadic-Macros.html
+///
+#define PROCESS_FATAL( resource_id, ... )                           \
+   PROCESS_FATAL_EX( L"" #resource_id, resource_id, __VA_ARGS__ );  \
+
+
+/// Standardized macro for processing a fatal error using a `printf`-style
+/// resource string and returning `FALSE` - Extended to include the resource name
 ///
 /// @see https://learn.microsoft.com/en-us/windows/win32/com/using-macros-for-error-handling
 /// @see https://gcc.gnu.org/onlinedocs/cpp/Variadic-Macros.html
 ///
-#define PROCESS_FATAL_R( resource_id, ... )                     \
-   giApplicationReturnValue = EXIT_FAILURE;                     \
-   LOG_FATAL_RX( L"" #resource_id, resource_id, __VA_ARGS__ );  \
-   gracefulShutdown()
+#define RETURN_FATAL_EX( resource_name, resource_id, ... )          \
+   PROCESS_FATAL_EX( resource_name, resource_id, __VA_ARGS__ );     \
+   return FALSE
 
 
 /// Standardized macro for processing a fatal error using a `printf`-style
 /// resource string and returning `FALSE`
 ///
-/// - Use #PROCESS_FATAL_R to tell the application about the problem
-/// - Return `FALSE`
-///
 /// @see https://learn.microsoft.com/en-us/windows/win32/com/using-macros-for-error-handling
 /// @see https://gcc.gnu.org/onlinedocs/cpp/Variadic-Macros.html
 ///
-#define RETURN_FATAL_R( resource_id, ... )                      \
-   /* PROCESS_FATAL_R */                                        \
-   giApplicationReturnValue = EXIT_FAILURE;                     \
-   LOG_FATAL_RX( L"" #resource_id, resource_id, __VA_ARGS__ );  \
-   gracefulShutdown();                                          \
+#define RETURN_FATAL( resource_id, ... )                            \
+   PROCESS_FATAL_EX( L"" #resource_id, resource_id, __VA_ARGS__ );  \
    return FALSE
 
 
@@ -161,13 +173,9 @@ extern int giApplicationReturnValue;
 /// @see https://learn.microsoft.com/en-us/windows/win32/com/using-macros-for-error-handling
 /// @see https://gcc.gnu.org/onlinedocs/cpp/Variadic-Macros.html
 ///
-#define CHECK_HR_R( resource_id, ... )                             \
-   if ( FAILED( hr ) ) {                                           \
-      /* RETURN_FATAL_R */                                         \
-      giApplicationReturnValue = EXIT_FAILURE;                     \
-      LOG_FATAL_RX( L"" #resource_id, resource_id, __VA_ARGS__ );  \
-      gracefulShutdown();                                          \
-      return FALSE;                                                \
+#define CHECK_HR_R( resource_id, ... )                                \
+   if ( FAILED( hr ) ) {                                              \
+      RETURN_FATAL_EX( L"" #resource_id, resource_id, __VA_ARGS__ );  \
    }
 
 
@@ -182,13 +190,9 @@ extern int giApplicationReturnValue;
 /// @see https://learn.microsoft.com/en-us/windows/win32/com/using-macros-for-error-handling
 /// @see https://gcc.gnu.org/onlinedocs/cpp/Variadic-Macros.html
 ///
-#define CHECK_BR_R( resource_id, ... )                             \
-   if ( !br ) {                                                    \
-      /* RETURN_FATAL_R */                                         \
-      giApplicationReturnValue = EXIT_FAILURE;                     \
-      LOG_FATAL_RX( L"" #resource_id, resource_id, __VA_ARGS__ );  \
-      gracefulShutdown();                                          \
-      return FALSE;                                                \
+#define CHECK_BR_R( resource_id, ... )                                \
+   if ( !br ) {                                                       \
+      RETURN_FATAL_EX( L"" #resource_id, resource_id, __VA_ARGS__ );  \
    }
 
 
@@ -196,30 +200,28 @@ extern int giApplicationReturnValue;
 /// return `BOOL`s.  This macro uses resource strings and `printf`-style
 /// varargs.
 ///
-/// Failing a `WARN_` macro will just print a warning.  It won't change the program flow
+/// Failing a `WARN_` macro will just print a warning.  It won't change the
+/// program flow
 ///
 /// @see https://gcc.gnu.org/onlinedocs/cpp/Variadic-Macros.html
 ///
 #define WARN_BR_R( resource_id, ... )            \
    if ( !br ) {                                  \
-      LOG_WARN_R( resource_id, __VA_ARGS__ );  \
+      LOG_WARN_R( resource_id, __VA_ARGS__ );    \
    }
 
 
 /// Standardized macro for checking the return value of GDI functions that
-/// return `BOOL`s.  This macro uses resource strings and `printf`-style
-/// varargs.
+/// return `BOOL`s and queuing any errors.  This macro uses resource strings
+/// and `printf`-style varargs.
 ///
 /// - If the check succeeds, continue processing
 /// - If the check fails, queue a message and close the program
 ///
 /// @see https://learn.microsoft.com/en-us/windows/win32/com/using-macros-for-error-handling
-#define CHECK_BR_Q( resource_id, ... )                             \
-   if ( !br ) {                                                    \
-      /* QUEUE_FATAL */                                            \
-      giApplicationReturnValue = EXIT_FAILURE;                     \
-      LOG_FATAL_QX( L"" #resource_id, resource_id, __VA_ARGS__ );  \
-      gracefulShutdown();                                          \
+#define CHECK_BR_Q( resource_id, ... )                               \
+   if ( !br ) {                                                      \
+      QUEUE_FATAL_EX( L"" #resource_id, resource_id, __VA_ARGS__ );  \
    }
 
 
@@ -231,12 +233,9 @@ extern int giApplicationReturnValue;
 /// - If the check fails, queue a message and close the program
 ///
 /// @see https://learn.microsoft.com/en-us/windows/win32/com/using-macros-for-error-handling
-#define CHECK_HR_Q( resource_id, ... )                             \
-   if ( FAILED( hr ) ) {                                           \
-      /* QUEUE_FATAL */                                            \
-      giApplicationReturnValue = EXIT_FAILURE;                     \
-      LOG_FATAL_QX( L"" #resource_id, resource_id, __VA_ARGS__ );  \
-      gracefulShutdown();                                          \
+#define CHECK_HR_Q( resource_id, ... )                               \
+   if ( FAILED( hr ) ) {                                             \
+      QUEUE_FATAL_EX( L"" #resource_id, resource_id, __VA_ARGS__ );  \
    }
 
 

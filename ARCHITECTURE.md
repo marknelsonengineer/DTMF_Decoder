@@ -82,9 +82,13 @@ program.  There are so many scenarios to consider!  For example, shutting down..
      has been destroyed)
    - ...and a normal shutdown
 
-Yikes!
+In keeping with the goals of this project, my intention is to:
+   - Test every API call for errors (It's so easy to ignore things in Windows)
+   - Keep the user informed any error conditions
+   - Correctly handle every error condition
 
-Here's what I've learned about processes' end-of-life:
+This is ridiculously hard to do in Win32.  Let's start with what I've learned
+about processes' end-of-life:
    - [Error Handling](https://learn.microsoft.com/en-us/windows/win32/debug/error-handling) by Microsoft
      - Well-written applications include error-handling code that allows them
        to recover gracefully from unexpected errors. When an error occurs, the
@@ -92,8 +96,8 @@ Here's what I've learned about processes' end-of-life:
        recover on its own.
    - [Modern C++ Best Practices for Exceptions and Error Handling](https://learn.microsoft.com/en-us/cpp/cpp/errors-and-exception-handling-modern-cpp?view=msvc-170)
      - I do not plan to re-architect a Win32 program to use exceptions.
-     - The native Win32 API doesn't seem to use C++ exceptions either. 
-   - Work threads shouldn't display `MessageBox`es, so we need to queue a message, 
+     - The native Win32 API doesn't seem to use C++ exceptions either.
+   - Work threads shouldn't display `MessageBox`es, so we need to queue a message,
      initiate a shutdown and then print a `MessageBox` as it's winding down.
    - [The WM_QUIT_Message](https://devblogs.microsoft.com/oldnewthing/20050222-00/?p=36393)
    - [The difference between WM_QUIT, WM_CLOSE, and WM_DESTROY](https://stackoverflow.com/questions/3155782/what-is-the-difference-between-wm-quit-wm-close-and-wm-destroy-in-a-windows-pr)
@@ -152,95 +156,101 @@ Here's what I've learned about processes' end-of-life:
      - `0` means success
      - Anything else means failure
      - [Standard Windows application return codes](https://stackoverflow.com/questions/1538884/what-standard-application-return-exit-codes-should-an-application-support)
-   - Win32 functions that return `BOOL` will return `0` on failure and non-`0` on 
-     success...  A program's exit code does the opposite -- they return `0` on 
+   - Win32 functions that return `BOOL` will return `0` on failure and non-`0` on
+     success...  A program's exit code does the opposite -- they return `0` on
      success and non-`0` on failure.
    - Be mindful that Win32's `BOOL` datatype is an `INT`, not a `bool`.
 
 
 ### Error Handling Policy
-   - (Done) **If the main window hasn't started**
-     - Show a dialog box, then exit #wWinMain
+   - All messages should be held as a multi-lingual capable string resource
+     - There are a handful of messages (mostly around initialing the string
+       resource API) that will be English-only.
 
-   - **Inside the `initSomething` functions**
-     - Unwind, returning `FALSE` until you get to the top, then show a `MessageBox`,
-       set #giApplicationReturnValue and bubble up the error
+   - #gbIsRunning is set to `true` at exactly one place:  The start of #wWinMain
 
-     - The `initSomething` functions are called from #wWinMain before the 
+   - **If the main window hasn't started**
+     - Show a dialog box, then exit #wWinMain returnng #EXIT_FAILURE
+
+   - **Error handling inside the `initSomething` functions**
+     - The `initSomething` functions are called from #wWinMain before the
        message loop starts...
-      - Each init function called by #wWinMain has a custom error handler 
-        that calls a unique set of cleanups depending on how far the 
-        initialization has progressed.  
-        Finally, the handler calls `return EXIT_FAILURE`
-      - The `somethingInit` functions should return `BOOL`s.
+
+     - Each init function called by #wWinMain has a custom error handler.
+
+      - The `initSomething` functions should return `BOOL`s.
         - If everything initializes OK, bubble up `TRUE`s
         - If there are problems...
-          - Print a message
+          - Log the issue
+          - Use `MessageBox` to display an error message
           - Set #giApplicationReturnValue to #EXIT_FAILURE
           - Unwind any initialization that's aready been done
-          - Bubble up `FALSE` back to #wWinMain
+            - Each init function has a unique set of cleanups depending on how
+              far the initialization has progressed.
+          - Bubble `FALSE` back up to #wWinMain
 
    - **After the message loop has started**
-     - Set #giApplicationReturnValue and call #gracefulShutdown
+     - Set #giApplicationReturnValue to #EXIT_FAILURE
+     - Queue a message to be displayed later
+     - Call #gracefulShutdown
 
-   - Log all messages as a string resource
-   
-   - (Done) #gbIsRunning is set to `true` at exactly one place:  The start of #wWinMain
-
-   - (Done) I've considered using [FlashWindow](https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-flashwindow)
+   - I've considered using [FlashWindow](https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-flashwindow)
      for errors or warnings, but that's not really what it's for, so I'm
-     not using it.  The `MessageBox` approach used in log.cpp is closer to 
-     the [Principle of Least Astonishment](https://en.wikipedia.org/wiki/Principle_of_least_astonishment)
+     not using it.  The `MessageBox` approach used in log.cpp is closer to the
+     [Principle of Least Astonishment](https://en.wikipedia.org/wiki/Principle_of_least_astonishment)
 
-   - (Done) `cleanupSomething` methods should always work and not `ASSERT`, even if
-     their corresponding `initSomething` methods haven't run yet.  This allows
-     us to call all of the `cleanupSomething` methods during initialization
-     failures.
+   - The `cleanupSomething` methods should always work and not `ASSERT`, even
+     if their corresponding `initSomething` methods haven't run yet.  This
+     allows us to call all (actually, most) of the `cleanupSomething` methods
+     during initialization failures.
 
-   - (Audio capture needs doing) There's an assymetry around starting and ending threads that needs
-     explaining.  We start threads in #audioInit and #goertzel_Init (in
-     addition to initializing their data structures).  However, we stop the 
-     threads in #audioStopDevice and #goertzel_Stop.  Lastly we release
-     resources in #audioCleanup and #goertzel_Cleanup.  This is because
-     the the audio and goertzel systems have interdependent data structures,
-     so when it comes time to terminate the program we first need to stop
-     both subsystems, then release their resources.
-     
-   - Worker threads should not create windows.  This bears repeating.  Worker 
-     threads should not create windows (like `MessageBox`).  They will appear
-     to hang, get out of sync and the controlling process will loose control 
-     of them.  
-     
-     So, how can they communicate problems and safely shutdown the app?  Let's
-     queue some messages and then play them back from the main thread.
+   - Worker threads should not create windows (like `MessageBox`).  This bears
+     repeating.  Worker threads should not create windows.  They will appear
+     to hang, get out of sync and the controlling process will loose control
+     of them.
 
-   - **A normal close operation**
+     So, how can they communicate problems and safely shutdown the app?  The
+     logger can queue messages and then play them back from the main thread.
+
+   - **Ending the application (normally)**
      - On `WM_CLOSE` - The start of a normal close... start unwinding things
        - Set #gbIsRunning to `false`
        - Call #goertzel_Stop
-       - Trigger the audio capture thread loop
-         - When `WaitForSingleObject` returns, it will see that #gbIsRunning
-           is `false`, terminate the loop, then cleanup all things audio.
-       - Call #audioStopDevice ??? Need to think about this ???
+       - Call #audioStopDevice
        - Call `destroyWindow` - This is standard Win32 behavior
+
      - On `WM_DESTROY`
-       - Cleanup the view
-       - Call `PostQuitMessate( giApplicationReturnValue )` - This is standard Win32 behavior
+       - Cleanup the view by calling #mvcViewCleanup
+       - Call `PostQuitMessate( giApplicationReturnValue )` - This is standard
+         Win32 behavior
 
-   - (Done) We will not use [TerminateProcess](https://learn.microsoft.com/en-us/windows/win32/api/processthreadsapi/nf-processthreadsapi-terminateprocess),
-     [TerminateThread](https://learn.microsoft.com/en-us/windows/win32/api/processthreadsapi/nf-processthreadsapi-terminatethread)
-     or [FatalAppExitA](https://learn.microsoft.com/en-us/windows/win32/api/errhandlingapi/nf-errhandlingapi-fatalappexita)
-     they are too big of a gun for this application.
+     - WM_QUIT will exit the message loop
 
-   - (Done) Instead of using [ExitProcess](https://learn.microsoft.com/en-us/windows/win32/api/processthreadsapi/nf-processthreadsapi-exitprocess),
-     we use the return value of [wWinMain](https://learn.microsoft.com/en-us/windows/win32/learnwin32/winmain--the-application-entry-point)
-     to exit.
-     - A normal exit returns #EXIT_SUCCESS (`0`)
-     - An abnormal exit returns #EXIT_FAILURE... We don't need unique error
-       codes for every type of error
-     - The model will hold #giApplicationReturnValue, which will initially
-       be set to #EXIT_SUCCESS (`0`).  Then, any function/error handler can set it
-       which will then get passed out when the program terminates.
+     - As #wWinMain runs to the end... it will:
+       - Stop the worker threads
+       - Log the first WARN, ERROR or FATAL message (if any)
+       - Cleanup resources in the reverse order they were created
+       - Return with #giApplicationReturnValue
+
+     - #wWinMain ends with `return giApplicationReturnValue;`
+       - Instead of using [ExitProcess](https://learn.microsoft.com/en-us/windows/win32/api/processthreadsapi/nf-processthreadsapi-exitprocess),
+         we use the return value of [wWinMain](https://learn.microsoft.com/en-us/windows/win32/learnwin32/winmain--the-application-entry-point)
+         to exit.  I like the idea of letting the CRT (Consone runtime) library
+         ending the program.
+       - The model holds #giApplicationReturnValue, which is initially set to
+         #EXIT_SUCCESS (`0`).  Any function/error handler can set it
+         which gets passed out when the program terminates.
+         - A normal exit returns #EXIT_SUCCESS (`0`)
+         - An abnormal exit returns #EXIT_FAILURE
+           - We don't need unique error codes for every type of error as we have
+             very expressive logging
+
+           - We will not use [TerminateProcess](https://learn.microsoft.com/en-us/windows/win32/api/processthreadsapi/nf-processthreadsapi-terminateprocess),
+             [TerminateThread](https://learn.microsoft.com/en-us/windows/win32/api/processthreadsapi/nf-processthreadsapi-terminatethread)
+             or [FatalAppExitA](https://learn.microsoft.com/en-us/windows/win32/api/errhandlingapi/nf-errhandlingapi-fatalappexita)
+             they are too big of a gun for this application.
+
+Normal and abnormal shutdowns can be differentiated by:
 
 |                               | Normal Shutdown         | Abnormal Shutdown |
 |-------------------------------|-------------------------|-------------------|
@@ -248,153 +258,130 @@ Here's what I've learned about processes' end-of-life:
 | Set #gbIsRunning to `false`   | Yes                     | Yes               |
 | Post `WM_CLOSE`               | Yes                     | Yes               |
 | Call #LOG_FATAL( message )    | No                      | Yes               |
-| return                        | `TRUE`                  | `FALSE`           |
+| Functions return              | `TRUE`                  | `FALSE`           |
 
 
 ### Subsystems Shutdown Notes
-- (Done) **Main Window Thread**
-  - Init Error Handler
 
-  - Running Error Handler
-    - Mostly, this happens in the other subsystems, however:
-      - Problems in the message loop will call #QUEUE_FATAL
-      - Problems in the message handlers will also call #QUEUE_FATAL
-
-  - Normal Shutdown
-    - #gracefulShutdown
-      - Set #gbIsRunning to `false`
-      - Post `WM_CLOSE`
-    - WM_CLOSE will
-      - Set #gbIsRunning to `false`
-      - Cause the Audio capture thread to loop (and terminate) by setting 
-        #ghAudioSamplesReadyEvent
-      - Stop the audio capture device
-      - Call `DestroyWindow`
-    - WM_DESTROY will:
-      - `NULL` out #ghMainWindow 
-      - Call #mvcViewCleanup 
-      - Call `PostQuitMessage`
-    - WM_QUIT will:
-      - Exit the message loop
-    - As #wWinMain runs to the end... it will:
-      - Stop the worker threads
-      - Log the first WARN, ERROR or FATAL message (if any)
-      - Cleanup resources in the reverse order they were created
-      - Return with #giApplicationReturnValue
-
-- (Done) **GDI / Direct2D**
+- **GDI / Direct2D**
   - Init Error Handler
     - Set #giApplicationReturnValue to #EXIT_FAILURE
-    - Call #LOG_FATAL 
+    - Call #LOG_FATAL
     - Call #gracefulShutdown
     - Return `FALSE` that bubbles up to the main thread
-    - Because #gracefulShutdown was called, the main loop's 
+    - Because #gracefulShutdown was called, the main loop's
       messages won't display
-  - Running Error Handler
-    - See the Main Window Thread's Running Error Handler
+
   - Normal Shutdown
     - Cleaned up in `WM_DESTROY` immediately after the window is destroyed
     - The cleanup method is very simple and never fails
 
-- (Done) **Model**
+- **Model**
   - Init Error Handler
     - Doesn't do anything.  Always returns `TRUE` (for now).
-  - Running Error Handler
-    - See the Main Window Thread's Running Error Handler
   - Normal Shutdown
-    - Go through each item in the model and zero it out (or keep/ignore it)
+    - Go through each item in the model and zeros it out (or keep/ignore it)
     - Calls #pcmReleaseQueue
 
-- (Done) **Logger**
+- **Logger**
   - Init Error Handler
     - It's so simple that it's always successful (but we check it anyways)
   - Running Error Handler
     - When Log functions throw exceptions, they will:
-      ````
-           OutputDebugStringA( "VIOLATED STACK GUARD in Logger.  Exiting immediately." );
-           _ASSERT_EXPR( FALSE, L"VIOLATED STACK GUARD in Logger.  Exiting immediately." );
-      ````
+
+          OutputDebugStringA(   "VIOLATED STACK GUARD in Logger.  Exiting immediately." );
+          _ASSERT_EXPR( FALSE, L"VIOLATED STACK GUARD in Logger.  Exiting immediately." );
+
     ... (because they terminate immediately, they don't return error codes)
-  - Normal Shutdown
-    - At the very end of the program
+
+- **Windows Error Reporting**
+  - If the application ever generates a #LOG_LEVEL_ERROR or #LOG_LEVEL_FATAL,
+    then the very first error message gets logged to WER and a report is
+    submitted when the program exits.  If the application never generates
+    these two errors, then it does not submit a report.
 
 - **Audio Capture Thread**
-  - Init Error Handler
-  - Running Error Handler
-    - For TRACE, DEBUG and INFO, just log them
-    - No WARN allowed
-    - For ERROR and FATAL, see the Main Window Thread's Running Error Handler
-  - Normal Shutdown
+  - None
 
-- (Done) **Goertzel DFT Threads**
+- **Goertzel DFT Threads**
   - Init Error Handler
-    - #goertzel_Init is called in #audioInit... after some important audio 
+    - #goertzel_Init is called in #audioInit... after some important audio
       data structures are created but before the audio capture thread starts
-    - Propagate errors up the call stack as `BOOL`s
-  - Running Error Handler
-    - See the Main Window Thread's Running Error Handler
   - Normal Shutdown
-    - Call #goertzel_Stop to stop the threads.  #goertzel_Stop does not 
+    - Call #goertzel_Stop to stop the threads.  #goertzel_Stop does not
       return until all of the threads have stopped
     - #goertzel_Stop should be called _after_ ending the audio capture
       thread
-    - After the threads are done, call #goertzel_Cleanup to close out the 
+    - After the threads are done, call #goertzel_Cleanup to close out the
       resources it created
 
 
 ### Macros & Functions Supporting Shutdown
-- #gracefulShutdown - Initiates a shutdown (can be normal shutdown or a shutdown
-  due to a fatal error).
-  - Set #gbIsRunning to `false`
-  - Post `WM_CLOSE`
-  - #gracefulShutdown will not shutdown the program **before** the message 
-    loop starts; there's no queue to collect the `WM_CLOSE` yet
-  - This is both a normal and failure-mode shutdown, so this doesn't set
-    #giApplicationReturnValue
-                      
 - #gbIsRunning - A global `bool` that all of the worker threads watch
 
-- Helper macros for checking the result of function calls (both to Win32 and 
-  internal calls).  All of these macros use wide resource strings and 
-  `printf`-style varargs.
-  
-  - The `CHECK-` macros rely on pre-declared return variable declarations
-    `BOOL br` and `HRESULT hr`_and_ they depend on the function being tested 
-    to set the return value
-  
-|                              | Check a `BOOL` result | Check an `HRESULT`    | Action taken         |
-|------------------------------|-----------------------|-----------------------|----------------------|
-| Immediately display messages | #CHECK_BR_R           | #CHECK_HR_R           | Call #RETURN_FATAL_R |
-| Queue messages for later     | #CHECK_BR_Q           | #CHECK_HR_Q           | Call #QUEUE_FATAL    |
-| Test for success or failure  | `if ( !br )`          | `if ( FAILED( hr ) )` |                      |
+- #gracefulShutdown - Initiates a shutdown (can be normal shutdown or a shutdown
+  due to an error).
+  - Set #gbIsRunning to `false`
+  - Post `WM_CLOSE`
+  - #gracefulShutdown will not shutdown the program **before** the message
+    loop starts; there's no queue to collect the `WM_CLOSE` yet
+  - This is both a normal and failure-mode shutdown, so it doesn't set
+    #giApplicationReturnValue
 
-  - #WARN_BR_R and #WARN_HR_R warns on failures but doesn't change the program's
-    flow.
-  
-  - #RETURN_FATAL_R is very simple... it calls #PROCESS_FATAL_R and then 
-    returns `FALSE`
-    
-  - #PROCESS_FATAL_R
+- Helper macros for checking the result of function calls (both to Win32 and
+  internal calls).  All of these macros use wide resource strings and
+  `printf`-style varargs.
+
+  - These macros rely on pre-declared return variable declarations
+    `BOOL br` and `HRESULT hr`_and_ they depend on the function being tested
+    to put their return values into these variables.
+
+  - They streamline a lot of ugly error checking code into:
+
+        HRESULT hr;  // HRESULT result
+        ...
+        hr = D2D1CreateFactory( D2D1_FACTORY_TYPE_MULTI_THREADED, &spD2DFactory );
+        CHECK_HR_R( IDS_VIEW_FAILED_TO_CREATE_DIRECT2D_FACTORY );  // "Failed to create Direct2D Factory"
+
+#### Table of Macro Functions
+
+|                              | Check a BOOL result   | Check an HRESULT      | Action taken          |
+|------------------------------|-----------------------|-----------------------|-----------------------|
+| Test for success or failure  | `if ( !br )`          | `if ( FAILED( hr ) )` |                       |
+| Display a warning message    | #WARN_BR_R            | #WARN_HR_R            | Call #LOG_WARN_R      |
+| Immediately display messages | #CHECK_BR_R           | #CHECK_HR_R           | Call #RETURN_FATAL_EX |
+| Queue messages for later     | #CHECK_BR_Q           | #CHECK_HR_Q           | Call #QUEUE_FATAL_EX  |
+
+  - #QUEUE_FATAL (just resource id) via #QUEUE_FATAL_EX (with resource name
+    and id)
     - Sets #giApplicationReturnValue to #EXIT_FAILURE
-    - Calls #LOG_FATAL_R
+    - Calls #LOG_FATAL_QX (the X log functions pass the resource name as a
+      string)
     - Calls #gracefulShutdown
-    
-  - #QUEUE_FATAL
+
+  - #PROCESS_FATAL (just resource id) via #PROCESS_FATAL_EX (with resource name
+    and id)
     - Sets #giApplicationReturnValue to #EXIT_FAILURE
-    - Calls #LOG_FATAL_Q
+    - Calls #LOG_FATAL_RX (the X log functions pass the resource name as a string)
     - Calls #gracefulShutdown
-    
+
+  - #RETURN_FATAL (just resource id) and #RETURN_FATAL_EX (with resource name
+    and id) are very simple... they call #PROCESS_FATAL_EX and then return
+    `FALSE`
+
 
 ## Coding Conventions
 The [C++ Core Guidelines](https://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines)
 discourage prefix notation (for example, Hungarian notation).  Internally, the
-Windows team no longer uses it. But its use remains in samples and documentation.
+Windows team no longer uses it, but its use remains in samples and
+documentation.
 
-I choose to continue to use it.  See [Windows Coding Convention](https://learn.microsoft.com/en-us/windows/win32/learnwin32/windows-coding-conventions).
+I choose to continue to use it.
+See [Windows Coding Convention](https://learn.microsoft.com/en-us/windows/win32/learnwin32/windows-coding-conventions).
 
 By convention, most `extern` functions will be named `subjectAction`.  This
-tends to group them together (by subject).  If the last letter of subject 
-is an `l`, then it's OK to name a function `subject_Action` as `l` is hard to 
+tends to group them together (by subject).  If the last letter of subject
+is an `l`, then it's OK to name a function `subject_Action` as `l` is hard to
 distinguish from `I`.
 
 
