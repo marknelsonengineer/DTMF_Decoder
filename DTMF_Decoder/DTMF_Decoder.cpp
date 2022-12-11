@@ -261,8 +261,8 @@ int APIENTRY wWinMain(
       }
    }
 
-   br = goertzel_Stop();
-   WARN_BR_R( IDS_DTMF_DECODER_FAILED_TO_END_DFT_THREADS );  // "Failed to end the Goertzel DFT threads"
+   br = audioStop();
+   WARN_BR_R( IDS_DTMF_DECODER_FAILED_TO_STOP_AUDIO_DEVICE );  // "Failed to stop the audio device"
 
    /// Cleanup all resources in the reverse order they were created
    br = audioCleanup();
@@ -353,35 +353,23 @@ LRESULT CALLBACK WndProc( HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam 
          }
          break;
       case WM_KEYDOWN:  /// WM_KEYDOWN - Exit if ESC is pressed
-         {
-            switch ( wParam ) {
-               case VK_ESCAPE:  /// Exit the app (normally) when ESC is pressed
-                  // logTest();      // This is a good place to test the logger
-                  gracefulShutdown();
-                  break ;
-               default:
-                  break ;
-            }
+         switch ( wParam ) {
+            case VK_ESCAPE:  /// Exit the app (normally) when ESC is pressed
+               // logTest();      // This is a good place to test the logger
+               gracefulShutdown();
+               break ;
+            default:
+               break ;
          }
          break ;
       case WM_CLOSE:    /// WM_CLOSE - Start the process of closing the application
-         {
-            gbIsRunning = false;
+         gbIsRunning = false;
 
-            if ( ghAudioSamplesReadyEvent != NULL ) {
-               br = SetEvent( ghAudioSamplesReadyEvent );
-               WARN_BR_R( IDS_DTMF_DECODER_FAILED_TO_SIGNAL_gAUDIOSAMPLESREADY );  // "Failed to signal gAudioSamplesReadyEvent"
-            }
-
-            br = audioStopDevice();
-            WARN_BR_R( IDS_DTMF_DECODER_FAILED_TO_STOP_AUDIO_DEVICE );  // "Failed to stop the audio device"
-
-            br = DestroyWindow( hWnd );
-            if ( !br ) {
-               LOG_FATAL_Q( IDS_DTMF_DECODER_FAILED_TO_DESTROY_WINDOW );  // Failed to destroy window
-            }
-            break;
+         br = DestroyWindow( hWnd );
+         if ( !br ) {
+            LOG_FATAL_Q( IDS_DTMF_DECODER_FAILED_TO_DESTROY_WINDOW );  // Failed to destroy window
          }
+         break;
       case WM_DESTROY:  /// WM_DESTROY - Post a quit message
          ghMainWindow = NULL;
 

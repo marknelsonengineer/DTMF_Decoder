@@ -398,7 +398,7 @@ DWORD WINAPI audioCaptureThread( LPVOID Context ) {
 
    CoUninitialize();
 
-   LOG_TRACE_R( IDS_AUDIO_END_THREAD );  // "End capture thread"
+   LOG_TRACE_R( IDS_AUDIO_END_THREAD );  // "End audio capture thread"
 
    ExitThread( 0 );
 }
@@ -490,7 +490,7 @@ BOOL audioInit() {
    /// Get the ID from IMMDevice
    hr = spDevice->GetId( &spwstrDeviceId );
    if ( hr != S_OK || spwstrDeviceId == NULL ) {
-      RETURN_FATAL( IDS_AUDIO_FAILED_TO_GET_DEVICE_ID );  // "Failed to get the device's ID string"
+      RETURN_FATAL( IDS_AUDIO_FAILED_TO_GET_DEVICE_ID );  // "Failed to get the audio device's ID string"
    }
 
    LOG_INFO_R( IDS_AUDIO_DEVICE_ID, spwstrDeviceId );  // "Device ID = %s"
@@ -498,7 +498,7 @@ BOOL audioInit() {
    /// Get the State from IMMDevice
    hr = spDevice->GetState( &sdwState );
    if ( hr != S_OK || sdwState == NULL ) {
-      RETURN_FATAL( IDS_AUDIO_FAILED_TO_GET_DEVICE_STATE );  // "Failed to get the device's state"
+      RETURN_FATAL( IDS_AUDIO_FAILED_TO_GET_DEVICE_STATE );  // "Failed to get the audio device's state"
    }
 
    if ( sdwState != DEVICE_STATE_ACTIVE ) {
@@ -666,10 +666,45 @@ BOOL audioInit() {
 }
 
 
-/// Stop the audio device
+/// Stop the audio device and threads
+///
+/// This function should not return until the audio thread **and** all of the
+/// goertzel work threads have stopped.
+///
+/// In Win32, threads will set their signalled state when they terminate, so
+/// let's take advantage of that.
+///
 /// @return `TRUE` if successful.  `FALSE` if there was a problem.
-BOOL audioStopDevice() {
+BOOL audioStop() {
    HRESULT hr;  // HRESULT result
+   BOOL br;     // BOOL result
+
+   /// Start by setting #gbIsRunning to `FALSE` -- just to be sure
+   gbIsRunning = false;
+
+   _ASSERTE( ghAudioSamplesReadyEvent != NULL );
+   _ASSERTE( shCaptureThread != NULL );
+
+   br = goertzel_Stop();
+   WARN_BR_R( IDS_DTMF_DECODER_FAILED_TO_END_DFT_THREADS );  // "Failed to end the Goertzel DFT threads"
+
+   /// Trigger the audio capture threads to loop...
+   /// with #gbIsRunning `== FALSE` causing the loop to terminate
+   br = SetEvent( ghAudioSamplesReadyEvent );
+   CHECK_BR_R( IDS_AUDIO_FAILED_TO_SIGNAL_THREAD );  // "Failed to signal an audio capture thread.  Exiting."
+
+   /// Wait for the thread to terminate
+   DWORD dwWaitResult;  // Result from WaitForMultipleObjects
+   dwWaitResult = WaitForSingleObject( shCaptureThread, INFINITE );
+   if ( dwWaitResult != WAIT_OBJECT_0 ) {
+      RETURN_FATAL( IDS_AUDIO_THREAD_END_FAILED );  // "Wait for all audio capture thread to end failed.  Exiting."
+   }
+
+   // At this point, the audio capture thread has ended
+   br = CloseHandle( shCaptureThread );
+   CHECK_BR_R( IDS_AUDIO_FAILED_CLOSING_THREAD );  // "Failed to close shCaptureThread"
+
+   shCaptureThread = NULL;
 
    if ( spAudioClient != NULL ) {
       hr = spAudioClient->Stop();

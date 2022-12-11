@@ -16,7 +16,7 @@
 
 
 extern BOOL audioInit();
-extern BOOL audioStopDevice();
+extern BOOL audioStop();
 extern BOOL audioCleanup();
 
 

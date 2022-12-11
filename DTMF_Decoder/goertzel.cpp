@@ -265,8 +265,10 @@ BOOL goertzel_Init( _In_ const int iSampleRate ) {
 /// Signal all of the threads so they can end on their own terms
 ///
 /// This function should not return until all of the goertzel work threads have
-/// stopped.  In Win32, threads will set their signalled state when they
-/// terminate, so let's take advantage of that.
+/// stopped.  
+/// 
+/// In Win32, threads will set their signalled state when they terminate, so 
+/// let's take advantage of that.
 ///
 /// @see https://learn.microsoft.com/en-us/windows/win32/api/synchapi/nf-synchapi-setevent
 /// @see https://learn.microsoft.com/en-us/windows/win32/sync/wait-functions
