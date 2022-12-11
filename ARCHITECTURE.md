@@ -25,8 +25,8 @@ it signals all 8 threads to run in parallel and when **all** of the Goertzel
 work threads finish, it signals the Audio Capture thread to continue
 processing.
 
-When the energy at a given frequency surpasses a set threshold, the row or 
-column frequency labels are redrawn (in a highlighted color).  If both a 
+When the energy at a given frequency surpasses a set threshold, the row or
+column frequency labels are redrawn (in a highlighted color).  If both a
 DTMF row *and* column are "on", then the key "lights up" as well.  Super simple.
 
 Per [Raymond Chen](https://devblogs.microsoft.com/oldnewthing/author/oldnewthing)'s
@@ -42,7 +42,7 @@ the element is in the update rectangle, it gets drawn.  If not, then it must
 not need to be updated.  This is the Win32 way of drawing.
 
 For performance, I hand-coded an x86-64 Goertzel algorithm in Assembly
-Language.  C is very "chatty" with memory.   An Assembly Language based 
+Language.  C is very "chatty" with memory.   An Assembly Language based
 algorithm takes advantage of:
   - Out-of-order processing
   - All of the intermediate variables are held in registers
@@ -163,12 +163,11 @@ about processes' end-of-life:
 
 
 ### Error Handling Policy
-   - (Done) **If the main window hasn't started**
-     - Show a dialog box, then exit #wWinMain
+   - All messages should be held as a multi-lingual capable string resource
+     - There are a handful of messages (mostly around initialing the string
+       resource API) that will be English-only.
 
-   - **Inside the `initSomething` functions**
-     - Unwind, returning `FALSE` until you get to the top, then show a `MessageBox`,
-       set #giApplicationReturnValue and bubble up the error
+   - #gbIsRunning is set to `true` at exactly one place:  The start of #wWinMain
 
    - **If the main window hasn't started**
      - Show a dialog box, then exit #wWinMain returnng #EXIT_FAILURE
