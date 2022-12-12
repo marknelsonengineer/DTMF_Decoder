@@ -168,12 +168,12 @@ int APIENTRY wWinMain(
    wcex.cbClsExtra = 0;
    wcex.cbWndExtra = 0;
    wcex.hInstance = hInstance;
-   wcex.hIcon = LoadIcon( hInstance, MAKEINTRESOURCE( IDI_DTMF_DECODER ) );
-   wcex.hCursor = LoadCursor( nullptr, IDC_ARROW );
+   wcex.hIcon = LoadIconW( hInstance, MAKEINTRESOURCEW( IDI_DTMF_DECODER ) );
+   wcex.hCursor = LoadCursorW( nullptr, L"IDC_ARROW" );
    wcex.hbrBackground = NULL;  // To avoid flicker
    wcex.lpszMenuName = MAKEINTRESOURCEW( IDC_DTMFDECODER );
    wcex.lpszClassName = sswWindowClass;
-   wcex.hIconSm = LoadIcon( wcex.hInstance, MAKEINTRESOURCE( IDI_DTMF_DECODER ) );
+   wcex.hIconSm = LoadIconW( wcex.hInstance, MAKEINTRESOURCEW( IDI_DTMF_DECODER ) );
 
    if ( !RegisterClassExW( &wcex ) ) {
       LOG_FATAL_R( IDS_DTMF_DECODER_FAILED_TO_REGISTER_WINDOW_CLASS );  // "Failed to register window class.  Exiting."
@@ -251,7 +251,7 @@ int APIENTRY wWinMain(
       return EXIT_FAILURE;
    }
 
-   HACCEL hAccelTable = LoadAccelerators( hInstance, MAKEINTRESOURCE( IDC_DTMFDECODER ) );
+   HACCEL hAccelTable = LoadAcceleratorsW( hInstance, MAKEINTRESOURCEW( IDC_DTMFDECODER ) );
    if ( hAccelTable == NULL ) {
       LOG_FATAL_R( IDS_DTMF_DECODER_FAILED_TO_LOAD_MENU );  // "Failed to load menu accelerator.  Exiting."
       mvcViewCleanup();
@@ -357,7 +357,7 @@ LRESULT CALLBACK WndProc( HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam 
                   audioStop();
                   break;
                case IDM_ABOUT:
-                  DialogBox( shInstance, MAKEINTRESOURCE( IDD_ABOUTBOX ), hWnd, About );
+                  DialogBoxW( shInstance, MAKEINTRESOURCEW( IDD_ABOUTBOX ), hWnd, About );
                   // DialogBox returns void -- nothing to check
                   break;
 
