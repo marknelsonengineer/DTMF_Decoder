@@ -182,11 +182,21 @@
 #define IDS_LOG_WER_FAILED_TO_REGISTER_MEMORY 255
 #define IDS_AUDIO_FAILED_TO_SIGNAL_THREAD 256
 #define IDS_AUDIO_THREAD_END_FAILED     257
+#define IDS_DTMF_DECODER_FAILED_TO_RETRIEVE_MENU 258
+#define IDS_AUDIO_FAILED_TO_SET_MENU_STATE 259
+#define IDS_DTMF_DECODER_FAILED_TO_START_AUDIO 260
+#define IDS_AUDIO_FAILED_TO_DRAW_MENU   261
 #define IDC_PROGRAM_NAME                1000
 #define IDC_VERSION                     1001
 #define IDC_AUTHOR                      1002
 #define IDC_DATE                        1003
 #define IDC_COPYRIGHT                   1004
+#define ID_FILE_STARTAUDIOCAPTURE       32771
+#define ID_FILE_ENDAUDIOCAPTURE         32772
+#define ID_AUDIO_STARTCAPTURE           32773
+#define ID_AUDIO_ENDCAPTURE             32774
+#define IDM_AUDIO_STARTCAPTURE          32775
+#define IDM_AUDIO_ENDCAPTURE            32776
 #define IDC_STATIC                      -1
 
 // Next default values for new objects
@@ -195,7 +205,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NO_MFC                     1
 #define _APS_NEXT_RESOURCE_VALUE        135
-#define _APS_NEXT_COMMAND_VALUE         32771
+#define _APS_NEXT_COMMAND_VALUE         32777
 #define _APS_NEXT_CONTROL_VALUE         1005
 #define _APS_NEXT_SYMED_VALUE           110
 #endif

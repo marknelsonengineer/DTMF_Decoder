@@ -75,6 +75,8 @@ bool gbIsRunning = false;
 
 HWND ghMainWindow = NULL;
 
+HMENU ghMainMenu = NULL;
+
 
 int giApplicationReturnValue = EXIT_SUCCESS;  // Default to SUCCESS
 

@@ -12,25 +12,29 @@ I've broken them down by (my own) categories and then alphabetically.
 |----------------------------|--------------------------------------------------------------------------------------------------------------|
 | `CloseHandle`              | https://learn.microsoft.com/en-us/windows/win32/api/handleapi/nf-handleapi-closehandle                       |
 | `CreateWindowW`            | https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindoww                         |
-| `DefWindowProc`            | https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-defwindowproca                        |
+| `DefWindowProcW`           | https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-defwindowprocw                        |
 | `DestroyWindow`            | https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-destroywindow                         |
-| `DialogBox`                | https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-dialogboxa                            |
+| `DialogBoxW`               | https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-dialogboxw                            |
 | `DispatchMessage`          | https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-dispatchmessage                       |
+| `EnableMenuItem`           | https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-enablemenuitem                        |
 | `EndDialog`                | https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-enddialog                             |
 | `GetCurrentProcess`        | https://learn.microsoft.com/en-us/windows/win32/api/processthreadsapi/nf-processthreadsapi-getcurrentprocess |
+| `GetMenu`                  | https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-getmenu                               |
 | `GetMessage`               | https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-getmessage                            |
 | `GetProcessImageFileNameW` | https://learn.microsoft.com/en-us/windows/win32/api/psapi/nf-psapi-getprocessimagefilenamew                  | 
 | `HIWORD`                   | https://learn.microsoft.com/en-us/previous-versions/windows/desktop/legacy/ms632657(v=vs.85)                 |
 | `InvalidateRect`           | https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-invalidaterect                        |
-| `LoadAccelerators`         | https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-loadacceleratorsa                     |
+| `LoadAcceleratorsW`        | https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-loadacceleratorsw                     |
+| `LoadCursorW`              | https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-loadcursorw                           |
+| `LoadIconW`                | https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-loadiconw                             |
 | `LoadStringW`              | https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-loadstringw                           |
-| `MAKEINTRESOURCE`          | https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-makeintresourcea                      |
-| `PostMessageA`             | https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-postmessagea                          |
+| `MAKEINTRESOURCEW`         | https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-makeintresourcew                      |
+| `PostMessageW`             | https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-postmessagew                          |
 | `PostQuitMessage`          | https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-postquitmessage                       |
 | `RegisterClassExW`         | https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-registerclassexw                      |
-| `SetDlgItemTextA`          | https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-setdlgitemtexta                       |
+| `SetDlgItemTextW`          | https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-setdlgitemtextw                       |
 | `ShowWindow`               | https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-showwindow                            |
-| `TranslateAccelerator`     | https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-translateacceleratora                 |
+| `TranslateAcceleratorW`    | https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-translateacceleratorw                 |
 | `TranslateMessage`         | https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-translatemessage                      |
 | `UpdateWindow`             | https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-updatewindow                          |
 

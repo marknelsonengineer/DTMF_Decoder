@@ -27,7 +27,7 @@
 // #define NOWINMESSAGES      ///< We need the message loop API
 // #define NOWINSTYLES        ///< We use some windows styles
 #define NOSYSMETRICS
-#define NOMENUS
+// #define NOMENUS            ///< We are enabling/disabling menu items
 #define NOICONS
 #define NOKEYSTATES
 #define NOSYSCOMMANDS

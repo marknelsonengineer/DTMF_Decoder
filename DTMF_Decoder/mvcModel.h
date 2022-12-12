@@ -65,8 +65,12 @@ extern dtmfTones_t gDtmfTones[ NUMBER_OF_DTMF_TONES ];
 extern bool gbIsRunning;
 
 
-/// Pointer to the main window handle
+/// Handle to the main window.  This is really a pointer.
 extern HWND ghMainWindow;
+
+
+/// Handle to the main window's menu.  This is really a pointer.
+extern HMENU ghMainMenu;
 
 
 /// The application's return value.  This defaults to 0 (success).  Any error
@@ -294,3 +298,4 @@ __forceinline void mvcModelToggleToneDetectedStatus(
       }
    }
 }
+

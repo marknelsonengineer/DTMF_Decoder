@@ -14,31 +14,35 @@
 /// ## APIs Used
 /// | API                    | Link                                                                                         |
 /// |------------------------|----------------------------------------------------------------------------------------------|
+/// | `BeginPaint` (GDI)     | https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-beginpaint            |
 /// | `CoInitializeEx`       | https://learn.microsoft.com/en-us/windows/win32/api/combaseapi/nf-combaseapi-coinitializeex  |
 /// | `CoUninitialize`       | https://learn.microsoft.com/en-us/windows/win32/api/combaseapi/nf-combaseapi-couninitialize  |
-/// | `LoadStringW`          | https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-loadstringw           |
 /// | `CreateWindowW`        | https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindoww         |
-/// | `RegisterClassExW`     | https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-registerclassexw      |
-/// | `ShowWindow`           | https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-showwindow            |
-/// | `UpdateWindow`         | https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-updatewindow          |
-/// | `DefWindowProc`        | https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-defwindowproca        |
-/// | `GetMessage`           | https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-getmessage            |
-/// | `DispatchMessage`      | https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-dispatchmessage       |
-/// | `LoadAccelerators`     | https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-loadacceleratorsa     |
-/// | `MAKEINTRESOURCE`      | https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-makeintresourcea      |
-/// | `PostMessageA`         | https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-postmessagea          |
-/// | `TranslateAccelerator` | https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-translateacceleratora |
-/// | `TranslateMessage`     | https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-translatemessage      |
-/// | `DialogBox`            | https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-dialogboxa            |
+/// | `DefWindowProcW`       | https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-defwindowprocw        |
 /// | `DestroyWindow`        | https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-destroywindow         |
-/// | `PostQuitMessage`      | https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-postquitmessage       |
+/// | `DialogBoxW`           | https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-dialogboxw            |
+/// | `DispatchMessage`      | https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-dispatchmessage       |
+/// | `EnableMenuItem`       | https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-enablemenuitem        |
 /// | `EndDialog`            | https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-enddialog             |
-/// | `BeginPaint` (GDI)     | https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-beginpaint            |
 /// | `EndPaint` (GDI)       | https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-endpaint              |
-/// | `SecureZeroMemory`     | https://learn.microsoft.com/en-us/previous-versions/windows/desktop/legacy/aa366877(v=vs.85) |
-/// | `SetEvent`             | https://learn.microsoft.com/en-us/windows/win32/api/synchapi/nf-synchapi-setevent            |
-/// | `SetDlgItemTextA`      | https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-setdlgitemtexta       |
+/// | `GetMenu`              | https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-getmenu               |
+/// | `GetMessage`           | https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-getmessage            |
 /// | `HIWORD`               | https://learn.microsoft.com/en-us/previous-versions/windows/desktop/legacy/ms632657(v=vs.85) |
+/// | `LoadAcceleratorsW`    | https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-loadacceleratorsw     |
+/// | `LoadCursorW`          | https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-loadcursorw           |
+/// | `LoadIconW`            | https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-loadiconw             |
+/// | `LoadStringW`          | https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-loadstringw           |
+/// | `MAKEINTRESOURCEW`     | https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-makeintresourcew      |
+/// | `PostMessageW`         | https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-postmessagew          |
+/// | `PostQuitMessage`      | https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-postquitmessage       |
+/// | `RegisterClassExW`     | https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-registerclassexw      |
+/// | `SecureZeroMemory`     | https://learn.microsoft.com/en-us/previous-versions/windows/desktop/legacy/aa366877(v=vs.85) |
+/// | `SetDlgItemTextW`      | https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-setdlgitemtextw       |
+/// | `SetEvent`             | https://learn.microsoft.com/en-us/windows/win32/api/synchapi/nf-synchapi-setevent            |
+/// | `ShowWindow`           | https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-showwindow            |
+/// | `TranslateAcceleratorW`| https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-translateacceleratorw |
+/// | `TranslateMessage`     | https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-translatemessage      |
+/// | `UpdateWindow`         | https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-updatewindow          |
 ///
 /// @file    DTMF_Decoder.cpp
 /// @author  Mark Nelson <marknels@hawaii.edu>
@@ -153,6 +157,7 @@ int APIENTRY wWinMain(
       return EXIT_FAILURE;
    }
 
+
    /// Register the Windows Class
    WNDCLASSEXW wcex;
    ZeroMemory( &wcex, sizeof( wcex ) );
@@ -197,6 +202,17 @@ int APIENTRY wWinMain(
 
    LOG_TRACE_R( IDS_DTMF_DECODER_CREATED_MAIN_WINDOW, giWindowWidth, giWindowHeight );  // "Created main window:  Width=%d  Height=%d"
 
+   /// Get the menu
+   ghMainMenu = GetMenu( ghMainWindow );
+   if ( ghMainMenu == NULL ) {
+      LOG_FATAL_R( IDS_DTMF_DECODER_FAILED_TO_RETRIEVE_MENU );  // "Failed to retrieve menu.  Exiting."
+      CoUninitialize();       // Unwind COM
+      return EXIT_FAILURE;
+   }
+   /// The menu does not need to be closed as it's assigned to a window.  The
+   /// menu is automatically destroyed when the window closes.
+
+
    /// Initialize the model
    br = mvcModelInit();
    if ( !br ) {
@@ -214,10 +230,21 @@ int APIENTRY wWinMain(
       return EXIT_FAILURE;
    }
 
-   /// Initialize the audio capture device & thread
+   /// Initialize the audio capture device
    br = audioInit();
    if ( !br ) {
       LOG_FATAL_R( IDS_DTMF_DECODER_FAILED_TO_INITIALIZE_AUDIO );  // "Failed to initialize the audio capture system.  Exiting."
+      mvcViewCleanup();
+      mvcModelCleanup();
+      CoUninitialize();       // Unwind COM
+      return EXIT_FAILURE;
+   }
+
+   /// Start the audio capture device & threads
+   br = audioStart();
+   if ( !br ) {
+      LOG_FATAL_R( IDS_DTMF_DECODER_FAILED_TO_START_AUDIO );  // "Failed to start capturing audio.  Exiting."
+      audioCleanup();
       mvcViewCleanup();
       mvcModelCleanup();
       CoUninitialize();       // Unwind COM
@@ -248,7 +275,7 @@ int APIENTRY wWinMain(
                                 0, 0   // Retrieve all available messages
                               ) ) != 0 ) {
       if ( bRet > 0 ) {
-         if ( !TranslateAccelerator( msg.hwnd, hAccelTable, &msg ) ) {
+         if ( !TranslateAcceleratorW( msg.hwnd, hAccelTable, &msg ) ) {
             TranslateMessage( &msg );
             DispatchMessage( &msg );
          }
@@ -320,15 +347,22 @@ LRESULT CALLBACK WndProc( HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam 
             int wmId = LOWORD( wParam );
             // Parse the menu selections
             switch ( wmId ) {
+               case IDM_EXIT:
+                  gracefulShutdown();
+                  break;
+               case IDM_AUDIO_STARTCAPTURE:
+                  audioStart();
+                  break;
+               case IDM_AUDIO_ENDCAPTURE:
+                  audioStop();
+                  break;
                case IDM_ABOUT:
                   DialogBox( shInstance, MAKEINTRESOURCE( IDD_ABOUTBOX ), hWnd, About );
                   // DialogBox returns void -- nothing to check
                   break;
-               case IDM_EXIT:
-                  gracefulShutdown();
-                  break;
+
                default:
-                  return DefWindowProc( hWnd, message, wParam, lParam );
+                  return DefWindowProcW( hWnd, message, wParam, lParam );
             }
          }
          break;
@@ -406,7 +440,7 @@ LRESULT CALLBACK WndProc( HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam 
 ///
 void gracefulShutdown() {
    gbIsRunning = false;
-   PostMessageA( ghMainWindow, WM_CLOSE, 0, 0 );  // Shutdown the app
+   PostMessageW( ghMainWindow, WM_CLOSE, 0, 0 );  // Shutdown the app
 }
 
 

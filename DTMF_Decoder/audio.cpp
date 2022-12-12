@@ -668,6 +668,33 @@ BOOL audioInit() {
 }
 
 
+/// Start the audio capture thread
+///
+/// @return `TRUE` if successful.  `FALSE` if there was a problem.
+BOOL audioStart() {
+   HRESULT hr;  // HRESULT result
+   BOOL    br;  // BOOL result
+
+   _ASSERTE( ghMainWindow != NULL );
+   _ASSERTE( ghMainMenu != NULL );
+
+   /// Disable the `Start Capture` menu item
+   br = EnableMenuItem( ghMainMenu, IDM_AUDIO_STARTCAPTURE, MF_DISABLED );
+   if ( br == -1 ) {
+      RETURN_FATAL( IDS_AUDIO_FAILED_TO_SET_MENU_STATE );  // "Failed to set menu state.  Exiting."
+   }
+
+
+   /// Enable the `End Capture` menu item
+   br = EnableMenuItem( ghMainMenu, IDM_AUDIO_ENDCAPTURE, MF_ENABLED );
+   if ( br == -1 ) {
+      RETURN_FATAL( IDS_AUDIO_FAILED_TO_SET_MENU_STATE );  // "Failed to set menu state.  Exiting."
+   }
+
+   return TRUE;
+}
+
+
 /// Stop the audio device and threads
 ///
 /// This function should not return until the audio thread **and** all of the
@@ -680,6 +707,16 @@ BOOL audioInit() {
 BOOL audioStop() {
    HRESULT hr;  // HRESULT result
    BOOL br;     // BOOL result
+
+   _ASSERTE( ghMainWindow != NULL );
+   _ASSERTE( ghMainMenu != NULL );
+
+   /// Disable the `End Capture` menu item
+   br = EnableMenuItem( ghMainMenu, IDM_AUDIO_ENDCAPTURE, MF_DISABLED );
+   if ( br == -1 ) {
+      RETURN_FATAL( IDS_AUDIO_FAILED_TO_SET_MENU_STATE );  // "Failed to set menu state.  Exiting."
+   }
+
 
    /// Start by setting #gbIsRunning to `FALSE` -- just to be sure
    gbIsRunning = false;
@@ -711,6 +748,12 @@ BOOL audioStop() {
 
    br = goertzel_Stop();
    WARN_BR_R( IDS_DTMF_DECODER_FAILED_TO_END_DFT_THREADS );  // "Failed to end the Goertzel DFT threads"
+
+   /// Enable the `Start Capture` menu item
+   br = EnableMenuItem( ghMainMenu, IDM_AUDIO_STARTCAPTURE, MF_ENABLED );
+   if ( br == -1 ) {
+      RETURN_FATAL( IDS_AUDIO_FAILED_TO_SET_MENU_STATE );  // "Failed to set menu state.  Exiting."
+   }
 
    return TRUE;
 }
