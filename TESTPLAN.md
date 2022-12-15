@@ -40,6 +40,14 @@ however it probably doesn't make sense to run it from Profile
   - Reverse the tests of every error handler and verify that they work as expected.
   - Ensure runs that end in failure generate a Windiws Error Report.  Open the report and ensure all of the 
   - Ensure the program runs correctly when used in a Remote Desktop session. 
+  - change the DPI from the control panel
+  - Test at various DPIs:  “96, 120, 144, and 192”
+
+Excerpt From
+The Old New Thing: Practical Development Throughout the Evolution of Windows (Mark Nelson's Library)
+Raymond Chen
+https://itunes.apple.com/WebObjects/MZStore.woa/wa/viewBook?id=0
+This material may be protected by copyright.
 
 ## Documentation
 - Check the project's [GitHub page](https://github.com/marknelsonengineer/DTMF_Decoder) and make sure the home page looks good
