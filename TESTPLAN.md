@@ -42,6 +42,9 @@ however it probably doesn't make sense to run it from Profile
   - Ensure the program runs correctly when used in a Remote Desktop session. 
   - change the DPI from the control panel
   - Test at various DPIs:  “96, 120, 144, and 192”
+  - Test at different color depths 
+  - Test with multiple mknitors (where are the secondary monitor is both to the left and the right of the primary monitor)
+
 
 Excerpt From
 The Old New Thing: Practical Development Throughout the Evolution of Windows (Mark Nelson's Library)
