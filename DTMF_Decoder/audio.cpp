@@ -460,18 +460,52 @@ static BOOL audioPrintWaveFormat( _In_ const WAVEFORMATEX* pFmt ) {
 }
 
 
-/// Initialize the audio capture device and start the capture thread
+/// Initialize the audio capture device
 ///
 /// @return `TRUE` if successful.  `FALSE` if there was a problem.
 BOOL audioInit() {
-   HRESULT hr;  // HRESULT result
-   BOOL    br;  // BOOL result
-
    if ( sShareMode == AUDCLNT_SHAREMODE_EXCLUSIVE ) {
       RETURN_FATAL( IDS_AUDIO_EXCLUSIVE_MODE_UNSUPPORTED );  // "Exclusive mode not supported right now.  Exiting."
    }
 
    _ASSERTE( sShareMode == AUDCLNT_SHAREMODE_SHARED );
+
+   /// Create the callback events
+   ghAudioSamplesReadyEvent = CreateEventExW(
+      NULL,                                // Default security attributes
+      NULL,                                // Object name
+      0,                                   // Configuration flags
+      EVENT_MODIFY_STATE | SYNCHRONIZE );  // Desired access
+   if ( ghAudioSamplesReadyEvent == NULL ) {
+      RETURN_FATAL( IDS_AUDIO_FAILED_TO_CREATE_READY_EVENT );  // "Failed to create an audio samples ready event"
+   }
+
+
+   LOG_INFO_R( IDS_AUDIO_INIT_SUCCESSFUL );  // "The audio capture interface has been initialized"
+
+   /// The thread of execution goes back to #wWinMain, which starts the main
+   /// message loop
+   return TRUE;
+}
+
+
+/// Start the audio capture thread
+///
+/// @return `TRUE` if successful.  `FALSE` if there was a problem.
+BOOL audioStart() {
+   HRESULT hr;  // HRESULT result
+   BOOL    br;  // BOOL result
+
+   _ASSERTE( ghMainWindow != NULL );
+   _ASSERTE( ghMainMenu != NULL );
+   _ASSERTE( ghAudioSamplesReadyEvent != NULL );
+
+   /// Disable the `Start Capture` menu item
+   br = EnableMenuItem( ghMainMenu, IDM_AUDIO_STARTCAPTURE, MF_DISABLED );
+   if ( br == -1 ) {
+      RETURN_FATAL( IDS_AUDIO_FAILED_TO_SET_MENU_STATE );  // "Failed to set menu state.  Exiting."
+   }
+
 
    /// Get IMMDeviceEnumerator from COM (CoCreateInstance)
    IMMDeviceEnumerator* deviceEnumerator = NULL;
@@ -564,7 +598,7 @@ BOOL audioInit() {
       LOG_INFO_R( IDS_AUDIO_FORMAT_SUPPORTED );  // "The requested format is supported"
    } else if ( hr == AUDCLNT_E_UNSUPPORTED_FORMAT ) {
       RETURN_FATAL( IDS_AUDIO_FORMAT_UNSUPPORTED );  // "The requested format is is not supported"
-   } else if( hr == S_FALSE && spAudioFormatUsed != NULL) {
+   } else if ( hr == S_FALSE && spAudioFormatUsed != NULL ) {
       LOG_DEBUG_R( IDS_AUDIO_FORMAT_NOT_AVAILABLE );  // "The requested format is not available, but this format is:"
       audioPrintWaveFormat( spAudioFormatUsed );
       return FALSE;
@@ -598,7 +632,7 @@ BOOL audioInit() {
    /// Initialize shared mode audio client
    //  Shared mode streams using event-driven buffering must set both periodicity and bufferDuration to 0.
    hr = spAudioClient->Initialize( sShareMode, AUDCLNT_STREAMFLAGS_EVENTCALLBACK
-                                             | AUDCLNT_STREAMFLAGS_AUTOCONVERTPCM, 0, 0, spMixFormat, NULL );
+      | AUDCLNT_STREAMFLAGS_AUTOCONVERTPCM, 0, 0, spMixFormat, NULL );
    if ( hr != S_OK ) {
       /// @todo Look at more error codes and print out higher-fidelity error messages
       RETURN_FATAL( IDS_AUDIO_FAILED_TO_INITIALIZE );  // "Failed to initialize the audio client"
@@ -608,7 +642,7 @@ BOOL audioInit() {
    CHECK_HR_R( IDS_AUDIO_FAILED_TO_GET_BUFFER_SIZE );  // "Failed to get buffer size"
    LOG_INFO_R( IDS_AUDIO_BUFFER_CAPACITY,  // "The maximum capacity of the buffer is %" PRIu32" frames or %i ms"
       suBufferSize,
-      (int) (1.0 / spMixFormat->nSamplesPerSec * 1000 * suBufferSize ) );
+      (int) ( 1.0 / spMixFormat->nSamplesPerSec * 1000 * suBufferSize ) );
    /// Right now, the buffer is ~22ms or about the perfect size to capture
    /// VoIP voice, which is 20ms.
 
@@ -626,22 +660,8 @@ BOOL audioInit() {
 
    LOG_INFO_R( IDS_AUDIO_QUEUE_SIZE, gstQueueSize, SIZE_OF_QUEUE_IN_MS );  // "Queue size=%zu bytes or %d ms"
 
-   /// Initialize the Goertzel module (and associated threads)
-   br = goertzel_Init();
-   CHECK_BR_R( IDS_AUDIO_FAILED_TO_INITIALIZE_GOERTZEL );  // "Failed to initialize Goertzel module.  Exiting."
-
    br = goertzel_Start( spMixFormat->nSamplesPerSec );
    CHECK_BR_R( IDS_AUDIO_FAILED_TO_START_GOERTZEL );       // "Failed to start Goertzel DFT worker threads.  Exiting."
-
-   /// Create the callback events
-   ghAudioSamplesReadyEvent = CreateEventExW(
-      NULL,                                // Default security attributes
-      NULL,                                // Object name
-      0,                                   // Configuration flags
-      EVENT_MODIFY_STATE | SYNCHRONIZE );  // Desired access
-   if ( ghAudioSamplesReadyEvent == NULL ) {
-      RETURN_FATAL( IDS_AUDIO_FAILED_TO_CREATE_READY_EVENT );  // "Failed to create an audio samples ready event"
-   }
 
    hr = spAudioClient->SetEventHandle( ghAudioSamplesReadyEvent );
    CHECK_HR_R( IDS_AUDIO_FAILED_TO_SET_EVENT_CALLBACK );  // "Failed to set audio capture ready event"
@@ -660,42 +680,19 @@ BOOL audioInit() {
    hr = spAudioClient->Start();
    CHECK_HR_R( IDS_AUDIO_FAILED_TO_START_CAPTURE_STREAM );  // "Failed to start capturing the audio stream"
 
-   LOG_INFO_R( IDS_AUDIO_INIT_SUCCESSFUL );  // "The audio capture interface has been initialized"
-
-   /// The thread of execution goes back to #wWinMain, which starts the main
-   /// message loop
-   return TRUE;
-}
-
-
-/// Start the audio capture thread
-///
-/// @return `TRUE` if successful.  `FALSE` if there was a problem.
-BOOL audioStart() {
-   HRESULT hr;  // HRESULT result
-   BOOL    br;  // BOOL result
-
-   _ASSERTE( ghMainWindow != NULL );
-   _ASSERTE( ghMainMenu != NULL );
-
-   /// Disable the `Start Capture` menu item
-   br = EnableMenuItem( ghMainMenu, IDM_AUDIO_STARTCAPTURE, MF_DISABLED );
-   if ( br == -1 ) {
-      RETURN_FATAL( IDS_AUDIO_FAILED_TO_SET_MENU_STATE );  // "Failed to set menu state.  Exiting."
-   }
-
-
    /// Enable the `End Capture` menu item
    br = EnableMenuItem( ghMainMenu, IDM_AUDIO_ENDCAPTURE, MF_ENABLED );
    if ( br == -1 ) {
       RETURN_FATAL( IDS_AUDIO_FAILED_TO_SET_MENU_STATE );  // "Failed to set menu state.  Exiting."
    }
 
+   LOG_INFO_R( IDS_AUDIO_START_SUCCESSFUL );  // "The audio capture device has started."
+
    return TRUE;
 }
 
 
-/// Stop the audio device and threads
+/// Stop the audio device and threads.  Unwind everything done in #audioStart
 ///
 /// This function should not return until the audio thread **and** all of the
 /// goertzel work threads have stopped.
@@ -716,7 +713,6 @@ BOOL audioStop() {
    if ( br == -1 ) {
       RETURN_FATAL( IDS_AUDIO_FAILED_TO_SET_MENU_STATE );  // "Failed to set menu state.  Exiting."
    }
-
 
    /// Start by setting #gbIsRunning to `FALSE` -- just to be sure
    gbIsRunning = false;
@@ -749,38 +745,7 @@ BOOL audioStop() {
    br = goertzel_Stop();
    WARN_BR_R( IDS_DTMF_DECODER_FAILED_TO_END_DFT_THREADS );  // "Failed to end the Goertzel DFT threads"
 
-   /// Enable the `Start Capture` menu item
-   br = EnableMenuItem( ghMainMenu, IDM_AUDIO_STARTCAPTURE, MF_ENABLED );
-   if ( br == -1 ) {
-      RETURN_FATAL( IDS_AUDIO_FAILED_TO_SET_MENU_STATE );  // "Failed to set menu state.  Exiting."
-   }
-
-   return TRUE;
-}
-
-
-/// Cleanup all things audio.  Basically unwind everything that was done in
-/// #audioInit
-///
-/// @return `TRUE` if successful.  `FALSE` if there was a problem.
-BOOL audioCleanup() {
-   BOOL    br;  // BOOL result
-   HRESULT hr;  // HRESULT result
-
-   if ( shCaptureThread != NULL ) {
-      br = CloseHandle( shCaptureThread );
-      CHECK_BR_R( IDS_AUDIO_FAILED_CLOSING_THREAD );  // "Failed to close hCaptureThread"
-      shCaptureThread = NULL;
-   }
-
    SAFE_RELEASE( spCaptureClient );
-
-   /// @todo Do I need to unregister this event first?
-   if ( ghAudioSamplesReadyEvent != NULL ) {
-      br = CloseHandle( ghAudioSamplesReadyEvent );
-      CHECK_BR_R( IDS_AUDIO_FAILED_CLOSING_EVENT );  // "Failed to close gAudioSamplesReadyEvent"
-      ghAudioSamplesReadyEvent = NULL;
-   }
 
    if ( spAudioClient != NULL ) {
       hr = spAudioClient->Reset();
@@ -793,11 +758,11 @@ BOOL audioCleanup() {
    SAFE_RELEASE( spAudioClient );
 
    hr = PropVariantClear( &sDeviceFriendlyName );
-   CHECK_HR_R( IDS_AUDIO_FAILED_TO_RELEASE_PROPERTY, L"Device Friendly Name");  // "Failed to release property: %s"
+   CHECK_HR_R( IDS_AUDIO_FAILED_TO_RELEASE_PROPERTY, L"Device Friendly Name" );  // "Failed to release property: %s"
    hr = PropVariantClear( &sDeviceDescription );
-   CHECK_HR_R( IDS_AUDIO_FAILED_TO_RELEASE_PROPERTY, L"Device Description");  // "Failed to release property: %s"
+   CHECK_HR_R( IDS_AUDIO_FAILED_TO_RELEASE_PROPERTY, L"Device Description" );    // "Failed to release property: %s"
    hr = PropVariantClear( &sDeviceInterfaceFriendlyName );
-   CHECK_HR_R( IDS_AUDIO_FAILED_TO_RELEASE_PROPERTY, L"Device Interface Friendly Name");  // "Failed to release property: %s"
+   CHECK_HR_R( IDS_AUDIO_FAILED_TO_RELEASE_PROPERTY, L"Device Interface Friendly Name" );  // "Failed to release property: %s"
 
    SAFE_RELEASE( spPropertyStore );
 
@@ -817,6 +782,29 @@ BOOL audioCleanup() {
    }
 
    SAFE_RELEASE( spDevice );
+
+   /// Enable the `Start Capture` menu item
+   br = EnableMenuItem( ghMainMenu, IDM_AUDIO_STARTCAPTURE, MF_ENABLED );
+   if ( br == -1 ) {
+      RETURN_FATAL( IDS_AUDIO_FAILED_TO_SET_MENU_STATE );  // "Failed to set menu state.  Exiting."
+   }
+
+   return TRUE;
+}
+
+
+/// Cleanup all things audio.  Unwind everything done in #audioInit
+///
+/// @return `TRUE` if successful.  `FALSE` if there was a problem.
+BOOL audioCleanup() {
+   BOOL    br;  // BOOL result
+
+   /// @todo Do I need to unregister this event first?
+   if ( ghAudioSamplesReadyEvent != NULL ) {
+      br = CloseHandle( ghAudioSamplesReadyEvent );
+      CHECK_BR_R( IDS_AUDIO_FAILED_CLOSING_EVENT );  // "Failed to close gAudioSamplesReadyEvent"
+      ghAudioSamplesReadyEvent = NULL;
+   }
 
    return TRUE;
 }

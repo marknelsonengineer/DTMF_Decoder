@@ -18,7 +18,7 @@
 externdef gstQueueHead:qword
 externdef gstQueueSize:qword
 externdef gPcmQueue:qword
-externdef fScaleFactor:dword
+externdef sfScaleFactor:dword
 
 .code
 
@@ -81,9 +81,9 @@ exitForLoop:
 	MULSS  XMM4, XMM4                 ; real * real
 	MULSS  XMM5, XMM5                 ; imag * imag
 	ADDSS  XMM4, XMM5                 ; real * real + imag * imag
-	MOVSS  XMM5, dword ptr [fScaleFactor]
+	MOVSS  XMM5, dword ptr [sfScaleFactor]
 	SQRTSS XMM4, XMM4                 ; Square root
-	DIVSS  XMM4, XMM5                 ; / gfScaleFactor
+	DIVSS  XMM4, XMM5                 ; / sfScaleFactor
 	MOVSS  dword ptr [RDX + 44], XMM4 ; Store in toneStruct->goertzelMagnitude
 
 	RET

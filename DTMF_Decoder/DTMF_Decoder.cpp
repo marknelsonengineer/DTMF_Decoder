@@ -94,8 +94,10 @@ int APIENTRY wWinMain(
    {
    // These tests find unsafe cleanup routines... I'm keeping them in for now.
    gracefulShutdown();            // This does not shutdown a program during init
-// _ASSERTE( audioCleanup() );    // Can't call this before audioInit
+   _ASSERTE( audioCleanup() );    // Can't call this before audioInit
+// _ASSERTE( audioStop() );       // Can't call this out-of-sequence (yet)  todo Fix this
    _ASSERTE( goertzel_Cleanup() );
+   _ASSERTE( goertzel_Stop() );
 // _ASSERTE( logCleanup() );      // Can't call this before logInit
    _ASSERTE( mvcModelCleanup() );
    _ASSERTE( mvcViewCleanup() );
@@ -234,6 +236,17 @@ int APIENTRY wWinMain(
    br = audioInit();
    if ( !br ) {
       LOG_FATAL_R( IDS_DTMF_DECODER_FAILED_TO_INITIALIZE_AUDIO );  // "Failed to initialize the audio capture system.  Exiting."
+      mvcViewCleanup();
+      mvcModelCleanup();
+      CoUninitialize();       // Unwind COM
+      return EXIT_FAILURE;
+   }
+
+   /// Initialize the goertzel DFT module
+   br = goertzel_Init();
+   if ( !br ) {
+      LOG_FATAL_R( IDS_DTMF_DECODER_FAILED_TO_INITIALIZE_GOERTZEL );  // "Failed to initialize the Goertzel DFT module.  Exiting."
+      audioCleanup();
       mvcViewCleanup();
       mvcModelCleanup();
       CoUninitialize();       // Unwind COM
