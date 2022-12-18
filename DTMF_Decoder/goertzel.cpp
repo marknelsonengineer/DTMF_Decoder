@@ -5,7 +5,8 @@
 //  A Windows Desktop C program that decodes DTMF tones
 //
 /// An 8-way multi-threaded Discrete Fast Forier Transform - specifically,
-/// the Goertzel algorithm for analyzing 8-bit PCM data.
+/// a Goertzel algorithm for analyzing the energy in the 8 DTMF frquencies
+/// in an 8-bit PCM audio stream.
 ///
 /// @see https://github.com/Harvie/Programs/blob/master/c/goertzel/goertzel.c
 /// @see https://en.wikipedia.org/wiki/Goertzel_algorithm
@@ -207,7 +208,7 @@ DWORD WINAPI goertzelWorkThread( _In_ LPVOID pContext ) {
 }
 
 
-/// Initialize resources needed by the goertzel DFT
+/// Initialize resources needed by the goertzel DFT module
 ///
 /// @return `TRUE` if successful.  `FALSE` if there was a problem.
 BOOL goertzel_Init() {
@@ -350,12 +351,13 @@ BOOL goertzel_Stop() {
 }
 
 
-/// Cleanup goertzel event handles
+/// Cleanup the resources used by the Goertzel DFT module
 ///
 /// @return `TRUE` if successful.  `FALSE` if there was a problem.
 BOOL goertzel_Cleanup() {
    BOOL br;  // BOOL result
 
+   /// Close all #ghDoneDFTevent with CloseHandle
    for ( int i = 0 ; i < NUMBER_OF_DTMF_TONES ; i++ ) {
       if ( ghDoneDFTevent[ i ] != NULL ) {
          br = CloseHandle( ghDoneDFTevent[ i ] );
@@ -364,9 +366,10 @@ BOOL goertzel_Cleanup() {
       }
    }
 
+   /// Close #ghStartDFTevent with CloseHandle
    if ( ghStartDFTevent != NULL ) {
       br = CloseHandle( ghStartDFTevent );
-      CHECK_BR_R( IDS_GOERTZEL_FAILED_TO_CLOSE_STARTDFT_HANDLE );  //  "Failed to close ghStartDFTevent handle"
+      CHECK_BR_R( IDS_GOERTZEL_FAILED_TO_CLOSE_STARTDFT_HANDLE );  //  "Failed to close ghStartDFTevent handle."
       ghStartDFTevent = NULL;
    }
 
