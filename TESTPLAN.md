@@ -40,10 +40,10 @@ however it probably doesn't make sense to run it from Profile
   - Reverse the tests of every error handler and verify that they work as expected.
   - Ensure runs that end in failure generate a Windiws Error Report.  Open the report and ensure all of the 
   - Ensure the program runs correctly when used in a Remote Desktop session. 
-  - change the DPI from the control panel
-  - Test at various DPIs:  “96, 120, 144, and 192”
-  - Test at different color depths 
-  - Test with multiple mknitors (where are the secondary monitor is both to the left and the right of the primary monitor)
+  - Change the DPI from the control panel
+    - Test at various DPIs:  96, 120, 144, and 192
+    - Test at different color depths 
+  - Test with multiple monitors (where are the secondary monitor is both to the left and the right of the primary monitor)
 
 
 Excerpt From
@@ -59,4 +59,3 @@ This material may be protected by copyright.
   - Check each of the .md files
   - Check a file, down to the source code
     - Ensure the comments in the source code are <span style="color:green">green</span>
-    
