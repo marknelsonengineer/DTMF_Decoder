@@ -12,35 +12,7 @@
 /// @see https://en.wikipedia.org/wiki/Goertzel_algorithm
 /// @see https://en.wikipedia.org/wiki/Fast_Fourier_transform
 ///
-/// ## Math APIs
-/// | API                             | Link |
-/// |---------------------------------|------|
-/// | _USE_MATH_DEFINES               |      |
-/// | sinf                            |      |
-/// | cosf                            |      |
-/// | sqrtf                           |      |
-///
-/// ## Threads & Synchronization API
-/// | API                             | Link |
-/// |---------------------------------|------|
-/// | SetEvent                        |      |
-/// | ResetEvent                      |      |
-/// | WaitForSingleObject             |      |
-/// | WaitForMultipleObjects          |      |
-/// | CreateEventW                    |      |
-///
-/// ## Audio API
-/// | API                             | Link |
-/// |---------------------------------|------|
-/// | AvSetMmThreadCharacteristicsW   |      |
-/// | AvRevertMmThreadCharacteristics |      |
-///
-/// ## Other API Calls
-/// | API                             | Link |
-/// |---------------------------------|------|
-/// | CloseHandle                     |      |
-/// | #pragma message                 |      |
-/// | HIWORD                          |      |
+/// << Print Module API Documentation >>
 ///
 /// @file    goertzel.cpp
 /// @author  Mark Nelson <marknels@hawaii.edu>

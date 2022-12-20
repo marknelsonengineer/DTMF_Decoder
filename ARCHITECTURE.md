@@ -179,17 +179,17 @@ about processes' end-of-life:
      - The `initSomething` functions are called from #wWinMain before the
        message loop starts...
 
-     - Each init function called by #wWinMain has a custom error handler.
+     - Each init function called by #wWinMain has a custom error handler
 
-      - The `initSomething` functions should return `BOOL`s.
+      - The `initSomething` functions should return `BOOL`s
         - If everything initializes OK, bubble up `TRUE`s
         - If there are problems...
           - Log the issue
           - Use `MessageBox` to display an error message
           - Set #giApplicationReturnValue to #EXIT_FAILURE
           - Unwind any initialization that's aready been done
-            - Each init function has a unique set of cleanups depending on how
-              far the initialization has progressed.
+            - Each init function has a unique set of release functions 
+              depending on how far the initialization has progressed
           - Bubble `FALSE` back up to #wWinMain
 
    - **After the message loop has started**
@@ -202,9 +202,9 @@ about processes' end-of-life:
      not using it.  The `MessageBox` approach used in log.cpp is closer to the
      [Principle of Least Astonishment](https://en.wikipedia.org/wiki/Principle_of_least_astonishment)
 
-   - The `cleanupSomething` methods should always work and not `ASSERT`, even
+   - The `releaseSomething` methods should always work and not `ASSERT`, even
      if their corresponding `initSomething` methods haven't run yet.  This
-     allows us to call all (actually, most) of the `cleanupSomething` methods
+     allows us to call all (actually, most) of the `releaseSomething` methods
      during initialization failures.
 
    - Worker threads should not create windows (like `MessageBox`).  This bears
@@ -230,7 +230,7 @@ about processes' end-of-life:
      - As #wWinMain runs to the end... it will:
        - Stop the worker threads
        - Log the first WARN, ERROR or FATAL message (if any)
-       - Cleanup resources in the reverse order they were created
+       - Release resources in the reverse order they were created
        - Return with #giApplicationReturnValue
 
      - #wWinMain ends with `return giApplicationReturnValue;`
@@ -275,7 +275,7 @@ Normal and abnormal shutdowns can be differentiated by:
 
   - Normal Shutdown
     - Cleaned up in `WM_DESTROY` immediately after the window is destroyed
-    - The cleanup method is very simple and never fails
+    - The release method is very simple and never fails
 
 - **Model**
   - Init Error Handler
@@ -313,7 +313,7 @@ Normal and abnormal shutdowns can be differentiated by:
       return until all of the threads have stopped
     - #goertzel_Stop is called _after_ ending the audio capture
       thread in #audioStop
-    - Call #goertzel_Cleanup to close out the resources it created
+    - Call #goertzel_Release to cleanup the resources it created
 
 
 ### Macros & Functions Supporting Shutdown
