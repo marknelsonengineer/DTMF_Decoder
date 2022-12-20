@@ -7,7 +7,7 @@
 #  A Windows Desktop C program that decodes DTMF tones
 #
 ## Preprocess source files for Doxygen
-## 
+##
 ## 1.  Automatically generate the content in REFERENCES.md when it encounters
 ##     the keyword `<< Print All API Documentation >>`
 ## 2.  Automatically generate the API references in each source file when it
@@ -38,21 +38,26 @@ import pandas # For better CSV processing
 
 # The main body
 
+## Path to the API CSV file
 API_Documentation = "API_Documentation.csv"
 
+## DataFrame from Pandas CSV API
 csvData = pandas.read_csv( API_Documentation )
 csvData.sort_values( ['Section', 'Function'], inplace=True )
 
 # print( "Processing file [" + sys.argv[1] + "] using the API references in [" + API_Documentation + "]", file=sys.stderr )
 
 
-
+## Handle to the source file
 sourceFile = open( sys.argv[1], 'r' )
+
+## Iterate over sourceFile, putting each line in #line
 for line in sourceFile:
 
    # Process the documentation for REFERENCES.md
    hasTag = line.find( "<< Print All API Documentation >>" )
    if( hasTag != -1 ):
+   	## Track the section and print headers when it changes
       section=""
       for index, row in csvData.iterrows():
          if( section != row['Section'] ):
@@ -69,6 +74,7 @@ for line in sourceFile:
    hasTag = line.find( "<< Print Module API Documentation >>" )
    if( hasTag != -1 ):
       keywordSet = set()
+      ## Scan through the source file a second time (looking for API calls)
       sourceFile_2 = open( sys.argv[1], 'r' )
       for line_2 in sourceFile_2:
          for index, row in csvData.iterrows():
@@ -94,13 +100,18 @@ for line in sourceFile:
       continue
 
    # Automatically create links to the API references
+
+   ## Find the start of a DOxygen comment `///`
    start = line.find( "///" )
 
    if( start == -1 ):
       print( line, end='', flush=True )
       continue
 
+   ## The source before the DOxygen comment
    preComment = line[0:start]
+
+   ## The Doxygen comment's contents
    postComment = line[start+3:]
 
    for index, row in csvData.iterrows():

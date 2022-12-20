@@ -17,9 +17,16 @@ import shutil
 
 # print( "Starting " + os.path.basename(__file__) )
 
+## The configuration
 Configuration = sys.argv[1]
+
+## The platform
 Platform      = sys.argv[2]
+
+## The solution directory
 SolutionDir   = sys.argv[3]
+
+## The output directory
 OutDir        = sys.argv[4]
 
 # print( "Configuration: " + Configuration )
