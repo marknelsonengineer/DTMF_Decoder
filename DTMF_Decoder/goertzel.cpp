@@ -4,7 +4,7 @@
 //
 //  A Windows Desktop C program that decodes DTMF tones
 //
-/// An 8-way multi-threaded Discrete Fast Forier Transform - specifically,
+/// An 8-way multi-threaded Discrete Fast Forier Transform.  This implements
 /// a Goertzel algorithm for analyzing the energy in the 8 DTMF frquencies
 /// in an 8-bit PCM audio stream.
 ///
@@ -13,34 +13,34 @@
 /// @see https://en.wikipedia.org/wiki/Fast_Fourier_transform
 ///
 /// ## Math APIs
-/// | API                               | Link                                                                                             |
-/// |-----------------------------------|--------------------------------------------------------------------------------------------------|
-/// | `_USE_MATH_DEFINES`               | https://learn.microsoft.com/en-us/cpp/c-runtime-library/math-constants?view=msvc-170             |
-/// | `sinf`                            | https://en.cppreference.com/w/c/numeric/math/sin                                                 |
-/// | `cosf`                            | https://en.cppreference.com/w/c/numeric/math/cos                                                 |
-/// | `sqrtf`                           | https://en.cppreference.com/w/c/numeric/math/sqrt                                                |
+/// | API                             | Link |
+/// |---------------------------------|------|
+/// | _USE_MATH_DEFINES               |      |
+/// | sinf                            |      |
+/// | cosf                            |      |
+/// | sqrtf                           |      |
 ///
 /// ## Threads & Synchronization API
-/// | API                               | Link                                                                                             |
-/// |-----------------------------------|--------------------------------------------------------------------------------------------------|
-/// | `SetEvent`                        | https://learn.microsoft.com/en-us/windows/win32/api/synchapi/nf-synchapi-setevent                |
-/// | `ResetEvent`                      | https://learn.microsoft.com/en-us/windows/win32/api/synchapi/nf-synchapi-resetevent              |
-/// | `WaitForSingleObject`             | https://learn.microsoft.com/en-us/windows/win32/api/synchapi/nf-synchapi-waitforsingleobject     |
-/// | `WaitForMultipleObjects`          | https://learn.microsoft.com/en-us/windows/win32/api/synchapi/nf-synchapi-waitformultipleobjects  |
-/// | `CreateEventW`                    | https://learn.microsoft.com/en-us/windows/win32/api/synchapi/nf-synchapi-createeventw            |
+/// | API                             | Link |
+/// |---------------------------------|------|
+/// | SetEvent                        |      |
+/// | ResetEvent                      |      |
+/// | WaitForSingleObject             |      |
+/// | WaitForMultipleObjects          |      |
+/// | CreateEventW                    |      |
 ///
 /// ## Audio API
-/// | API                               | Link                                                                                             |
-/// |-----------------------------------|--------------------------------------------------------------------------------------------------|
-/// | `AvSetMmThreadCharacteristics`    | https://learn.microsoft.com/en-us/windows/win32/api/avrt/nf-avrt-avsetmmthreadcharacteristicsa   |
-/// | `AvRevertMmThreadCharacteristics` | https://learn.microsoft.com/en-us/windows/win32/api/avrt/nf-avrt-avrevertmmthreadcharacteristics |
+/// | API                             | Link |
+/// |---------------------------------|------|
+/// | AvSetMmThreadCharacteristicsW   |      |
+/// | AvRevertMmThreadCharacteristics |      |
 ///
 /// ## Other API Calls
-/// | API                               | Link                                                                                             |
-/// |-----------------------------------|--------------------------------------------------------------------------------------------------|
-/// | `CloseHandle`                     | https://learn.microsoft.com/en-us/windows/win32/api/handleapi/nf-handleapi-closehandle           |
-/// | `#pragma message`                 | https://learn.microsoft.com/en-us/cpp/preprocessor/message?view=msvc-170                         |
-/// | `HIWORD`                          | https://learn.microsoft.com/en-us/previous-versions/windows/desktop/legacy/ms632657(v=vs.85)     |
+/// | API                             | Link |
+/// |---------------------------------|------|
+/// | CloseHandle                     |      |
+/// | #pragma message                 |      |
+/// | HIWORD                          |      |
 ///
 /// @file    goertzel.cpp
 /// @author  Mark Nelson <marknels@hawaii.edu>
@@ -50,7 +50,7 @@
 #include <avrt.h>         // For AvSetMmThreadCharacteristics()
 #include <stdio.h>        // For sprintf_s()
 
-/// For getting math defines in C++ (this is a .cpp file)
+/// _USE_MATH_DEFINES is for getting math defines in C++ (this is a .cpp file)
 #define _USE_MATH_DEFINES
 #include <math.h>         // For sinf() and cosf()
 
@@ -59,16 +59,18 @@
 #include "goertzel.h"     // For yo bad self
 
 
-/// Define PI as a floating point number
+/// A floating point version of PI
 #define M_PIF 3.141592653589793238462643383279502884e+00F
 
-/// All of the DFT threads wait to start on this handle.  Declared external to support inlining.
+/// All of the DFT work threads wait to start on this handle.
+/// Declared external to support inlining.
 HANDLE ghStartDFTevent = NULL;
 
-/// The audio handler waits on each of the DFT threads before continuing.  Declared external to support inlining.
-HANDLE ghDoneDFTevent[ NUMBER_OF_DTMF_TONES ] = { NULL };
+/// The #audioCaptureThread waits on each of the DFT work threads before continuing.
+/// Declared external to support inlining.
+HANDLE ghDoneDFTevents[ NUMBER_OF_DTMF_TONES ] = { NULL };
 
-/// Handles to the worker threads
+/// Array of handles to the 8 work threads
 static HANDLE shWorkThreads[ NUMBER_OF_DTMF_TONES ] = { NULL };
 
 extern "C" float sfScaleFactor = 0;  ///< Set in #goertzel_Start and used in #goertzel_Magnitude
@@ -131,7 +133,7 @@ __forceinline static void goertzel_Magnitude(
 #endif
 
 
-/// Runs each of the 8 DFT worker threads
+/// Runs each of the 8 DFT work threads
 ///
 /// @see https://learn.microsoft.com/en-us/previous-versions/windows/desktop/legacy/ms686736(v=vs.85)
 ///
@@ -148,30 +150,31 @@ DWORD WINAPI goertzelWorkThread( _In_ LPVOID pContext ) {
 
    _ASSERTE( iIndex < NUMBER_OF_DTMF_TONES );
    _ASSERTE( ghStartDFTevent != NULL );
-   _ASSERTE( ghDoneDFTevent[ index ]  != NULL );
+   _ASSERTE( ghDoneDFTevents[ index ]  != NULL );
+
+   /// #### Function
 
    LOG_TRACE_R( IDS_GOERTZEL_START, index );  // "Goertzel DFT thread: %zu   Starting."
 
    HANDLE mmcssHandle = NULL;  // Local to the thread for safety
 
-   /// Set the multimedia class scheduler service, which will set the CPU
-   /// priority for this thread
-   ///
-   /// Uses the exported #gdwMmcssTaskIndex originally set in audio.cpp
-   ///
-   /// @see https://learn.microsoft.com/en-us/windows/win32/api/avrt/nf-avrt-avsetmmthreadcharacteristicsa
+   /// - Set the CPU priority for this thread with AvSetMmThreadCharacteristicsW
+   ///     - Uses the exported #gdwMmcssTaskIndex originally set in #audioStart
    mmcssHandle = AvSetMmThreadCharacteristicsW( L"Capture", &gdwMmcssTaskIndex );
    if ( mmcssHandle == NULL ) {
       LOG_WARN_R( IDS_GOERTZEL_FAILED_TO_SET_MMCSS, iIndex );  // "Goertzel DFT thread: %zu   Failed to set MMCSS on Goertzel work thread.  Continuing."
    }
    // LOG_INFO_R( IDS_GOERTZEL_SET_MMCSS, iIndex );  // "Goertzel DFT thread: %zu   Set MMCSS on Goertzel work thread."
 
+   /// - Start a loop while #gbIsRunning is `true`
    while ( gbIsRunning ) {
       DWORD dwWaitResult;
 
-      /// Wait for the #ghStartDFTevent to be signalled (shared by all DFT threads)
+      /// - Wait for #ghStartDFTevent to be signalled (shared by all DFT threads)
+      ///   with WaitForSingleObject
       dwWaitResult = WaitForSingleObject( ghStartDFTevent, INFINITE);
       if ( dwWaitResult == WAIT_OBJECT_0 ) {
+         ///     - Compute the energy in given DTMF frequency using #goertzel_Magnitude
          if ( gbIsRunning ) {
             #ifdef _WIN64
                goertzel_Magnitude_x64( (UINT8) index, &gDtmfTones[index] );
@@ -191,10 +194,13 @@ DWORD WINAPI goertzelWorkThread( _In_ LPVOID pContext ) {
          QUEUE_FATAL( IDS_GOERTZEL_WAITFORSINGLEOBJECT_FAILED_UNKNOWN, iIndex );  // "WaitForSingleObject in Goertzel thread %zu ended for an unknown reason.  Exiting.  Investigate!"
       }
 
-      SetEvent( ghDoneDFTevent[ index ] );
+      /// - Tell the audio processing thread that this thread's DFT processing is
+      ///   done with SetEvent
+      SetEvent( ghDoneDFTevents[ index ] );
    }
 
-   /// When the thread is done, put the CPU thread priority back
+   /// - When the loop is done, restore the thread's priority with
+   ///   AvRevertMmThreadCharacteristics
    if ( mmcssHandle != NULL ) {
       if( !AvRevertMmThreadCharacteristics( mmcssHandle ) ) {
          LOG_WARN_Q( IDS_GOERTZEL_FAILED_TO_REVERT_MMCSS, iIndex );  // "Goertzel DFT thread: %zu   Failed to revert MMCSS on Goertzel work thread.  Continuing."
@@ -208,12 +214,16 @@ DWORD WINAPI goertzelWorkThread( _In_ LPVOID pContext ) {
 }
 
 
-/// Initialize resources needed by the goertzel DFT module
+/// Initialize resources needed by the Goertzel DFT module
 ///
 /// @return `TRUE` if successful.  `FALSE` if there was a problem.
 BOOL goertzel_Init() {
-   /// Create events for synchronizing the threads
    _ASSERTE( ghStartDFTevent == NULL );
+
+   /// #### Function
+
+   /// - Initialize #ghStartDFTevent (The trigger to start all of the Goertzel
+   ///   DFT work threads) with CreateEventW
    ghStartDFTevent = CreateEventW(
       NULL,                            // Default security attributes
       TRUE,                            // Manually reset after all 8 threads run
@@ -223,17 +233,18 @@ BOOL goertzel_Init() {
       RETURN_FATAL( IDS_GOERTZEL_FAILED_TO_CREATE_STARTDFT_HANDLE );  // "Failed to create a ghStartDFTevent event handle.  Exiting."
    }
 
-   /// Create the "Done" events for each goertzel worker thread
+   /// - Initialize #ghDoneDFTevents (The "Done" events for each Goertzel DFT
+   ///   work thread) with CreateEventW
    for ( int i = 0 ; i < NUMBER_OF_DTMF_TONES ; i++ ) {
-      _ASSERTE( ghDoneDFTevent[ i ] == NULL );
+      _ASSERTE( ghDoneDFTevents[ i ] == NULL );
 
-      ghDoneDFTevent[ i ] = CreateEventW(
+      ghDoneDFTevents[ i ] = CreateEventW(
          NULL,                         // Default security attributes
          FALSE,                        // Automatically reset after the worker starts
          FALSE,                        // Initial state
          NULL );                       // Object name
-      if ( ghDoneDFTevent[ i ] == NULL ) {
-         RETURN_FATAL( IDS_GOERTZEL_FAILED_TO_CREATE_DONEDFT_HANDLES );  // "Failed to create a ghDoneDFTevent event handle.  Exiting."
+      if ( ghDoneDFTevents[ i ] == NULL ) {
+         RETURN_FATAL( IDS_GOERTZEL_FAILED_TO_CREATE_DONEDFT_HANDLES );  // "Failed to create a ghDoneDFTevents event handle.  Exiting."
       }
    }
 
@@ -241,7 +252,7 @@ BOOL goertzel_Init() {
 }
 
 
-/// Start the DFT worker threads
+/// Start the DFT work threads
 ///
 /// @param  iSampleRate  Samples per second
 /// @return `TRUE` if successful.  `FALSE` if there was a problem.
@@ -254,12 +265,13 @@ BOOL goertzel_Start( _In_ const int iSampleRate ) {
 
    float floatNumSamples = (float) gstQueueSize;
 
-   /// Initialize values needed by the goertzel DFT (these values depend on the
-   /// audio device, so we will set them in the start/stop routines.)
-
+   /// #### Function
+   ///
+   /// - Initialize values needed by the Goertzel DFT.  These values change with
+   ///   every audio device, so we will set/reset them in the start/stop routines.
    sfScaleFactor = gstQueueSize / 2.0f;
 
-   /// Set sine, cosine and coeff for each DTMF tone in #gDtmfTones.
+   /// - Set sine, cosine and coeff for each DTMF tone in #gDtmfTones.
    for ( int i = 0 ; i < NUMBER_OF_DTMF_TONES ; i++ ) {
       int   k      = (int) ( 0.5f + ( ( floatNumSamples * gDtmfTones[ i ].frequency ) / (float) floatSamplingRate ) );
       float omega  = ( 2.0f * M_PIF * k ) / floatNumSamples;
@@ -270,10 +282,10 @@ BOOL goertzel_Start( _In_ const int iSampleRate ) {
    }
 
    for ( int i = 0 ; i < NUMBER_OF_DTMF_TONES ; i++ ) {
-      _ASSERTE( ghDoneDFTevent[ i ] != NULL );
+      _ASSERTE( ghDoneDFTevents[ i ] != NULL );
       _ASSERTE( shWorkThreads[ i ] == NULL );
 
-      /// Start the threads
+      /// - Use CreateThread to start the threads, storing the handles in #shWorkThreads
       shWorkThreads[i] = CreateThread(NULL, 0, goertzelWorkThread, &gDtmfTones[i].index, 0, NULL);
       if ( shWorkThreads[ i ] == NULL ) {
          RETURN_FATAL( IDS_GOERTZEL_FAILED_TO_CREATE_WORK_THREAD, i );  // "Failed to create Goertzel work thread %d.  Exiting."
@@ -284,11 +296,11 @@ BOOL goertzel_Start( _In_ const int iSampleRate ) {
 }
 
 
-/// Signal all of the threads so they can end on their own terms
+/// Shutdown the Goertzel DFT work threads.
 ///
-/// This function should not return until all of the goertzel work threads have
+/// This function should not return until all of the Goertzel work threads have
 /// stopped.
-/// 
+///
 /// In Win32, threads will set their signalled state when they terminate.
 /// Let's take advantage of that.
 ///
@@ -297,11 +309,14 @@ BOOL goertzel_Start( _In_ const int iSampleRate ) {
 ///
 /// @return `TRUE` if successful.  `FALSE` if there was a problem.
 BOOL goertzel_Stop() {
-   /// Set #gbIsRunning to `FALSE` -- just to be sure
+   /// #### Function
+   ///
+   /// - Set #gbIsRunning to `FALSE` -- just to be sure
    gbIsRunning = false;
 
    BOOL br;  // BOOL result
 
+   /// - See how many theads are actually running
    int numRunningThreads = 0;
    for ( int i = 0 ; i < NUMBER_OF_DTMF_TONES ; i++ ) {
       if ( shWorkThreads[ i ] != NULL ) {
@@ -309,38 +324,39 @@ BOOL goertzel_Stop() {
       }
    }
 
-   /// If the threads are already stopped, then quietly return `TRUE`.
+   /// - If the threads are already stopped, then quietly return `TRUE`.
    if ( numRunningThreads == 0 ) {
       return TRUE;
    }
 
    _ASSERTE( ghStartDFTevent != NULL );
    for ( int i = 0 ; i < NUMBER_OF_DTMF_TONES ; i++ ) {
-      _ASSERTE( ghDoneDFTevent[ i ] != NULL );
+      _ASSERTE( ghDoneDFTevents[ i ] != NULL );
       // _ASSERTE( shWorkThreads[ i ] != NULL );  // Some, but not all threads may have already stopped
    }
-   /// Trigger all of the threads to run... which will spin their loops
-   /// with #gbIsRunning `== FALSE` and all of the threads will terminate
+
+
+   /// - Trigger all of the threads to run with SetEvent.  This will spin
+   ///   their loops... with #gbIsRunning `== FALSE`, all of the threads will
+   ///   then terminate.
    br = SetEvent( ghStartDFTevent );
    CHECK_BR_R( IDS_GOERTZEL_FAILED_TO_SIGNAL_START_DFT );  // "Failed to signal a ghStartDFTevent.  Exiting."
 
-   /// Wait for the threads to terminate
+   /// - Wait for the threads to terminate with WaitForMultipleObjects
+   ///     - If `bWaitAll` is `TRUE`, a return value within the specified range
+   ///       indicates that the state of all specified objects are signaled.
+   ///         - Read about WaitForMultipleObjects for the details.
    DWORD   dwWaitResult;  // Result from WaitForMultipleObjects
    dwWaitResult = WaitForMultipleObjects(
       NUMBER_OF_DTMF_TONES,  // Number of object handles
-      ghDoneDFTevent,        // Array of object handles
+      ghDoneDFTevents,       // Array of object handles
       TRUE,                  // bWaitAll:  If TRUE, return when all objects are signaled.  If FALSE, return when any one of the objects are signaled.
       INFINITE );            // Time-out interval, in milliseconds
-
-   /// If `bWaitAll` is `TRUE`, a return value within the specified range
-   /// indicates that the state of all specified objects are signaled.
-   ///
-   /// @see https://learn.microsoft.com/en-us/windows/win32/api/synchapi/nf-synchapi-waitformultipleobjects
    if ( !( dwWaitResult >= WAIT_OBJECT_0 && dwWaitResult <= ( WAIT_OBJECT_0 + NUMBER_OF_DTMF_TONES - 1 ) ) ) {
       RETURN_FATAL( IDS_GOERTZEL_THREAD_END_FAILED );  // "Wait for all Goertzel threads to end failed.  Exiting."
    }
 
-   /// Cleanup the worker thread handles
+   /// - Cleanup the work thread handles
    for ( int i = 0 ; i < NUMBER_OF_DTMF_TONES ; i++ ) {
       shWorkThreads[ i ] = NULL;
    }
@@ -351,22 +367,28 @@ BOOL goertzel_Stop() {
 }
 
 
-/// Cleanup the resources used by the Goertzel DFT module
+/// Release resources used by the Goertzel DFT module
 ///
 /// @return `TRUE` if successful.  `FALSE` if there was a problem.
-BOOL goertzel_Cleanup() {
+BOOL goertzel_Release() {
+   /// #### Function
+   /// - Assert that the DFT work threads are not running
+   for ( int i = 0 ; i < NUMBER_OF_DTMF_TONES ; i++ ) {
+      _ASSERTE( shWorkThreads[ i ] == NULL );
+   }
+
    BOOL br;  // BOOL result
 
-   /// Close all #ghDoneDFTevent with CloseHandle
+   /// - Close all #ghDoneDFTevents with CloseHandle
    for ( int i = 0 ; i < NUMBER_OF_DTMF_TONES ; i++ ) {
-      if ( ghDoneDFTevent[ i ] != NULL ) {
-         br = CloseHandle( ghDoneDFTevent[ i ] );
-         CHECK_BR_R( IDS_GOERTZEL_FAILED_TO_CLOSE_DONEDFT_HANDLES, i );  // "Failed to create a ghDoneDFTevent handle %d.  Exiting."
-         ghDoneDFTevent[ i ] = NULL;
+      if ( ghDoneDFTevents[ i ] != NULL ) {
+         br = CloseHandle( ghDoneDFTevents[ i ] );
+         CHECK_BR_R( IDS_GOERTZEL_FAILED_TO_CLOSE_DONEDFT_HANDLES, i );  // "Failed to create a ghDoneDFTevents handle %d.  Exiting."
+         ghDoneDFTevents[ i ] = NULL;
       }
    }
 
-   /// Close #ghStartDFTevent with CloseHandle
+   /// - Close #ghStartDFTevent with CloseHandle
    if ( ghStartDFTevent != NULL ) {
       br = CloseHandle( ghStartDFTevent );
       CHECK_BR_R( IDS_GOERTZEL_FAILED_TO_CLOSE_STARTDFT_HANDLE );  //  "Failed to close ghStartDFTevent handle."

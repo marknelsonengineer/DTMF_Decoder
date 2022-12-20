@@ -27,10 +27,10 @@
 extern BOOL goertzel_Init();
 extern BOOL goertzel_Start( _In_ const int SAMPLING_RATE_IN );
 extern BOOL goertzel_Stop();
-extern BOOL goertzel_Cleanup();
+extern BOOL goertzel_Release();
 
 extern HANDLE ghStartDFTevent;
-extern HANDLE ghDoneDFTevent[ NUMBER_OF_DTMF_TONES ];
+extern HANDLE ghDoneDFTevents[ NUMBER_OF_DTMF_TONES ];
 
 
 /// Signal the Goertzel DFT worker threads to start, then wait for all 8 of
@@ -47,10 +47,10 @@ __forceinline BOOL goertzel_compute_dtmf_tones() {
    br = SetEvent( ghStartDFTevent );
    CHECK_BR_Q( IDS_GOERTZEL_FAILED_TO_SIGNAL_START_DFT, 0 );  // "Failed to signal a ghStartDFTevent.  Exiting."
 
-   /// Wait for all of the worker threads to signal their ghDoneDFTevent
+   /// Wait for all of the worker threads to signal their ghDoneDFTevents
    dwWaitResult = WaitForMultipleObjects( 
                      NUMBER_OF_DTMF_TONES,  // Number of object handles
-                     ghDoneDFTevent,        // Array of object handles
+                     ghDoneDFTevents,        // Array of object handles
                      TRUE,                  // bWaitAll:  If TRUE, return when all objects are signaled.  If FALSE, return when any one of the objects are signaled.
                      INFINITE );            // Time-out interval, in milliseconds
 
