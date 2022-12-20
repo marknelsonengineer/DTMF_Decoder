@@ -69,7 +69,6 @@ Audio API,IMMDevice::OpenPropertyStore,https://learn.microsoft.com/en-us/windows
 Audio API,IMMDeviceEnumerator::GetDefaultAudioEndpoint,https://learn.microsoft.com/en-us/windows/win32/api/mmdeviceapi/nf-mmdeviceapi-immdeviceenumerator-getdefaultaudioendpoint
 Threads & Synchronization API,InitializeCriticalSection,https://learn.microsoft.com/en-us/windows/win32/api/synchapi/nf-synchapi-initializecriticalsection
 GDI & Direct2D API,InvalidateRect,https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-invalidaterect
-Generic Win32 API,InvalidateRect,https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-invalidaterect
 Audio API,IPropertyStore::GetValue,https://learn.microsoft.com/en-us/previous-versions/windows/desktop/legacy/bb761473(v=vs.85)
 COM API,IUnknown::Release,https://learn.microsoft.com/en-us/windows/win32/api/unknwn/nf-unknwn-iunknown-release
 Threads & Synchronization API,LeaveCriticalSection,https://learn.microsoft.com/en-us/windows/win32/api/synchapi/nf-synchapi-leavecriticalsection

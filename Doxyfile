@@ -918,7 +918,9 @@ INPUT                  = Z:/Src/VisualStudio/DTMF_Decoder/DTMF_Decoder \
                          DOXYGEN.md \
                          ./bin/update_version.py \
                          README.md \
-                         TESTPLAN.md
+                         TESTPLAN.md \
+                         ./bin/doxygen_input_filter.py \
+                         ./bin/pre_build_event.py
 
 # This tag can be used to specify the character encoding of the source files
 # that doxygen parses. Internally doxygen uses the UTF-8 encoding. Doxygen uses
