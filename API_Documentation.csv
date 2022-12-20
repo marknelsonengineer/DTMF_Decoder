@@ -1,7 +1,45 @@
 ﻿Section,Function,URL
+Debugging & Instrumentation API,_ASSERT_EXPR,https://learn.microsoft.com/en-us/cpp/c-runtime-library/reference/assert-asserte-assert-expr-macros?view=msvc-170
+Debugging & Instrumentation API,_ASSERTE,https://learn.microsoft.com/en-us/cpp/c-runtime-library/reference/assert-asserte-assert-expr-macros?view=msvc-170
+CRT & Memory Management API,_CrtCheckMemory,https://learn.microsoft.com/en-us/cpp/c-runtime-library/reference/crtcheckmemory
+CRT & Memory Management API,_free_dbg,https://learn.microsoft.com/en-us/cpp/c-runtime-library/reference/free-dbg
+CRT & Memory Management API,_malloc_dbg,https://learn.microsoft.com/en-us/cpp/c-runtime-library/reference/malloc-dbg
+Math,_USE_MATH_DEFINES,https://learn.microsoft.com/en-us/cpp/c-runtime-library/math-constants?view=msvc-170
+Pragmas,pragma comment,https://learn.microsoft.com/en-us/cpp/preprocessor/comment-c-cpp?view=msvc-170
+Pragmas,pragma message,https://learn.microsoft.com/en-us/cpp/preprocessor/message?view=msvc-170
 Audio API,AvRevertMmThreadCharacteristics,https://learn.microsoft.com/en-us/windows/win32/api/avrt/nf-avrt-avrevertmmthreadcharacteristics
-Audio API,AvSetMmThreadCharacteristics,https://learn.microsoft.com/en-us/windows/win32/api/avrt/nf-avrt-avsetmmthreadcharacteristicsa
-Audio API,XXXIAudioCaptureClient,https://learn.microsoft.com/en-us/windows/win32/api/audioclient/nn-audioclient-iaudiocaptureclient
+Audio API,AvSetMmThreadCharacteristicsW,https://learn.microsoft.com/en-us/windows/win32/api/avrt/nf-avrt-avsetmmthreadcharacteristicsw
+GDI & Direct2D API,BeginPaint (GDI),https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-beginpaint
+Generic Win32 API,CloseHandle,https://learn.microsoft.com/en-us/windows/win32/api/handleapi/nf-handleapi-closehandle
+COM API,CoCreateInstance,https://learn.microsoft.com/en-us/windows/win32/api/combaseapi/nf-combaseapi-cocreateinstance
+COM API,CoInitializeEx,https://learn.microsoft.com/en-us/windows/win32/api/combaseapi/nf-combaseapi-coinitializeex
+CRT & Memory Management API,CopyMemory,https://learn.microsoft.com/en-us/previous-versions/windows/desktop/legacy/aa366535(v=vs.85)
+Math,cosf,https://en.cppreference.com/w/c/numeric/math/cos
+COM API,CoTaskMemFree,https://learn.microsoft.com/en-us/windows/win32/api/combaseapi/nf-combaseapi-cotaskmemfree
+COM API,CoUninitialize,https://learn.microsoft.com/en-us/windows/win32/api/combaseapi/nf-combaseapi-couninitialize
+Threads & Synchronization API,CreateEventExW,https://learn.microsoft.com/en-us/windows/win32/api/synchapi/nf-synchapi-createeventexw
+Threads & Synchronization API,CreateEventW,https://learn.microsoft.com/en-us/windows/win32/api/synchapi/nf-synchapi-createeventw
+Threads & Synchronization API,CreateThread,https://learn.microsoft.com/en-us/windows/win32/api/processthreadsapi/nf-processthreadsapi-createthread
+Generic Win32 API,CreateWindowW,https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindoww
+GDI & Direct2D API,D2D1::RectF,https://learn.microsoft.com/en-us/windows/win32/api/d2d1helper/nf-d2d1helper-rectf
+GDI & Direct2D API,D2D1CreateFactory,https://learn.microsoft.com/en-us/windows/win32/api/d2d1/nf-d2d1-d2d1createfactory-r1
+Generic Win32 API,DefWindowProcW,https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-defwindowprocw
+Threads & Synchronization API,DeleteCriticalSection,https://learn.microsoft.com/en-us/windows/win32/api/synchapi/nf-synchapi-deletecriticalsection
+Generic Win32 API,DestroyWindow,https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-destroywindow
+Generic Win32 API,DialogBoxW,https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-dialogboxw
+Generic Win32 API,DispatchMessage,https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-dispatchmessage
+GDI & Direct2D API,DrawRoundedRectangle,https://learn.microsoft.com/en-us/dotnet/api/system.windows.media.drawingcontext.drawroundedrectangle?view=windowsdesktop-6.0
+GDI & Direct2D API,DWriteCreateFactory,https://learn.microsoft.com/en-us/windows/win32/api/dwrite/nf-dwrite-dwritecreatefactory
+Generic Win32 API,EnableMenuItem,https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-enablemenuitem
+Generic Win32 API,EndDialog,https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-enddialog
+GDI & Direct2D API,EndPaint (GDI),https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-endpaint
+Threads & Synchronization API,EnterCriticalSection,https://learn.microsoft.com/en-us/windows/win32/api/synchapi/nf-synchapi-entercriticalsection
+Threads & Synchronization API,ExitThread,https://learn.microsoft.com/en-us/windows/win32/api/processthreadsapi/nf-processthreadsapi-exitthread
+Generic Win32 API,GetCurrentProcess,https://learn.microsoft.com/en-us/windows/win32/api/processthreadsapi/nf-processthreadsapi-getcurrentprocess
+Generic Win32 API,GetMenu,https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-getmenu
+Generic Win32 API,GetMessage,https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-getmessage
+Generic Win32 API,GetProcessImageFileNameW,https://learn.microsoft.com/en-us/windows/win32/api/psapi/nf-psapi-getprocessimagefilenamew
+Generic Win32 API,HIWORD,https://learn.microsoft.com/en-us/previous-versions/windows/desktop/legacy/ms632657(v=vs.85)
 Audio API,IAudioCaptureClient::GetBuffer,https://learn.microsoft.com/en-us/windows/win32/api/audioclient/nf-audioclient-iaudiocaptureclient-getbuffer
 Audio API,IAudioCaptureClient::ReleaseBuffer,https://learn.microsoft.com/en-us/windows/win32/api/audioclient/nf-audioclient-iaudiocaptureclient-releasebuffer
 Audio API,IAudioClient::GetBufferSize,https://learn.microsoft.com/en-us/windows/win32/api/audioclient/nf-audioclient-iaudioclient-getbuffersize
@@ -14,60 +52,6 @@ Audio API,IAudioClient::Reset,https://learn.microsoft.com/en-us/windows/win32/ap
 Audio API,IAudioClient::SetEventHandle,https://learn.microsoft.com/en-us/windows/win32/api/audioclient/nf-audioclient-iaudioclient-seteventhandle
 Audio API,IAudioClient::Start,https://learn.microsoft.com/en-us/windows/win32/api/audioclient/nf-audioclient-iaudioclient-start
 Audio API,IAudioClient::Stop,https://learn.microsoft.com/en-us/windows/win32/api/audioclient/nf-audioclient-iaudioclient-stop
-Audio API,IMMDevice::Activate,https://learn.microsoft.com/en-us/windows/win32/api/mmdeviceapi/nf-mmdeviceapi-immdevice-activate
-Audio API,IMMDevice::GetId,https://learn.microsoft.com/en-us/windows/win32/api/mmdeviceapi/nf-mmdeviceapi-immdevice-getid
-Audio API,IMMDevice::GetState,https://learn.microsoft.com/en-us/windows/win32/api/mmdeviceapi/nf-mmdeviceapi-immdevice-getstate
-Audio API,IMMDevice::OpenPropertyStore,https://learn.microsoft.com/en-us/windows/win32/api/mmdeviceapi/nf-mmdeviceapi-immdevice-openpropertystore
-Audio API,IMMDeviceEnumerator::GetDefaultAudioEndpoint,https://learn.microsoft.com/en-us/windows/win32/api/mmdeviceapi/nf-mmdeviceapi-immdeviceenumerator-getdefaultaudioendpoint
-Audio API,IPropertyStore::GetValue,https://learn.microsoft.com/en-us/previous-versions/windows/desktop/legacy/bb761473(v=vs.85)
-Audio API,PropVariantInit,https://learn.microsoft.com/en-us/windows/win32/api/propidl/nf-propidl-propvariantinit
-Audio API,WAVEFORMATEX,https://learn.microsoft.com/en-us/windows/win32/api/mmeapi/ns-mmeapi-waveformatex
-Audio API,WAVEFORMATEXTENSIBLE,https://learn.microsoft.com/en-us/windows/win32/api/mmreg/ns-mmreg-waveformatextensible
-Audio API,XXXIAudioClient,https://learn.microsoft.com/en-us/windows/win32/api/audioclient/nn-audioclient-iaudioclient
-Audio API,XXXIMMDevice,https://learn.microsoft.com/en-us/windows/win32/api/mmdeviceapi/nn-mmdeviceapi-immdevice
-Audio API,XXXIPropertyStore,https://learn.microsoft.com/en-us/windows/win32/api/propsys/nn-propsys-ipropertystore
-COM API,CoCreateInstance,https://learn.microsoft.com/en-us/windows/win32/api/combaseapi/nf-combaseapi-cocreateinstance
-COM API,CoInitializeEx,https://learn.microsoft.com/en-us/windows/win32/api/combaseapi/nf-combaseapi-coinitializeex
-COM API,CoTaskMemFree,https://learn.microsoft.com/en-us/windows/win32/api/combaseapi/nf-combaseapi-cotaskmemfree
-COM API,CoUninitialize,https://learn.microsoft.com/en-us/windows/win32/api/combaseapi/nf-combaseapi-couninitialize
-COM API,IUnknown::Release,https://learn.microsoft.com/en-us/windows/win32/api/unknwn/nf-unknwn-iunknown-release
-COM API,PropVariantClear,https://learn.microsoft.com/en-us/windows/win32/api/combaseapi/nf-combaseapi-propvariantclear
-CRT & Memory Management API,_CrtCheckMemory,https://learn.microsoft.com/en-us/cpp/c-runtime-library/reference/crtcheckmemory
-CRT & Memory Management API,_free_dbg,https://learn.microsoft.com/en-us/cpp/c-runtime-library/reference/free-dbg
-CRT & Memory Management API,_malloc_dbg,https://learn.microsoft.com/en-us/cpp/c-runtime-library/reference/malloc-dbg
-CRT & Memory Management API,CopyMemory,https://learn.microsoft.com/en-us/previous-versions/windows/desktop/legacy/aa366535(v=vs.85)
-CRT & Memory Management API,rand,https://learn.microsoft.com/en-us/cpp/c-runtime-library/reference/rand?view=msvc-170
-CRT & Memory Management API,SecureZeroMemory,https://learn.microsoft.com/en-us/previous-versions/windows/desktop/legacy/aa366877(v=vs.85)
-CRT & Memory Management API,StringCbCopyExW,https://learn.microsoft.com/en-us/windows/win32/api/strsafe/nf-strsafe-stringcbcopyexw
-CRT & Memory Management API,StringCbPrintfW,https://learn.microsoft.com/en-us/windows/win32/api/strsafe/nf-strsafe-stringcbprintfw
-CRT & Memory Management API,StringCchCopyW,https://learn.microsoft.com/en-us/windows/win32/api/strsafe/nf-strsafe-stringcchcopyw
-CRT & Memory Management API,StringCchPrintfW,https://learn.microsoft.com/en-us/windows/win32/api/strsafe/nf-strsafe-stringcchprintfw
-CRT & Memory Management API,ZeroMemory,https://learn.microsoft.com/en-us/previous-versions/windows/desktop/legacy/aa366920(v=vs.85)
-Debugging & Instrumentation API,_ASSERT_EXPR,https://learn.microsoft.com/en-us/cpp/c-runtime-library/reference/assert-asserte-assert-expr-macros?view=msvc-170
-Debugging & Instrumentation API,_ASSERTE,https://learn.microsoft.com/en-us/cpp/c-runtime-library/reference/assert-asserte-assert-expr-macros?view=msvc-170
-Debugging & Instrumentation API,MessageBeep,https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-messagebeep
-Debugging & Instrumentation API,MessageBoxA,https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-messageboxa
-Debugging & Instrumentation API,MessageBoxW,https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-messageboxw
-Debugging & Instrumentation API,OutputDebugStringA,https://learn.microsoft.com/en-us/windows/win32/api/debugapi/nf-debugapi-outputdebugstringa
-Debugging & Instrumentation API,OutputDebugStringW,https://learn.microsoft.com/en-us/windows/win32/api/debugapi/nf-debugapi-outputdebugstringw
-Debugging & Instrumentation API,sprintf_s,https://learn.microsoft.com/en-us/cpp/c-runtime-library/reference/sprintf-s-sprintf-s-l-swprintf-s-swprintf-s-l?view=msvc-170
-Debugging & Instrumentation API,swprintf_s,https://learn.microsoft.com/en-us/cpp/c-runtime-library/reference/sprintf-s-sprintf-s-l-swprintf-s-swprintf-s-l?view=msvc-170
-Debugging & Instrumentation API,va_arg,https://learn.microsoft.com/en-us/cpp/c-runtime-library/reference/va-arg-va-copy-va-end-va-start?view=msvc-170
-Debugging & Instrumentation API,vsprintf_s,https://learn.microsoft.com/en-us/cpp/c-runtime-library/reference/vsprintf-s-vsprintf-s-l-vswprintf-s-vswprintf-s-l?view=msvc-170
-Debugging & Instrumentation API,vswprintf_s,https://learn.microsoft.com/en-us/cpp/c-runtime-library/reference/vsprintf-s-vsprintf-s-l-vswprintf-s-vswprintf-s-l?view=msvc-170
-Debugging & Instrumentation API,wcslen,https://en.cppreference.com/w/c/string/wide/wcslen
-Debugging & Instrumentation API,WerRegisterMemoryBlock,https://learn.microsoft.com/en-us/windows/win32/api/werapi/nf-werapi-werregistermemoryblock
-Debugging & Instrumentation API,WerReportAddDump,https://learn.microsoft.com/en-us/windows/win32/api/werapi/nf-werapi-werreportadddump
-Debugging & Instrumentation API,WerReportCloseHandle,https://learn.microsoft.com/en-us/windows/win32/api/werapi/nf-werapi-werreportclosehandle
-Debugging & Instrumentation API,WerReportCreate,https://learn.microsoft.com/en-us/windows/win32/api/werapi/nf-werapi-werreportcreate
-Debugging & Instrumentation API,WerReportSetParameter,https://learn.microsoft.com/en-us/windows/win32/api/werapi/nf-werapi-werreportsetparameter
-Debugging & Instrumentation API,WerReportSubmit,https://learn.microsoft.com/en-us/windows/win32/api/werapi/nf-werapi-werreportsubmit
-GDI & Direct2D API,BeginPaint (GDI),https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-beginpaint
-GDI & Direct2D API,D2D1::RectF,https://learn.microsoft.com/en-us/windows/win32/api/d2d1helper/nf-d2d1helper-rectf
-GDI & Direct2D API,D2D1CreateFactory,https://learn.microsoft.com/en-us/windows/win32/api/d2d1/nf-d2d1-d2d1createfactory-r1
-GDI & Direct2D API,DrawRoundedRectangle,https://learn.microsoft.com/en-us/dotnet/api/system.windows.media.drawingcontext.drawroundedrectangle?view=windowsdesktop-6.0
-GDI & Direct2D API,DWriteCreateFactory,https://learn.microsoft.com/en-us/windows/win32/api/dwrite/nf-dwrite-dwritecreatefactory
-GDI & Direct2D API,EndPaint (GDI),https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-endpaint
 GDI & Direct2D API,ID2D1RenderTarget::BeginDraw,https://learn.microsoft.com/en-us/windows/win32/api/d2d1/nf-d2d1-id2d1rendertarget-begindraw
 GDI & Direct2D API,ID2D1RenderTarget::Clear,https://learn.microsoft.com/en-us/windows/win32/direct2d/id2d1rendertarget-clear
 GDI & Direct2D API,ID2D1RenderTarget::CreateHwndRenderTarget,https://learn.microsoft.com/en-us/windows/win32/api/d2d1/nf-d2d1-id2d1factory-createhwndrendertarget(constd2d1_render_target_properties__constd2d1_hwnd_render_target_properties__id2d1hwndrendertarget)
@@ -78,50 +62,66 @@ GDI & Direct2D API,IDWriteFactory::CreateTextFormat,https://learn.microsoft.com/
 GDI & Direct2D API,IDWriteTextFormat::SetParagraphAlignment,https://learn.microsoft.com/en-us/windows/win32/api/dwrite/nf-dwrite-idwritetextformat-setparagraphalignment
 GDI & Direct2D API,IDWriteTextFormat::SetTextAlignment,https://learn.microsoft.com/en-us/windows/win32/api/dwrite/nf-dwrite-idwritetextformat-settextalignment
 GDI & Direct2D API,IDWriteTextFormat::SetWordWrapping,https://learn.microsoft.com/en-us/windows/win32/api/dwrite/nf-dwrite-idwritetextformat-setwordwrapping
+Audio API,IMMDevice::Activate,https://learn.microsoft.com/en-us/windows/win32/api/mmdeviceapi/nf-mmdeviceapi-immdevice-activate
+Audio API,IMMDevice::GetId,https://learn.microsoft.com/en-us/windows/win32/api/mmdeviceapi/nf-mmdeviceapi-immdevice-getid
+Audio API,IMMDevice::GetState,https://learn.microsoft.com/en-us/windows/win32/api/mmdeviceapi/nf-mmdeviceapi-immdevice-getstate
+Audio API,IMMDevice::OpenPropertyStore,https://learn.microsoft.com/en-us/windows/win32/api/mmdeviceapi/nf-mmdeviceapi-immdevice-openpropertystore
+Audio API,IMMDeviceEnumerator::GetDefaultAudioEndpoint,https://learn.microsoft.com/en-us/windows/win32/api/mmdeviceapi/nf-mmdeviceapi-immdeviceenumerator-getdefaultaudioendpoint
+Threads & Synchronization API,InitializeCriticalSection,https://learn.microsoft.com/en-us/windows/win32/api/synchapi/nf-synchapi-initializecriticalsection
 GDI & Direct2D API,InvalidateRect,https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-invalidaterect
-Generic Win32 API,CloseHandle,https://learn.microsoft.com/en-us/windows/win32/api/handleapi/nf-handleapi-closehandle
-Generic Win32 API,CreateWindowW,https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindoww
-Generic Win32 API,DefWindowProcW,https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-defwindowprocw
-Generic Win32 API,DestroyWindow,https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-destroywindow
-Generic Win32 API,DialogBoxW,https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-dialogboxw
-Generic Win32 API,DispatchMessage,https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-dispatchmessage
-Generic Win32 API,EnableMenuItem,https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-enablemenuitem
-Generic Win32 API,EndDialog,https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-enddialog
-Generic Win32 API,GetCurrentProcess,https://learn.microsoft.com/en-us/windows/win32/api/processthreadsapi/nf-processthreadsapi-getcurrentprocess
-Generic Win32 API,GetMenu,https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-getmenu
-Generic Win32 API,GetMessage,https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-getmessage
-Generic Win32 API,GetProcessImageFileNameW,https://learn.microsoft.com/en-us/windows/win32/api/psapi/nf-psapi-getprocessimagefilenamew
-Generic Win32 API,HIWORD,https://learn.microsoft.com/en-us/previous-versions/windows/desktop/legacy/ms632657(v=vs.85)
 Generic Win32 API,InvalidateRect,https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-invalidaterect
+Audio API,IPropertyStore::GetValue,https://learn.microsoft.com/en-us/previous-versions/windows/desktop/legacy/bb761473(v=vs.85)
+COM API,IUnknown::Release,https://learn.microsoft.com/en-us/windows/win32/api/unknwn/nf-unknwn-iunknown-release
+Threads & Synchronization API,LeaveCriticalSection,https://learn.microsoft.com/en-us/windows/win32/api/synchapi/nf-synchapi-leavecriticalsection
 Generic Win32 API,LoadAcceleratorsW,https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-loadacceleratorsw
 Generic Win32 API,LoadCursorW,https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-loadcursorw
 Generic Win32 API,LoadIconW,https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-loadiconw
 Generic Win32 API,LoadStringW,https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-loadstringw
 Generic Win32 API,MAKEINTRESOURCEW,https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-makeintresourcew
+Debugging & Instrumentation API,MessageBeep,https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-messagebeep
+Debugging & Instrumentation API,MessageBoxA,https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-messageboxa
+Debugging & Instrumentation API,MessageBoxW,https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-messageboxw
+Debugging & Instrumentation API,OutputDebugStringA,https://learn.microsoft.com/en-us/windows/win32/api/debugapi/nf-debugapi-outputdebugstringa
+Debugging & Instrumentation API,OutputDebugStringW,https://learn.microsoft.com/en-us/windows/win32/api/debugapi/nf-debugapi-outputdebugstringw
 Generic Win32 API,PostMessageW,https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-postmessagew
 Generic Win32 API,PostQuitMessage,https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-postquitmessage
+COM API,PropVariantClear,https://learn.microsoft.com/en-us/windows/win32/api/combaseapi/nf-combaseapi-propvariantclear
+Audio API,PropVariantInit,https://learn.microsoft.com/en-us/windows/win32/api/propidl/nf-propidl-propvariantinit
+CRT & Memory Management API,rand,https://learn.microsoft.com/en-us/cpp/c-runtime-library/reference/rand?view=msvc-170
 Generic Win32 API,RegisterClassExW,https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-registerclassexw
+Threads & Synchronization API,ResetEvent,https://learn.microsoft.com/en-us/windows/win32/api/synchapi/nf-synchapi-resetevent
+CRT & Memory Management API,SecureZeroMemory,https://learn.microsoft.com/en-us/previous-versions/windows/desktop/legacy/aa366877(v=vs.85)
 Generic Win32 API,SetDlgItemTextW,https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-setdlgitemtextw
+Threads & Synchronization API,SetEvent,https://learn.microsoft.com/en-us/windows/win32/api/synchapi/nf-synchapi-setevent
 Generic Win32 API,ShowWindow,https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-showwindow
+Math,sinf,https://en.cppreference.com/w/c/numeric/math/sin
+Debugging & Instrumentation API,sprintf_s,https://learn.microsoft.com/en-us/cpp/c-runtime-library/reference/sprintf-s-sprintf-s-l-swprintf-s-swprintf-s-l?view=msvc-170
+Math,sqrtf,https://en.cppreference.com/w/c/numeric/math/sqrt
+CRT & Memory Management API,StringCbCopyExW,https://learn.microsoft.com/en-us/windows/win32/api/strsafe/nf-strsafe-stringcbcopyexw
+CRT & Memory Management API,StringCbPrintfW,https://learn.microsoft.com/en-us/windows/win32/api/strsafe/nf-strsafe-stringcbprintfw
+CRT & Memory Management API,StringCchCopyW,https://learn.microsoft.com/en-us/windows/win32/api/strsafe/nf-strsafe-stringcchcopyw
+CRT & Memory Management API,StringCchPrintfW,https://learn.microsoft.com/en-us/windows/win32/api/strsafe/nf-strsafe-stringcchprintfw
+Debugging & Instrumentation API,swprintf_s,https://learn.microsoft.com/en-us/cpp/c-runtime-library/reference/sprintf-s-sprintf-s-l-swprintf-s-swprintf-s-l?view=msvc-170
+Threads & Synchronization API,ThreadProc,https://learn.microsoft.com/en-us/previous-versions/windows/desktop/legacy/ms686736(v=vs.85)
 Generic Win32 API,TranslateAcceleratorW,https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-translateacceleratorw
 Generic Win32 API,TranslateMessage,https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-translatemessage
 Generic Win32 API,UpdateWindow,https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-updatewindow
-Math,_USE_MATH_DEFINES,https://learn.microsoft.com/en-us/cpp/c-runtime-library/math-constants?view=msvc-170
-Math,cosf,https://en.cppreference.com/w/c/numeric/math/cos
-Math,sinf,https://en.cppreference.com/w/c/numeric/math/sin
-Math,sqrtf,https://en.cppreference.com/w/c/numeric/math/sqrt
-Pragmas,"#pragma comment(lib, ""avrt"")",https://learn.microsoft.com/en-us/cpp/preprocessor/comment-c-cpp?view=msvc-170
-Pragmas,#pragma message,https://learn.microsoft.com/en-us/cpp/preprocessor/message?view=msvc-170
-Threads & Synchronization API,CreateEventExW,https://learn.microsoft.com/en-us/windows/win32/api/synchapi/nf-synchapi-createeventexw
-Threads & Synchronization API,CreateEventW,https://learn.microsoft.com/en-us/windows/win32/api/synchapi/nf-synchapi-createeventw
-Threads & Synchronization API,CreateThread,https://learn.microsoft.com/en-us/windows/win32/api/processthreadsapi/nf-processthreadsapi-createthread
-Threads & Synchronization API,DeleteCriticalSection,https://learn.microsoft.com/en-us/windows/win32/api/synchapi/nf-synchapi-deletecriticalsection
-Threads & Synchronization API,EnterCriticalSection,https://learn.microsoft.com/en-us/windows/win32/api/synchapi/nf-synchapi-entercriticalsection
-Threads & Synchronization API,ExitThread,https://learn.microsoft.com/en-us/windows/win32/api/processthreadsapi/nf-processthreadsapi-exitthread
-Threads & Synchronization API,InitializeCriticalSection,https://learn.microsoft.com/en-us/windows/win32/api/synchapi/nf-synchapi-initializecriticalsection
-Threads & Synchronization API,LeaveCriticalSection,https://learn.microsoft.com/en-us/windows/win32/api/synchapi/nf-synchapi-leavecriticalsection
-Threads & Synchronization API,ResetEvent,https://learn.microsoft.com/en-us/windows/win32/api/synchapi/nf-synchapi-resetevent
-Threads & Synchronization API,SetEvent,https://learn.microsoft.com/en-us/windows/win32/api/synchapi/nf-synchapi-setevent
-Threads & Synchronization API,ThreadProc,https://learn.microsoft.com/en-us/previous-versions/windows/desktop/legacy/ms686736(v=vs.85)
+Debugging & Instrumentation API,va_arg,https://learn.microsoft.com/en-us/cpp/c-runtime-library/reference/va-arg-va-copy-va-end-va-start?view=msvc-170
+Debugging & Instrumentation API,vsprintf_s,https://learn.microsoft.com/en-us/cpp/c-runtime-library/reference/vsprintf-s-vsprintf-s-l-vswprintf-s-vswprintf-s-l?view=msvc-170
+Debugging & Instrumentation API,vswprintf_s,https://learn.microsoft.com/en-us/cpp/c-runtime-library/reference/vsprintf-s-vsprintf-s-l-vswprintf-s-vswprintf-s-l?view=msvc-170
 Threads & Synchronization API,WaitForMultipleObjects,https://learn.microsoft.com/en-us/windows/win32/api/synchapi/nf-synchapi-waitformultipleobjects
 Threads & Synchronization API,WaitForSingleObject,https://learn.microsoft.com/en-us/windows/win32/api/synchapi/nf-synchapi-waitforsingleobject
+Audio API,WAVEFORMATEX,https://learn.microsoft.com/en-us/windows/win32/api/mmeapi/ns-mmeapi-waveformatex
+Audio API,WAVEFORMATEXTENSIBLE,https://learn.microsoft.com/en-us/windows/win32/api/mmreg/ns-mmreg-waveformatextensible
+Debugging & Instrumentation API,wcslen,https://en.cppreference.com/w/c/string/wide/wcslen
+Debugging & Instrumentation API,WerRegisterMemoryBlock,https://learn.microsoft.com/en-us/windows/win32/api/werapi/nf-werapi-werregistermemoryblock
+Debugging & Instrumentation API,WerReportAddDump,https://learn.microsoft.com/en-us/windows/win32/api/werapi/nf-werapi-werreportadddump
+Debugging & Instrumentation API,WerReportCloseHandle,https://learn.microsoft.com/en-us/windows/win32/api/werapi/nf-werapi-werreportclosehandle
+Debugging & Instrumentation API,WerReportCreate,https://learn.microsoft.com/en-us/windows/win32/api/werapi/nf-werapi-werreportcreate
+Debugging & Instrumentation API,WerReportSetParameter,https://learn.microsoft.com/en-us/windows/win32/api/werapi/nf-werapi-werreportsetparameter
+Debugging & Instrumentation API,WerReportSubmit,https://learn.microsoft.com/en-us/windows/win32/api/werapi/nf-werapi-werreportsubmit
+Audio API,XXXIAudioCaptureClient,https://learn.microsoft.com/en-us/windows/win32/api/audioclient/nn-audioclient-iaudiocaptureclient
+Audio API,XXXIAudioClient,https://learn.microsoft.com/en-us/windows/win32/api/audioclient/nn-audioclient-iaudioclient
+Audio API,XXXIMMDevice,https://learn.microsoft.com/en-us/windows/win32/api/mmdeviceapi/nn-mmdeviceapi-immdevice
+Audio API,XXXIPropertyStore,https://learn.microsoft.com/en-us/windows/win32/api/propsys/nn-propsys-ipropertystore
+CRT & Memory Management API,ZeroMemory,https://learn.microsoft.com/en-us/previous-versions/windows/desktop/legacy/aa366920(v=vs.85)
