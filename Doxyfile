@@ -911,7 +911,6 @@ WARN_LOGFILE           =
 INPUT                  = Z:/Src/VisualStudio/DTMF_Decoder/DTMF_Decoder \
                          README.md \
                          REFERENCES.md \
-                         REFERENCES.md \
                          ARCHITECTURE.md \
                          STATISTICS.md \
                          RELEASE_CHECKLIST.md \
