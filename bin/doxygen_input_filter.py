@@ -1,6 +1,6 @@
 #! python3
 
-###############################################################################
+# #############################################################################
 #          University of Hawaii, College of Engineering
 #          DTMF_Decoder - EE 469 - Fall 2022
 #
@@ -16,10 +16,12 @@
 ##
 ## Enhance the source code's documentation without polluting it.  Say we have
 ## the following code snippet:
-##      /// Use CloseHandle to close #ghStartDFTevent
-##         br = CloseHandle( ghStartDFTevent );
-##         CHECK_BR_R( IDS_GOERTZEL_FAILED_TO_CLOSE_STARTDFT_HANDLE );  //  "Failed to close ghStartDFTevent handle."
-##         ghStartDFTevent = NULL;
+## ````
+#       /// Use CloseHandle to close #ghStartDFTevent
+#           br = CloseHandle( ghStartDFTevent );
+#           CHECK_BR_R( IDS_GOERTZEL_FAILED_TO_CLOSE_STARTDFT_HANDLE );  //  "Failed to close ghStartDFTevent handle."
+#           ghStartDFTevent = NULL;
+## ````
 ##
 ## CloseHandle is a Windows API call documented at:  https://learn.microsoft.com/en-us/windows/win32/api/handleapi/nf-handleapi-closehandle
 ##
@@ -35,29 +37,70 @@
 import sys    # For argv
 import pandas # For better CSV processing
 
+## Print without a \n and flush the buffer
+#  @param aString The string to print
+def printCat( aString ):
+   ## Print a string
+   #  @param end   The end character
+   #  @param flush Flush the buffer
+   print( aString, end='', flush=True )
+
+
+## Print and flush the buffer
+#  @param aString The string to print
+def printFlush( aString ):
+   ## Print a string
+   #  @param flush Flush the buffer
+   print( aString, flush=True )
+
+
+## Do the string substitution
+#  @param aString The string to perform the substitution on
+#  @param csvData A dataset that can be interated over containing the
+#                 approproate documentation
+def documentKeywords( aString, csvData ):
+   for index, row in csvData.iterrows():
+      aString = aString.replace( row['Function'], f"[{row['Function']}]({row['URL']})" )
+   return aString
+
 
 # The main body
+
+## The source filename
+sourceFilename = sys.argv[1]
+
+## Handle to the source file
+sourceFile = open( sourceFilename, 'r' )
+
+
+# Don't do API replacement for Python source files
+if sourceFilename[-3:] == ".py":
+   for line in sourceFile:
+      printCat( line )
+   exit( 0 )
+
 
 ## Path to the API CSV file
 API_Documentation = "API_Documentation.csv"
 
 ## DataFrame from Pandas CSV API
 csvData = pandas.read_csv( API_Documentation )
-csvData.sort_values( ['Section', 'Function'], inplace=True )
+csvData.sort_values( ['Section', 'Function'],
+                     ## Leave the results in self (csvData)
+                     inplace=True
+                   )
 
 # print( "Processing file [" + sys.argv[1] + "] using the API references in [" + API_Documentation + "]", file=sys.stderr )
 
 
-## Handle to the source file
-sourceFile = open( sys.argv[1], 'r' )
 
-## Iterate over sourceFile, putting each line in #line
+## Iterate over sourceFile, putting each line in `line`
 for line in sourceFile:
 
    # Process the documentation for REFERENCES.md
    hasTag = line.find( "<< Print All API Documentation >>" )
    if( hasTag != -1 ):
-   	## Track the section and print headers when it changes
+      ## Track the section and print headers when it changes
       section=""
       for index, row in csvData.iterrows():
          if( section != row['Section'] ):
@@ -66,16 +109,17 @@ for line in sourceFile:
             print( "| API | Link |" )
             print( "|-----|------|" )
             section = row['Section']
-         print( f"| [{row['Function']}]({row['URL']}) | {row['URL']} |", flush=True )
-      print( "" )
+         printFlush( f"| [{row['Function']}]({row['URL']}) | {row['URL']} |" )
+      printFlush( "" )
       continue
 
    # Process the documentation for a module's API section
    hasTag = line.find( "<< Print Module API Documentation >>" )
    if( hasTag != -1 ):
+      ## The set of keywords in the source file
       keywordSet = set()
       ## Scan through the source file a second time (looking for API calls)
-      sourceFile_2 = open( sys.argv[1], 'r' )
+      sourceFile_2 = open( sourceFilename, 'r' )
       for line_2 in sourceFile_2:
          for index, row in csvData.iterrows():
             start = line_2.find( row['Function'] )
@@ -95,8 +139,8 @@ for line in sourceFile:
             print( "/// | API | Link |" )
             print( "/// |-----|------|" )
             section = row['Section']
-         print( f"/// | [{row['Function']}]({row['URL']}) | {row['URL']} |", flush=True )
-      print( "" )
+         printFlush( f"/// | [{row['Function']}]({row['URL']}) | {row['URL']} |" )
+      printFlush( "" )
       continue
 
    # Automatically create links to the API references
@@ -105,7 +149,7 @@ for line in sourceFile:
    start = line.find( "///" )
 
    if( start == -1 ):
-      print( line, end='', flush=True )
+      printCat( line )
       continue
 
    ## The source before the DOxygen comment
@@ -114,7 +158,6 @@ for line in sourceFile:
    ## The Doxygen comment's contents
    postComment = line[start+3:]
 
-   for index, row in csvData.iterrows():
-      postComment = postComment.replace( row['Function'], f"[{row['Function']}]({row['URL']})" )
+   postComment = documentKeywords( postComment, csvData )
 
-   print( f"{preComment}///{postComment}", end='', flush=True )
+   printCat( f"{preComment}///{postComment}" )

@@ -1,10 +1,10 @@
-###############################################################################
+# #############################################################################
 #          University of Hawaii, College of Engineering
 #          DTMF_Decoder - EE 469 - Fall 2022
 #
 #  A Windows Desktop C program that decodes DTMF tones
 #
-## Script a number of activities before the build runs
+## Script activities before the build runs
 ##
 ## @file    pre_build_event.py
 ## @author  Mark Nelson <marknels@hawaii.edu>

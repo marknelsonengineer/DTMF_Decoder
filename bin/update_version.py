@@ -1,6 +1,6 @@
 #! python3
 
-###############################################################################
+# #############################################################################
 #          University of Hawaii, College of Engineering
 #          DTMF_Decoder - EE 469 - Fall 2022
 #
@@ -11,8 +11,8 @@
 ## Usage:  Normally, this script just updates the `version.h` file.  However,
 ##         if you run it with the `--all` command line option, it will update:
 ##         - version.h
-##         - The VERSION object in resource.rc
-##         - The Doxyfile
+##         - The VERSION object in `resource.rc`
+##         - `Doxyfile`
 ##         - The Visual Studio project configuration file
 ##
 ## @see https://stackoverflow.com/questions/59692711/auto-increment-fileversion-build-nr-in-visual-studio-2019
