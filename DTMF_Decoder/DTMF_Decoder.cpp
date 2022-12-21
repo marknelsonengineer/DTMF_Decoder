@@ -96,10 +96,10 @@ int APIENTRY wWinMain(
    gracefulShutdown();            // This does not shutdown a program during init
    _ASSERTE( audioCleanup() );    // Can't call this before audioInit
 // _ASSERTE( audioStop() );       // Can't call this out-of-sequence (yet)  todo Fix this
-   _ASSERTE( goertzel_Cleanup() );
+   _ASSERTE( goertzel_Release() );
    _ASSERTE( goertzel_Stop() );
 // _ASSERTE( logCleanup() );      // Can't call this before logInit
-   _ASSERTE( mvcModelCleanup() );
+   _ASSERTE( mvcModelRelease() );
    _ASSERTE( mvcViewCleanup() );
    _ASSERTE( logWerCleanup() );
 
@@ -227,7 +227,7 @@ int APIENTRY wWinMain(
    br = mvcViewInit();
    if ( !br ) {
       LOG_FATAL_R( IDS_DTMF_DECODER_FAILED_TO_INITIALIZE_VIEW );  // "Failed to initialize the view.  Exiting."
-      mvcModelCleanup();      // Unwind mvcViewInit
+      mvcModelRelease();      // Unwind mvcViewInit
       CoUninitialize();       // Unwind COM
       return EXIT_FAILURE;
    }
@@ -237,7 +237,7 @@ int APIENTRY wWinMain(
    if ( !br ) {
       LOG_FATAL_R( IDS_DTMF_DECODER_FAILED_TO_INITIALIZE_AUDIO );  // "Failed to initialize the audio capture system.  Exiting."
       mvcViewCleanup();
-      mvcModelCleanup();
+      mvcModelRelease();
       CoUninitialize();       // Unwind COM
       return EXIT_FAILURE;
    }
@@ -248,7 +248,7 @@ int APIENTRY wWinMain(
       LOG_FATAL_R( IDS_DTMF_DECODER_FAILED_TO_INITIALIZE_GOERTZEL );  // "Failed to initialize the Goertzel DFT module.  Exiting."
       audioCleanup();
       mvcViewCleanup();
-      mvcModelCleanup();
+      mvcModelRelease();
       CoUninitialize();       // Unwind COM
       return EXIT_FAILURE;
    }
@@ -259,7 +259,7 @@ int APIENTRY wWinMain(
       LOG_FATAL_R( IDS_DTMF_DECODER_FAILED_TO_START_AUDIO );  // "Failed to start capturing audio.  Exiting."
       audioCleanup();
       mvcViewCleanup();
-      mvcModelCleanup();
+      mvcModelRelease();
       CoUninitialize();       // Unwind COM
       return EXIT_FAILURE;
    }
@@ -268,7 +268,7 @@ int APIENTRY wWinMain(
    if ( hAccelTable == NULL ) {
       LOG_FATAL_R( IDS_DTMF_DECODER_FAILED_TO_LOAD_MENU );  // "Failed to load menu accelerator.  Exiting."
       mvcViewCleanup();
-      mvcModelCleanup();
+      mvcModelRelease();
       CoUninitialize();       // Unwind COM
       audioCleanup();
       return EXIT_FAILURE;
@@ -311,7 +311,7 @@ int APIENTRY wWinMain(
    // The view was cleaned up in WM_DESTRO (immediately following the destruction
    // of the window
 
-   br = goertzel_Cleanup();
+   br = goertzel_Release();
    WARN_BR_R( IDS_DTMF_DECODER_FAILED_TO_CLEANUP_DFT );  // "Failed to cleanup Goertzel DFT"
 
    /// Print any entries in the log queue
@@ -319,7 +319,7 @@ int APIENTRY wWinMain(
       logDequeueAndDisplayMessage();
    }
 
-   br = mvcModelCleanup();
+   br = mvcModelRelease();
    WARN_BR_R( IDS_DTMF_DECODER_FAILED_TO_CLEANUP_MODEL );  // "Failed to cleanup the model."
 
    // The window has already been cleaned up
