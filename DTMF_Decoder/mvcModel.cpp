@@ -6,13 +6,8 @@
 //
 /// The model holds the state between the various modules
 ///
-/// ## APIs Used
-/// | API                | Link                                                                                         |
-/// |--------------------|----------------------------------------------------------------------------------------------|
-/// | `_malloc_dbg`      | https://learn.microsoft.com/en-us/cpp/c-runtime-library/reference/malloc-dbg                 |
-/// | `SecureZeroMemory` | https://learn.microsoft.com/en-us/previous-versions/windows/desktop/legacy/aa366877(v=vs.85) |
-/// | `_free_dbg`        | https://learn.microsoft.com/en-us/cpp/c-runtime-library/reference/free-dbg                   |
-/// | `_CrtCheckMemory`  | https://learn.microsoft.com/en-us/cpp/c-runtime-library/reference/crtcheckmemory             |
+/// ### APIs Used
+/// << Print Module API Documentation >>
 ///
 /// @file    mvcModel.cpp
 /// @author  Mark Nelson <marknels@hawaii.edu>
@@ -32,26 +27,28 @@ BOOL mvcModelInit() {
 }
 
 
-/// Cleans up any loose ends in the model
+/// Releases resources used by the model
 ///
 /// @return `TRUE` if successful.  `FALSE` if there was a problem.
-BOOL mvcModelCleanup() {
-   /// #gbIsRunning is always current and does not need cleaning
+BOOL mvcModelRelease() {
+   /// #### Function
 
-   /// Set #dtmfTones_t::detected to `false`
+   /// - #gbIsRunning is always current and does not need cleaning
+
+   /// - Set #dtmfTones_t::detected to `false`
    for ( size_t i = 0 ; i < NUMBER_OF_DTMF_TONES ; i++ ) {
       gDtmfTones[ i ].detected = false;
    }
 
-   /// Nothing to clean with #gdwMmcssTaskIndex
+   /// - Nothing to clean with #gdwMmcssTaskIndex
 
-   /// We expect #audioCleanup to clean #ghAudioSamplesReadyEvent
+   /// - We expect #audioCleanup to clean #ghAudioSamplesReadyEvent
 
-   /// We expect DTMF_Decoder.cpp to clean #ghMainWindow
+   /// - We expect DTMF_Decoder.cpp to clean #ghMainWindow
 
-   /// #giApplicationReturnValue is always current and does not need cleaning
+   /// - #giApplicationReturnValue is always current and does not need cleaning
 
-   /// Call #pcmReleaseQueue to clean #gPcmQueue, #gstQueueHead and #gstQueueSize
+   /// - Call #pcmReleaseQueue to clean #gPcmQueue, #gstQueueHead and #gstQueueSize
    pcmReleaseQueue();
 
    return TRUE;
@@ -94,15 +91,20 @@ BOOL pcmSetQueueSize( _In_ const size_t size ) {
    _ASSERTE( gstQueueSize == 0 );
    _ASSERTE( size != 0 );
 
+   /// #### Function
+
+   /// - Allocate memory with _malloc_dbg
    gPcmQueue = (BYTE*)_malloc_dbg(size, _CLIENT_BLOCK, __FILE__, __LINE__);
    if ( gPcmQueue == NULL ) {
       LOG_ERROR_R( IDS_MODEL_FAILED_TO_MALLOC );  // "Failed to allocate memory for PCM queue"
       return FALSE;
    }
 
+   /// - Initialize the queue
    gstQueueSize = size;
    gstQueueHead = 0;
 
+   /// - Zero the memory with SecureZeroMemory
    SecureZeroMemory( gPcmQueue, gstQueueSize );
 
    _ASSERTE( gPcmQueue != NULL );
@@ -115,12 +117,16 @@ BOOL pcmSetQueueSize( _In_ const size_t size ) {
 
 
 void pcmReleaseQueue() {
+   /// #### Function
+
    if ( gPcmQueue != NULL ) {
 
-      SecureZeroMemory( gPcmQueue, gstQueueSize );  // Zero out memory before releasing it
+      /// - Zero out the queue with SecureZeroMemory before releasing it
+      SecureZeroMemory( gPcmQueue, gstQueueSize );
 
       _ASSERTE( _CrtCheckMemory() );  // Check memory and see if there's a problem
 
+      /// - Free the queue's memory with _free_dbg
       _free_dbg( gPcmQueue, _CLIENT_BLOCK );
 
       gPcmQueue = NULL;
