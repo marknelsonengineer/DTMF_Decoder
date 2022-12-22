@@ -60,7 +60,7 @@ def printFlush( aString ):
 #                 approproate documentation
 def documentKeywords( aString, xlsData ):
    for index, row in xlsData.iterrows():
-      aString = aString.replace( row['Function'], f"[{row['Function']}]({row['URL']})" )
+      aString = aString.replace( row['Name'], f"[{row['Name']}]({row['URL']})" )
    return aString
 
 
@@ -85,7 +85,7 @@ API_Documentation = "API_Documentation.xls"
 
 ## DataFrame from Pandas Excel API
 xlsData = pandas.read_excel( API_Documentation )
-xlsData.sort_values( ['Section', 'Function'],
+xlsData.sort_values( ['Section', 'Name'],
                      ## Leave the results in self (xlsData)
                      inplace=True
                    )
@@ -109,7 +109,7 @@ for line in sourceFile:
             print( "| API | Link |" )
             print( "|-----|------|" )
             section = row['Section']
-         printFlush( f"| [{row['Function']}]({row['URL']}) | {row['URL']} |" )
+         printFlush( f"| [{row['Name']}]({row['URL']}) | {row['URL']} |" )
       printFlush( "" )
       continue
 
@@ -122,16 +122,16 @@ for line in sourceFile:
       sourceFile_2 = open( sourceFilename, 'r' )
       for line_2 in sourceFile_2:
          for index, row in xlsData.iterrows():
-            start = line_2.find( row['Function'] )
+            start = line_2.find( row['Name'] )
             if( start != -1 ):
-               # print( f"Found {row['Function']}" )
-               keywordSet.add( row['Function'] )
+               # print( f"Found {row['Name']}" )
+               keywordSet.add( row['Name'] )
 
       # print( keywordSet )
 
       section = ""
       for index, row in xlsData.iterrows():
-         if row['Function'] not in keywordSet:
+         if row['Name'] not in keywordSet:
             continue
          if( section != row['Section'] ):
             print( "/// " )
@@ -139,7 +139,7 @@ for line in sourceFile:
             print( "/// | API | Link |" )
             print( "/// |-----|------|" )
             section = row['Section']
-         printFlush( f"/// | [{row['Function']}]({row['URL']}) | {row['URL']} |" )
+         printFlush( f"/// | [{row['Name']}]({row['URL']}) | {row['URL']} |" )
       printFlush( "" )
       continue
 
