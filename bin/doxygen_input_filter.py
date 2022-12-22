@@ -26,7 +26,7 @@
 ## CloseHandle is a Windows API call documented at:  https://learn.microsoft.com/en-us/windows/win32/api/handleapi/nf-handleapi-closehandle
 ##
 ## This script will find comments that start with ///, then it will find
-## API calls documented in a .CSV file, finally, it will substitute the
+## API calls documented in an Excel file, finally, it will substitute the
 ## API call in the documentation with a Markdown link to the call in the form of:
 ## [dislayName](URL)
 ##
@@ -35,7 +35,7 @@
 ###############################################################################
 
 import sys    # For argv
-import pandas # For better CSV processing
+import pandas # For better data processing
 
 ## Print without a \n and flush the buffer
 #  @param aString The string to print
@@ -56,10 +56,10 @@ def printFlush( aString ):
 
 ## Do the string substitution
 #  @param aString The string to perform the substitution on
-#  @param csvData A dataset that can be interated over containing the
+#  @param xlsData A dataset that can be interated over containing the
 #                 approproate documentation
-def documentKeywords( aString, csvData ):
-   for index, row in csvData.iterrows():
+def documentKeywords( aString, xlsData ):
+   for index, row in xlsData.iterrows():
       aString = aString.replace( row['Function'], f"[{row['Function']}]({row['URL']})" )
    return aString
 
@@ -80,13 +80,13 @@ if sourceFilename[-3:] == ".py":
    exit( 0 )
 
 
-## Path to the API CSV file
-API_Documentation = "API_Documentation.csv"
+## Path to the API Excel file
+API_Documentation = "API_Documentation.xls"
 
-## DataFrame from Pandas CSV API
-csvData = pandas.read_csv( API_Documentation )
-csvData.sort_values( ['Section', 'Function'],
-                     ## Leave the results in self (csvData)
+## DataFrame from Pandas Excel API
+xlsData = pandas.read_excel( API_Documentation )
+xlsData.sort_values( ['Section', 'Function'],
+                     ## Leave the results in self (xlsData)
                      inplace=True
                    )
 
@@ -102,7 +102,7 @@ for line in sourceFile:
    if( hasTag != -1 ):
       ## Track the section and print headers when it changes
       section=""
-      for index, row in csvData.iterrows():
+      for index, row in xlsData.iterrows():
          if( section != row['Section'] ):
             print( "" )
             print( "## " + row['Section'] )
@@ -121,7 +121,7 @@ for line in sourceFile:
       ## Scan through the source file a second time (looking for API calls)
       sourceFile_2 = open( sourceFilename, 'r' )
       for line_2 in sourceFile_2:
-         for index, row in csvData.iterrows():
+         for index, row in xlsData.iterrows():
             start = line_2.find( row['Function'] )
             if( start != -1 ):
                # print( f"Found {row['Function']}" )
@@ -130,7 +130,7 @@ for line in sourceFile:
       # print( keywordSet )
 
       section = ""
-      for index, row in csvData.iterrows():
+      for index, row in xlsData.iterrows():
          if row['Function'] not in keywordSet:
             continue
          if( section != row['Section'] ):
@@ -158,6 +158,6 @@ for line in sourceFile:
    ## The Doxygen comment's contents
    postComment = line[start+3:]
 
-   postComment = documentKeywords( postComment, csvData )
+   postComment = documentKeywords( postComment, xlsData )
 
    printCat( f"{preComment}///{postComment}" )
