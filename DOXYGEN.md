@@ -81,20 +81,3 @@ Doxygen's website is:  https://www.doxygen.nl
    - I clone the configuration from an existing app, then pick through the config
      line-by-line until I'm happy with it.  I have a lot of customizations, but
      it looks good the way I publish it.
-
-# Old stuff
-
-### Dia
-   - Dia is no longer supported package on ArchLinux, but I built it by hand
-
-# pacman -S python-pip
-# pip install meson
-# pacman -S graphene
-
-$ git clone https://gitlab.gnome.org/GNOME/dia.git
-cd dia
-meson setup build
-cd build
-meson compile
-meson test
-sudo meson install
