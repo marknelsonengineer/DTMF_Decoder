@@ -13,6 +13,7 @@ Doxygen's website is:  https://www.doxygen.nl
    - I need to use [DOT](https://graphviz.org ) but 
      not [DIA](http://dia-installer.de) which is very old and is not maintained
      anymore.
+   - Here's a great link on Doxygen's graphics capabilities:  Dig into it:  https://alesnosek.com/blog/2015/06/28/diagrams-and-images-in-doxygen/
 
 ## Installing from Source on Linux
 
