@@ -119,8 +119,8 @@ function processDataFiles {
 
 
 function extract_working_files {
-   egrep    ${1}  $ALL_FILES > $WORKING_FILES
-   egrep -v ${1}  $ALL_FILES > $REMAINING_FILES
+   grep -E    ${1}  $ALL_FILES > $WORKING_FILES
+   grep -E -v ${1}  $ALL_FILES > $REMAINING_FILES
    mv $REMAINING_FILES $ALL_FILES
 }
 
@@ -153,7 +153,7 @@ function print_number_of_unit_tests {
 
 function print_number_of_individual_tests {
    printf "\n"
-   unit_tests=`egrep "BOOST_CHECK|BOOST_REQUIRE" ../tests/* | wc -l | awk '{print $1}'`
+   unit_tests=`grep -E "BOOST_CHECK|BOOST_REQUIRE" ../tests/* | wc -l | awk '{print $1}'`
    printf "Number of individual tests:  %d\n" $unit_tests
 }
 
