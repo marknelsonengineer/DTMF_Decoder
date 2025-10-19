@@ -7,29 +7,50 @@
 /// Custom style sheet for Doxygen documentation
 ///
 /// @file    estraStyleSheet.css
-/// @version 1.0
+/// @version 2.0
 ///
 /// @author  Mark Nelson <marknels@hawaii.edu>
-/// @date    2_Nov_2022
+/// @date    19 Oct 2025
 //////////////////////////////////////////////////////////////////////////// */
 
 code {
-    color: green;
+    color: lime;
 }
 
 pre.fragment {
-    color: green;
-    background-color: #e8e8e8
+    color: lime;
+    background-color: #1f1f1f
 }
 
 span.comment {
-    color: green;
+    color: lime;
 }
 
 span.preprocessor {
-    color: dimgray;
+    color: silver;
 }
 
 span.keywordflow {
     color: darkorange;
 }
+
+h1 {
+    font-size: 1.5em;
+}
+
+/* Format the @API xrefitem Alias */
+p.startdd {
+    margin-top: 2px;
+    margin-bottom: 2px;
+}
+
+p.interdd {
+    margin-top: 2px;
+    margin-bottom: 2px;
+}
+
+p.enddd {
+    margin-top: 2px;
+    margin-bottom: 4px;
+}
+
