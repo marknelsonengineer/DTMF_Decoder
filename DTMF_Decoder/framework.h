@@ -82,9 +82,9 @@ extern int giApplicationReturnValue;
 
 
 /// Add SAL notation when returning a `BOOL` in the usual
-/// ````
+/// ```
 ///      /// @return TRUE if successful.  FALSE if there was a problem.
-/// ````
+/// ```
 /// ...design pattern.
 #define RETURN_BOOL _Success_( return != 0 ) BOOL
 

@@ -61,10 +61,10 @@
 /// strings loaded from resources are assumed to be wide (UNICODE).
 ///
 /// When Log functions throw exceptions, they will:
-/// ````
+/// ```
 ///      OutputDebugStringA( "VIOLATED STACK GUARD in Logger.  Exiting immediately." );
 ///      _ASSERT_EXPR( FALSE, L"VIOLATED STACK GUARD in Logger.  Exiting immediately." );
-/// ````
+/// ```
 /// ... via #FATAL_IN_LOG
 ///
 /// #### Queuing messages
