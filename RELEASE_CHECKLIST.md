@@ -45,7 +45,7 @@ truth.
     - Push the project into Github and Tag the release
     - Regenerate the statistics by clicking the Stats button or running:
 
-          wsl --cd ~/src/VisualStudio/DTMF_Decoder --exec ./bin/stats.sh
+          wsl --cd ~/source/repos/DTMF_Decoder --exec ./bin/stats.sh
 
     - Regenerate the Doxygen documentation
     - Push the Doxygen documentation to UH from WSL's `bash` `cd $(SolutionDir)` `./bin/sync.sh`
