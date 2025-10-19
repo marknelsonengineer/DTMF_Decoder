@@ -36,7 +36,7 @@ OutDir        = sys.argv[4]
 
 os.chdir( SolutionDir )
 
-os.system( "python3 " + SolutionDir + "bin/update_version.py" )
+os.system( "py " + SolutionDir + "bin/update_version.py" )
 
 if Configuration == "Release":
     print( "Copying PGO instrumentation files")

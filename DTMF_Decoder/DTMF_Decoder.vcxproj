@@ -311,7 +311,7 @@
       <PreprocessorDefinitions>_WIN64;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </MASM>
     <PreBuildEvent>
-      <Command>python3 $(SolutionDir)bin\pre_build_event.py "$(Configuration)" "$(Platform)" $(SolutionDir) "$(OutDir)</Command>
+      <Command>py $(SolutionDir)bin\pre_build_event.py "$(Configuration)" "$(Platform)" $(SolutionDir) "$(OutDir)</Command>
     </PreBuildEvent>
     <PreBuildEvent>
       <Message>Python-based pre-build script</Message>
