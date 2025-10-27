@@ -24,9 +24,9 @@ DTMF Decoder for Windows
 ## Links & Downloads
 The project's home page (hosted by GitHub) is [here](https://github.com/marknelsonengineer/DTMF_Decoder)
 
-The source code documentation (hosted by UH) is [here](https://www2.hawaii.edu/~marknels/DTMF_Decoder/docs/)
+The source code documentation is [here](https://mark.nelson.engineer/srcdoc/dtmf_decoder/html/)
 
-The application can be downloaded from [here](https://www2.hawaii.edu/~marknels/DTMF_Decoder/app/)
+<!-- The application can be downloaded from [here](https://www2.hawaii.edu/~marknels/DTMF_Decoder/app/)  -->
 
 
 
