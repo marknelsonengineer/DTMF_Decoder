@@ -43,6 +43,7 @@
 /// | `TranslateAcceleratorW`| https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-translateacceleratorw |
 /// | `TranslateMessage`     | https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-translatemessage      |
 /// | `UpdateWindow`         | https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-updatewindow          |
+/// | `_malloc_dbg`          | https://learn.microsoft.com/en-us/cpp/c-runtime-library/reference/malloc-dbg   |
 ///
 /// @file    DTMF_Decoder.cpp
 /// @author  Mark Nelson <marknels@hawaii.edu>

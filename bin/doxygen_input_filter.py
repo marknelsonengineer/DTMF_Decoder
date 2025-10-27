@@ -16,12 +16,12 @@
 ##
 ## Enhance the source code's documentation without polluting it.  Say we have
 ## the following code snippet:
-## ````
+## ```
 #       /// Use CloseHandle to close #ghStartDFTevent
 #           br = CloseHandle( ghStartDFTevent );
 #           CHECK_BR_R( IDS_GOERTZEL_FAILED_TO_CLOSE_STARTDFT_HANDLE );  //  "Failed to close ghStartDFTevent handle."
 #           ghStartDFTevent = NULL;
-## ````
+## ```
 ##
 ## CloseHandle is a Windows API call documented at:  https://learn.microsoft.com/en-us/windows/win32/api/handleapi/nf-handleapi-closehandle
 ##

@@ -53,7 +53,7 @@ The application can be downloaded from [here](https://www2.hawaii.edu/~marknels/
     like to write this in C and not C++
   - **WPF, Forms and UWP:** Same argument as the two above.
 
-- **The Graphics Framework:**  I started down the GDI path, but good `old Stack
+- **The Graphics Framework:**  I started down the GDI path, but good old Stack
   Overflow pointed me towards **Direct2D**.
   - **GDI:**  It's deprecated.  Also, I want to explore APIs that are written for GPUs.
   - **GDI+:**  I want to write this in C
